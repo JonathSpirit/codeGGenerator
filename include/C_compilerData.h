@@ -1,0 +1,79 @@
+/////////////////////////////////////////////////////////////////////////////////
+// Copyright 2021 Guillaume Guillet                                            //
+//                                                                             //
+// Licensed under the Apache License, Version 2.0 (the "License");             //
+// you may not use this file except in compliance with the License.            //
+// You may obtain a copy of the License at                                     //
+//                                                                             //
+//     http://www.apache.org/licenses/LICENSE-2.0                              //
+//                                                                             //
+// Unless required by applicable law or agreed to in writing, software         //
+// distributed under the License is distributed on an "AS IS" BASIS,           //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.    //
+// See the License for the specific language governing permissions and         //
+// limitations under the License.                                              //
+/////////////////////////////////////////////////////////////////////////////////
+
+#ifndef C_COMPILERDATA_H_INCLUDED
+#define C_COMPILERDATA_H_INCLUDED
+
+#include "C_stringDecomposer.h"
+#include "C_macro.h"
+#include "C_variable.h"
+#include "C_address.h"
+#include "C_instruction.h"
+#include <list>
+#include <memory>
+#include <stack>
+
+namespace codeg
+{
+
+enum ScopeStats : uint32_t
+{
+    SCOPE_NORMAL,
+
+    SCOPE_CONDITIONAL_TRUE,
+    SCOPE_CONDITIONAL_FALSE
+};
+
+struct CodeData
+{
+    bool push(uint8_t d);
+    void resize(uint32_t n);
+
+    uint32_t _cursor = 0;
+    uint32_t _capacity = 0;
+
+    std::shared_ptr<uint8_t[]> _data;
+};
+
+struct CompilerData
+{
+    bool isReserved(const std::string& str);
+
+    codeg::StringDecomposer _decomposer;
+
+    std::list<codeg::Instruction*> _instructions;
+    std::list<std::string> _reservedKeywords;
+
+    codeg::PoolList _pools;
+    std::string _defaultPool;
+
+    codeg::MacroList _macros;
+
+    codeg::JumpList _jumps;
+
+    std::string _actualFunctionName;
+    std::list<std::string> _functions;
+
+    uint32_t _scopeCount=0;
+    std::stack<uint32_t> _scope;
+    std::stack<codeg::ScopeStats> _scopeStats;
+
+    codeg::CodeData _code;
+};
+
+}//end codeg
+
+#endif // C_COMPILERDATA_H_INCLUDED

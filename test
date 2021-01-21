@@ -1,0 +1,103 @@
+write 1 x21
+write 2 35
+write 1 _result
+write 2 _bread1
+write 1 $wow
+
+P -RAM 0
+P MATRIX 1
+P INTER 4
+
+OP + 0
+OP << 1
+OP >> 2
+OP == 3
+
+OP & 5
+
+var ply1_pos
+var ply2_pos
+var ballx
+var bally
+var buff1
+var buff2
+var buff3
+
+var _func_parameter1
+var _func_parameter2
+var _func_jumplsb
+var _func_jumpmsb
+
+affect ply1_pos x80
+affect ply2_pos x80
+
+# BUSW1 0 : CS
+# BUSW1 1 : CLK
+# BUSW2 0 : data
+# _func_parameter1 : address
+# _func_parameter2 : data
+function Send
+	# Temporisation
+	do x80 & ._func_parameter1
+	choose PERIPHERAL MATRIX
+	
+	write 1 x01
+	write 1 x03
+	write 1 x01
+	
+	# ADDRESS
+	label INFUNCTION_SEND:Boucle_address
+	write 1 x00
+	write 2 d0
+	if _result
+		write 2 d1
+	else_end
+	write 1 x02
+	choose OP >>
+	if _result
+		brut OPERATION_RESULT|NOOP_B1|OPLW
+		brut NULL
+		choose OP &
+		jump INFUNCTION_SEND:Boucle_address
+	else_end
+
+	do x80 & ._func_parameter2
+	choose P MATRIX
+	# DATA
+	label INFUNCTION_SEND:Boucle_data
+	write 1 x00
+	write 2 d0
+	if _result
+		write 2 d1
+	else_end
+	write 1 x02
+	choose OP >>
+	if _result
+		brut OPERATION_RESULT|NOOP_B1|OPLW
+		brut NULL
+		choose OP &
+		jump INFUNCTION_SEND:Boucle_data
+	else_end
+	write 1 x03
+	write 1 x03
+	write 1 x01
+end
+
+choose P MATRIX
+write 1 x01
+write 1 x03
+write 1 x01
+
+affect _func_parameter1 x0C
+affect _func_parameter2 x01
+
+call Send
+
+affect _func_parameter1 d1
+affect _func_parameter2 xF0
+
+call Send
+
+label PATATE
+
+jump PATATE

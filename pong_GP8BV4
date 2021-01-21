@@ -1,0 +1,449 @@
+P -RAM 0
+P MATRIX 5
+P INTER 4
+
+#GP8B ALU - V1
+set + 0
+set - 1
+
+set & 2
+set | 3
+set ^ 4
+
+set && 5
+set || 6
+set ^^ 7
+
+set >> 8
+set << 9
+
+set > 10
+set < 11
+set >= 12
+set <= 13
+set == 14
+
+set ~ 15
+set ! 16
+
+set * 17
+
+set ~1 18
+set @ 19
+
+var ply1_pos
+var ply2_pos
+var ballx
+var bally
+var balld
+var buff1
+var buff2
+
+var _func_parameter1
+var _func_parameter2
+var _func_jumplsb
+var _func_jumpmsb
+
+label RESTART
+
+affect ply1_pos 0x80
+affect ply2_pos 0x80
+affect ballx 0x04
+affect bally 0x08
+affect balld 0
+
+# BUSW1 0 : CLK
+# BUSW1 1 : CS
+# BUSW2 0 : data
+# _func_parameter1 : address
+# _func_parameter2 : data
+function Send
+	# Temporisation
+	do x80 & ._func_parameter1
+	choose P MATRIX
+	
+	# ADDRESS
+	label INFUNCTION_SEND:Boucle_address
+	write 2 d0
+	write 1 x00
+	if _result
+		write 2 d1
+	else_end
+	clock 1
+	write 1 x01
+	clock 1
+	choose OP >>
+	if _result
+		brut OPERATION_RESULT|NOOP_B1|OPLW
+		brut NULL
+		choose OP &
+		jump INFUNCTION_SEND:Boucle_address
+	else_end
+
+	do x80 & ._func_parameter2
+	choose P MATRIX
+	# DATA
+	label INFUNCTION_SEND:Boucle_data
+	write 2 d0
+	write 1 x00
+	if _result
+		write 2 d1
+	else_end
+	clock 1
+	write 1 x01
+	clock 1
+	choose OP >>
+	if _result
+		brut OPERATION_RESULT|NOOP_B1|OPLW
+		brut NULL
+		choose OP &
+		jump INFUNCTION_SEND:Boucle_data
+	else_end
+
+	write 1 x03
+	write 1 x02
+	clock 1
+end
+
+#INIT MATRIX
+choose P MATRIX
+
+affect _func_parameter1 x0C
+affect _func_parameter2 x01
+
+call Send
+
+affect _func_parameter1 x09
+affect _func_parameter2 x00
+
+call Send
+
+affect _func_parameter1 x0A
+affect _func_parameter2 x02
+
+call Send
+
+affect _func_parameter1 x0B
+affect _func_parameter2 x07
+
+call Send
+
+affect _func_parameter1 d1
+affect _func_parameter2 x7E
+call Send
+affect _func_parameter1 d2
+affect _func_parameter2 x80
+call Send
+affect _func_parameter1 d3
+affect _func_parameter2 x80
+call Send
+affect _func_parameter1 d4
+affect _func_parameter2 x9E
+call Send
+affect _func_parameter1 d5
+affect _func_parameter2 x81
+call Send
+affect _func_parameter1 d6
+affect _func_parameter2 x81
+call Send
+affect _func_parameter1 d7
+affect _func_parameter2 x81
+call Send
+affect _func_parameter1 d8
+affect _func_parameter2 x7E
+call Send
+
+label MAIN
+
+#CODE DE L'UPDATE
+
+# On check les interupteurs
+choose P INTER
+# J1_DOWN 0x01
+do _read & x01
+if _result
+	do .ply1_pos == x02
+	if_not _result
+		do .ply1_pos >> d1
+		affect ply1_pos _result
+	else_end
+else_end
+choose P INTER
+# J1_UP 0x02
+do _read & x02
+if _result
+	do .ply1_pos == x80
+	if_not _result
+		do .ply1_pos << d1
+		affect ply1_pos _result
+	else_end
+else_end
+choose P INTER
+# J2_DOWN 0x10
+do _read & x10
+if _result
+	do .ply2_pos == x02
+	if_not _result
+		do .ply2_pos >> d1
+		affect ply2_pos _result
+	else_end
+else_end
+choose P INTER
+# J2_UP 0x20
+do _read & x20
+if _result
+	do .ply2_pos == x80
+	if_not _result
+		do .ply2_pos << d1
+		affect ply2_pos _result
+	else_end
+else_end
+
+#BALLE
+#0:HG 1:BG 2:DH 3:DB
+do .balld == d0
+if _result
+	do .bally << d1
+	affect buff1 _result
+	do .ballx << d1
+	affect buff2 _result
+
+	do .buff1 == x80
+	if _result
+		affect balld d1
+	else_end
+	if_not _result
+		do .buff2 == x80
+		if _result
+			do .ply1_pos == .buff1
+			if _result
+				affect balld d2
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+			do .ply1_pos >> d1
+			do _result == .buff1
+			if _result
+				affect balld d2
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+		else_end
+	else_end
+	
+	do .buff1 + d0
+	affect bally _result
+	do .buff2 + d0
+	affect ballx _result
+else_end
+do .balld == d1
+if _result
+	do .bally >> d1
+	affect buff1 _result
+	do .ballx << d1
+	affect buff2 _result
+
+	do .buff1 == x01
+	if _result
+		affect balld d0
+		do .buff2 == x80
+		if _result
+			do .bally + d0
+			affect buff1 _result
+			do .ballx + d0
+			affect buff2 _result
+			
+			do d1 == d1
+		else_end
+	else_end
+	if_not _result
+		do .buff2 == x80
+		if _result
+			do .ply1_pos == .buff1
+			if _result
+				affect balld d3
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+			do .ply1_pos >> d1
+			do _result == .buff1
+			if _result
+				affect balld d3
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+		else_end
+	else_end
+	
+	do .buff1 + d0
+	affect bally _result
+	do .buff2 + d0
+	affect ballx _result
+else_end
+do .balld == d2
+if _result
+	do .bally << d1
+	affect buff1 _result
+	do .ballx >> d1
+	affect buff2 _result
+
+	do .buff1 == x80
+	if _result
+		affect balld d3
+	else_end
+	if_not _result
+		do .buff2 == x01
+		if _result
+			do .ply2_pos == .buff1
+			if _result
+				affect balld d0
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+			do .ply2_pos >> d1
+			do _result == .buff1
+			if _result
+				affect balld d0
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+		else_end
+	else_end
+	
+	do .buff1 + d0
+	affect bally _result
+	do .buff2 + d0
+	affect ballx _result
+else_end
+do .balld == d3
+if _result
+	do .bally >> d1
+	affect buff1 _result
+	do .ballx >> d1
+	affect buff2 _result
+
+	do .buff1 == x01
+	if _result
+		affect balld d2
+	else_end
+	if_not _result
+		do .buff2 == x01
+		if _result
+			do .ply2_pos == .buff1
+			if _result
+				affect balld d1
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+			do .ply2_pos >> d1
+			do _result == .buff1
+			if _result
+				affect balld d1
+				do .bally + d0
+				affect buff1 _result
+				do .ballx + d0
+				affect buff2 _result
+			else_end
+		else_end
+	else_end
+	
+	do .buff1 + d0
+	affect bally _result
+	do .buff2 + d0
+	affect ballx _result
+else_end
+
+#CODE DE L'AFFICHAGE
+
+#1ere ligne
+affect _func_parameter1 d1
+affect _func_parameter2 d0
+
+do .ply1_pos == x80
+if _result
+	do ._func_parameter2 + x80
+	affect _func_parameter2 _result
+else_end
+do .ply2_pos == x80
+if _result
+	do ._func_parameter2 + x01
+	affect _func_parameter2 _result
+else_end
+do .bally == x80
+if _result
+	do ._func_parameter2 + .ballx
+	affect _func_parameter2 _result
+else_end
+
+call Send
+
+#Xeme ligne
+affect buff1 x80
+affect buff2 x40
+
+affect _func_parameter1 d2
+
+label BOUCLE_AFFICHAGE
+
+affect _func_parameter2 d0
+
+do .ply1_pos == .buff1
+if _result
+	do ._func_parameter2 + x80
+	affect _func_parameter2 _result
+else_end
+do .ply1_pos == .buff2
+if _result
+	do ._func_parameter2 + x80
+	affect _func_parameter2 _result
+else_end
+do .ply2_pos == .buff1
+if _result
+	do ._func_parameter2 + x01
+	affect _func_parameter2 _result
+else_end
+do .ply2_pos == .buff2
+if _result
+	do ._func_parameter2 + x01
+	affect _func_parameter2 _result
+else_end
+do .bally == .buff2
+if _result
+	do ._func_parameter2 + .ballx
+	affect _func_parameter2 _result
+else_end
+
+call Send
+
+do ._func_parameter1 + d1
+affect _func_parameter1 _result
+do .buff1 >> d1
+affect buff1 _result
+do .buff2 >> d1
+affect buff2 _result
+
+do ._func_parameter1 == d9
+if_not _result
+	jump BOUCLE_AFFICHAGE
+else_end
+
+do .ballx == d0
+if _result
+	jump RESTART
+else_end
+
+jump MAIN

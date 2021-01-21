@@ -1,0 +1,27 @@
+/*
+Instruction LSB :
+0x0 = BUSW1
+0x1 = BUSW2
+0x2 = SETCS
+0x3 = OPLW
+0x4 = OPRW
+0x5 = OPC
+0x6 = NOOP_A1
+0x7 = NOOP_A2
+-------------------
+Instruction MSB :
+0x0 = JUMPWLSB
+0x1 = JUMPWMSB
+0x2 = JUMP
+0x3 = CLKM
+0x4 = IF
+0x5 = IFNOT
+0x6 = NOOP_B1
+0x7 = NOOP_B2
+-------------------
+Number select :
+0x0 = ROM_VALUE
+0x1 = BUS_READ
+0x2 = OPERATION_RESULT
+0x3 = BUS_CHOOSE
+*/
