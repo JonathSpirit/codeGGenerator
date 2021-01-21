@@ -93,7 +93,7 @@ void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::Compi
 
         if ( codeg::Pool* tmpPool = data._pools.getPool(argPoolName._str) )
         {//Check pool
-            if ( !tmpPool->addVariable( {argVarName._str} ) )
+            if ( !tmpPool->addVariable( {argVarName._str, std::list<codeg::Address>()} ) )
             {
                 codeg::ConsoleWrite("[warning] var : variable \""+argVarName._str+"\" already exist in pool \""+argPoolName._str+"\"");
             }
@@ -116,7 +116,7 @@ void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::Compi
 
         if ( codeg::Pool* tmpPool = data._pools.getPool(data._defaultPool) )
         {//Check pool
-            if ( !tmpPool->addVariable( {argVarName._str} ) )
+            if ( !tmpPool->addVariable( {argVarName._str, std::list<codeg::Address>()} ) )
             {
                 codeg::ConsoleWrite("[warning] var : variable \""+argVarName._str+"\" already exist in pool \""+data._defaultPool+"\"");
             }
