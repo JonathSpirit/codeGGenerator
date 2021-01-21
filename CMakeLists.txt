@@ -28,9 +28,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -v")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
-    set(CMAKE_CXX_FLAGS "")
-    set(CMAKE_CXX_FLAGS_DEBUG "")
-    set(CMAKE_CXX_FLAGS_RELEASE "")
+    set(CMAKE_CXX_FLAGS "/EHsc")
+    set(CMAKE_CXX_FLAGS_DEBUG "/DEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2")
 else()
     # using GCC
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
