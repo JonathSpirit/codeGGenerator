@@ -772,8 +772,6 @@ std::string Instruction_else::getName() const
     return "else";
 }
 
-#warning un fichier pour les scopes
-
 void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
     if ( input._keywords.size() != 1 )
