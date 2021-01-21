@@ -166,6 +166,7 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     if ( (this->_variable = data._pools.getVariableWithString(this->_str, data._defaultPool)) )
     {
         this->_type = codeg::KeywordTypes::KEYWORD_VARIABLE;
+        this->_valueBus = codeg::ReadableBusses::READABLE_RAM;
         return this->_type == wantedType;
     }
 
