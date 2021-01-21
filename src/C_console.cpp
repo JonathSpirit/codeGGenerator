@@ -20,10 +20,13 @@
 #include <iomanip>
 
 #include <wchar.h>
+
+#ifdef _WIN32
 #include <windows.h>
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
 #endif
 
 namespace codeg
@@ -31,6 +34,7 @@ namespace codeg
 
 int ConsoleInit()
 {
+    #ifdef _WIN32
     ///WINDOWS
 
     // Set output mode to handle virtual terminal sequences
@@ -51,6 +55,9 @@ int ConsoleInit()
     {
         return GetLastError();
     }
+    #endif
+
+    return 0;
 }
 
 void ConsoleWrite(const std::string& str)
