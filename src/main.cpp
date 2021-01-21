@@ -60,16 +60,12 @@ const char* LineError::what() const noexcept
 
 int main()
 {
-    codeg::ConsoleInit();
-
-    /*codeg::ConsoleFatalWrite("yes");
-    codeg::ConsoleErrorWrite("yes");
-    codeg::ConsoleWarningWrite("yes");
-    codeg::ConsoleInfoWrite("yes");
-    return 0;*/
+    if ( codeg::ConsoleInit() )
+    {
+        std::cout << "Warning, bad console init, the console can be ugly now !" << std::endl;
+    }
 
     std::string fileInPath;
-    std::string fileOutPath;
     std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
     std::getline(std::cin, fileInPath);
 
@@ -221,6 +217,16 @@ int main()
         data._pools.resolve(data);
 
         codeg::ConsoleInfoWrite("Step 3 : OK !\n");
+
+        ///Writing on the output file
+        codeg::ConsoleInfoWrite("Step 4 : Writing the files ...");
+        codeg::ConsoleInfoWrite("Binary size : "+std::to_string(data._code._cursor)+" Bytes");
+
+        fileOutBinary.write(reinterpret_cast<char*>(data._code._data.get()), data._code._cursor);
+        fileOutBinary.close();
+
+        fileOutReadable.close();
+        codeg::ConsoleInfoWrite("Step 4 : OK !\n");
     }
     catch (const codeg::CompileError& e)
     {

@@ -694,7 +694,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     data._actualFunctionName = argName._str;
     data._functions.push_back(argName._str);
 
-    data._jumps._jumpPoints.push_back({"%%"+argName._str, 0});
+    data._jumps._jumpPoints.push_back({"%%"+argName._str, data._code._cursor});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -745,7 +745,7 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
         }
     }
 
-    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), 0});
+    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code._cursor});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -838,7 +838,7 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
         }
     }
 
-    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), 0});
+    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code._cursor});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
