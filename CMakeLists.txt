@@ -31,7 +31,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "")
     set(CMAKE_CXX_FLAGS_DEBUG "")
     set(CMAKE_CXX_FLAGS_RELEASE "")
-else
+else()
     # using GCC
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
