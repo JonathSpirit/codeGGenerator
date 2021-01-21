@@ -25,7 +25,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using Clang
     set(CMAKE_CXX_FLAGS "-stdlib=libc++ -Wall -Wextra -pedantic -m32")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -v")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
     set(CMAKE_CXX_FLAGS "/EHsc")
