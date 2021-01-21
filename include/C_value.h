@@ -17,33 +17,12 @@
 #ifndef C_VALUE_H_INCLUDED
 #define C_VALUE_H_INCLUDED
 
-#include "C_variable.h"
+#include <string>
 
 namespace codeg
 {
 
-enum ValueType
-{
-    VALUETYPE_BIGCONSTANT,
-    VALUETYPE_CONSTANT,
-    VALUETYPE_READ_VALUE,
-    VALUETYPE_VARIABLE
-};
-struct Value
-{
-    ValueType _type;
-
-    unsigned int _value;
-    unsigned char _readValue;
-
-    codeg::Variable* _variable;
-    std::string _poolName;
-};
-
-size_t GetIntegerFromString2(const std::string& buffStr, uint32_t& buff);
-bool GetIntegerFromString(std::string str, unsigned int& buff);
-
-codeg::Value ProcessValue(const std::string& strValue, const std::string& defaultPool, codeg::PoolList& poolList);
+size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff);
 
 }//end codeg
 

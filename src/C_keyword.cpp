@@ -77,7 +77,7 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     }
 
     ///Value
-    this->_valueSize = GetIntegerFromString2(this->_str, this->_value);
+    this->_valueSize = GetIntegerFromString(this->_str, this->_value);
     if (this->_valueSize)
     {
         if (wantedType == codeg::KeywordTypes::KEYWORD_VALUE)
