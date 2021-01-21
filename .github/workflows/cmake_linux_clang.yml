@@ -22,9 +22,9 @@ jobs:
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{github.workspace}}/build
       
-    - name: Install g++
+    - name: Install c c++ lib
       # Removing "file not found" bug with clang
-      run: sudo apt-get update && sudo apt-get install libc++-dev
+      run: sudo apt-get update && sudo apt-get install gcc-multilib g++-multilib libc6 libc6-dev
       
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
