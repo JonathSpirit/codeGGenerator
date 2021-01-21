@@ -25,7 +25,7 @@
 namespace codeg
 {
 
-class CompilerData;
+struct CompilerData;
 
 typedef uint32_t Address;
 

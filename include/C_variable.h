@@ -23,7 +23,7 @@
 namespace codeg
 {
 
-class CompilerData;
+struct CompilerData;
 
 typedef uint16_t MemoryAddress;
 typedef uint16_t MemorySize;

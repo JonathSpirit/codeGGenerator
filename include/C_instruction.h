@@ -62,7 +62,7 @@ enum BinaryOpcodes : uint8_t
     OPCODE_LTICK          = 0x17
 };
 
-class CompilerData;
+struct CompilerData;
 
 class Instruction
 {
