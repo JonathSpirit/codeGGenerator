@@ -142,8 +142,8 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data)
         codeg::MemoryAddress varAdd = this->g_startAddress + offset;
         for ( auto& valTarget : valVar._link )
         {
-            data._code._data.get()[valTarget + 1] = varAdd >> 8;//Address MSB
-            data._code._data.get()[valTarget + 3] = varAdd & 0x00FF;//Address LSB
+            data._code._data[valTarget + 1] = varAdd >> 8;//Address MSB
+            data._code._data[valTarget + 3] = varAdd & 0x00FF;//Address LSB
         }
     }
 
