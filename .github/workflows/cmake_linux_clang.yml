@@ -24,12 +24,8 @@ jobs:
       
     - name: Install g++
       # Removing "file not found" bug with clang
-<<<<<<< HEAD
       run: sudo apt update && sudo apt install g++ && sudo apt install libstdc++6
-=======
-      run: sudo apt update && sudo apt install g++
->>>>>>> b64ed78eb04e6cb7daf8add9032e1c4cf37c469a
-
+      
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
