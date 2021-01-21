@@ -217,6 +217,10 @@ int main()
 
         ///Third step resolving pools
         codeg::ConsoleInfoWrite("Step 3 : Resolving pools ...");
+
+        data._pools.resolve(data);
+
+        codeg::ConsoleInfoWrite("Step 3 : OK !\n");
     }
     catch (const codeg::CompileError& e)
     {

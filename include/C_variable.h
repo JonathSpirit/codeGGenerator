@@ -27,6 +27,7 @@ class CompilerData;
 
 typedef uint16_t MemoryAddress;
 typedef uint16_t MemorySize;
+typedef uint32_t MemoryBigSize;
 
 struct Variable
 {
@@ -57,12 +58,15 @@ public:
     const codeg::Pool::StartAddressTypes& getStartAddressType() const;
 
     bool setAddress(const codeg::MemoryAddress& start, const codeg::MemorySize& maxSize);
+    codeg::MemoryAddress getStartAddress() const;
+    codeg::MemorySize getMaxSize() const;
+    codeg::MemorySize getTotalSize() const;
 
     bool addVariable(const codeg::Variable& var);
     codeg::Variable* getVariable(const std::string& name);
     bool delVariable(const std::string& name);
 
-    codeg::MemorySize resolveLinks(codeg::CompilerData& data);
+    codeg::MemorySize resolveLinks(codeg::CompilerData& data, const codeg::MemoryAddress& startAddress);
 
 private:
     std::string g_name;

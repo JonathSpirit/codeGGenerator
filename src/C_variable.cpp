@@ -16,6 +16,7 @@
 
 #include "C_variable.h"
 #include "C_compilerData.h"
+#include "C_console.h"
 #include "main.h"
 
 namespace codeg
@@ -88,6 +89,22 @@ bool Pool::setAddress(const codeg::MemoryAddress& start, const codeg::MemorySize
         return true;
     }
 }
+codeg::MemoryAddress Pool::getStartAddress() const
+{
+    return this->g_startAddress;
+}
+codeg::MemorySize Pool::getMaxSize() const
+{
+    return this->g_addressMaxSize;
+}
+codeg::MemorySize Pool::getTotalSize() const
+{
+    if (this->g_addressMaxSize == 0)
+    {
+        return this->g_variables.size();
+    }
+    return this->g_addressMaxSize;
+}
 
 bool Pool::addVariable(const codeg::Variable& var)
 {
@@ -134,17 +151,18 @@ bool Pool::delVariable(const std::string& name)
     return false;
 }
 
-codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data)
+codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::MemoryAddress& startAddress)
 {
     codeg::MemoryAddress offset = 0;
-    for ( auto& valVar : this->g_variables )
+    for ( codeg::Variable& valVar : this->g_variables )
     {
-        codeg::MemoryAddress varAdd = this->g_startAddress + offset;
-        for ( auto& valTarget : valVar._link )
+        codeg::MemoryAddress varAdd = startAddress + offset;
+        for ( codeg::Address& valTarget : valVar._link )
         {
             data._code._data[valTarget + 1] = varAdd >> 8;//Address MSB
             data._code._data[valTarget + 3] = varAdd & 0x00FF;//Address LSB
         }
+        ++offset;
     }
 
     return this->g_variables.size();
@@ -238,267 +256,121 @@ codeg::Variable* PoolList::getVariableWithString(const std::string& str, const s
 
 codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
 {
+    codeg::MemorySize totalSize = 0;
+    codeg::ConsoleInfoWrite( "Fixed start address only ..." );
+    std::vector<std::list<codeg::Pool>::iterator> appliedPools;
+    appliedPools.reserve(this->g_pools.size());
 
-}
-
-
-
-/**
-cout << "Resolving address pool ..." << endl;
-    cout << "first pass, fixed address" << endl;
-    cout << "\tsize : " << codePoolList._data.size() << endl;
-    std::list<codeg::Pool> dynamicPool;
-    for ( std::list<codeg::Pool>::iterator itPool=codePoolList._data.begin(); itPool!=codePoolList._data.end(); ++itPool )
+    for ( std::list<codeg::Pool>::iterator it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
     {
-        if ( (*itPool)._dynamicAddress )
+        if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC )
         {
-            dynamicPool.push_back(*itPool);
-            continue;
-        }
-        cout << "\tpool : " << (*itPool)._name << endl;
-        cout << "\tvariable size : " << (*itPool)._data.size() << endl;
-        if ( !(*itPool)._addressSize )
-        {//Dynamic addressSize
-            (*itPool)._addressSize = (*itPool)._data.size();
-        }
-        cout << "\taddress required : " << (*itPool)._addressMin << " to " << (*itPool)._addressMin+(*itPool)._addressSize << endl;
-        unsigned short addressCount = (*itPool)._addressMin;
-        for ( std::list<codeg::Variable>::iterator itVar=(*itPool)._data.begin(); itVar!=(*itPool)._data.end(); ++itVar )
-        {
-            cout << "\tvariable <"<<(*itVar)._name<<"> at " << addressCount << " with " << (*itVar)._link.size() << " links" << endl;
-            for (unsigned int iLink=0; iLink<(*itVar)._link.size(); ++iLink)
-            {
-                (*itVar)._link[iLink][1] = addressCount&0x00FF;
-                (*itVar)._link[iLink][3] = addressCount>>8;
+            codeg::ConsoleInfoWrite( "Working on pool \""+(*it).getName()+"\":" );
+            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getSize()) );
+            codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
+            codeg::ConsoleInfoWrite( "\tstart address: "+std::to_string((*it).getStartAddress()) );
+            if ( (*it).getTotalSize() == 0 )
+            {//No variable and dynamic size
+                codeg::ConsoleWarningWrite("\tNo variable in this pool with a dynamic size, the pool will be ignored !");
+                continue;
             }
-            ++addressCount;
+
+            codeg::ConsoleInfoWrite( "\tCheck if the pool can be applied ..." );
+            //Check if the pool can be applied
+            for ( unsigned int i=0; i<appliedPools.size(); ++i )
+            {
+                if ( ((*it).getStartAddress() >= (*appliedPools[i]).getStartAddress()) && ((*it).getStartAddress() < (*appliedPools[i]).getStartAddress()+(*appliedPools[i]).getTotalSize()) )
+                {//Pool conflict
+                    throw codeg::FatalError("\tPool conflict, "+(*it).getName()+" conflict with "+(*appliedPools[i]).getName()+" !");
+                }
+            }
+
+            totalSize += (*it).resolveLinks(data, (*it).getStartAddress());
+            appliedPools.push_back(it);
+            codeg::ConsoleInfoWrite( "\tPool applied !" );
         }
     }
-    cout << "second pass, dynamic address" << endl;
-    cout << "\tsize : " << dynamicPool.size() << endl;
-    for ( std::list<codeg::Pool>::iterator itPool=dynamicPool.begin(); itPool!=dynamicPool.end(); ++itPool )
+
+    codeg::ConsoleInfoWrite( "OK" );
+    codeg::ConsoleInfoWrite( "Memory mapping ..." );
+
+    std::vector<codeg::MemorySize> mapping;
+    mapping.resize(65536, 1);
+    for ( unsigned int i=0; i<appliedPools.size(); ++i )
     {
-        cout << "\tpool : " << (*itPool)._name << endl;
-        cout << "\tvariable size : " << (*itPool)._data.size() << endl;
-        (*itPool)._addressMin = 0;
-        (*itPool)._addressSize = (*itPool)._data.size();
-        redoCheck:
-        //Finding a free address space
-        for (std::list<codeg::Pool>::iterator it=codePoolList._data.begin(); it!=codePoolList._data.end(); ++it)
-        {//Check if address space is not reserved
-            if ( (!(*it)._dynamicAddress) )
-            {
-                if ( ((*itPool)._addressMin>=(*it)._addressMin) && ((*itPool)._addressMin<=((*it)._addressMin+(*it)._addressSize)) )
-                {
-                    ++(*itPool)._addressMin;
-                    goto redoCheck;
-                }
-                if ( ((*itPool)._addressMin+(*itPool)._addressSize>=(*it)._addressMin) && (((*itPool)._addressMin+(*itPool)._addressSize)<=((*it)._addressMin+(*it)._addressSize)) )
-                {
-                    ++(*itPool)._addressMin;
-                    goto redoCheck;
-                }
-                if ( ((*itPool)._addressMin<=(*it)._addressMin) && (((*itPool)._addressMin+(*itPool)._addressSize)>=(*it)._addressMin) )
-                {
-                    ++(*itPool)._addressMin;
-                    goto redoCheck;
-                }
-                break;
-            }
-        }
-
-        cout << "\taddress required : " << (*itPool)._addressMin << " to " << (*itPool)._addressMin+(*itPool)._addressSize << endl;
-        unsigned short addressCount = (*itPool)._addressMin;
-        for ( std::list<codeg::Variable>::iterator itVar=(*itPool)._data.begin(); itVar!=(*itPool)._data.end(); ++itVar )
-        {
-            cout << "\tvariable <"<<(*itVar)._name<<"> at " << addressCount << " with " << (*itVar)._link.size() << " links" << endl;
-            for (unsigned int iLink=0; iLink<(*itVar)._link.size(); ++iLink)
-            {
-                (*itVar)._link[iLink][1] = addressCount&0x00FF;
-                (*itVar)._link[iLink][3] = addressCount>>8;
-            }
-            ++addressCount;
+        for ( unsigned int a=0; a<(*appliedPools[i]).getTotalSize(); ++a )
+        {//Removing memory location already used
+            mapping[(*appliedPools[i]).getStartAddress() + a] = 0;
         }
     }
-    cout << "Resolving address pool completed !" << endl << endl;
-**/
 
+    codeg::ConsoleInfoWrite( "OK" );
+    codeg::ConsoleInfoWrite( "Dynamic start address only ..." );
 
-
-
-
-
-
-
-#if 0
-PoolList::PoolList()
-{
-    this->_totalUsedSize=0;
-}
-PoolList::~PoolList()
-{
-}
-
-bool PoolList::addPool(codeg::Pool& newPool)
-{
-    for (std::list<codeg::Pool>::iterator it=this->_data.begin(); it!=this->_data.end(); ++it)
+    for ( std::list<codeg::Pool>::iterator it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
     {
-        if ( (*it)._name == newPool._name )
+        if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC )
         {
-            return false;
-        }
-    }
+            bool isApplied = false;
+            codeg::ConsoleInfoWrite( "Working on pool \""+(*it).getName()+"\":" );
+            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getSize()) );
+            codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
+            if ( (*it).getTotalSize() == 0 )
+            {//No variable and dynamic size
+                codeg::ConsoleWarningWrite("\tNo variable in this pool with a dynamic size, the pool will be ignored !");
+                continue;
+            }
 
-    newPool._data.clear();
+            codeg::ConsoleInfoWrite( "\tCheck if the pool can be applied ..." );
+            //Check if the pool can be applied
 
-    if ( newPool._dynamicAddress )
-    {//Dynamic address space
-        if ( !newPool._addressSize )
-        {//Dynamic size
-            this->_data.push_back(newPool);
-            return true;
-        }
-        else
-        {//Fixed size
-            this->_data.push_back(newPool);
-            return true;
-        }
-    }
-    else
-    {//Fixed address space
-        if ( !newPool._addressSize )
-        {//Dynamic size
-            return false;
-        }
-        else
-        {//Fixed size
-            for (std::list<codeg::Pool>::iterator it=this->_data.begin(); it!=this->_data.end(); ++it)
-            {//Check if address space is not reserved
-                if ( (!(*it)._dynamicAddress) )
+            codeg::MemoryAddress memoryStart = 0;
+            codeg::MemoryBigSize memorySize = 0;
+            for ( unsigned int i=0; i<mapping.size(); ++i )
+            {//Finding a free memory location
+                if ( mapping[i] == 1 )
                 {
-                    if ( (newPool._addressMin>=(*it)._addressMin) && (newPool._addressMin<=((*it)._addressMin+(*it)._addressSize)) )
-                    {
-                        return false;
+                    memoryStart = i;
+                    memorySize = 0;
+
+                    for ( unsigned int a=i; a<mapping.size(); ++a )
+                    {//Getting the size
+                        if ( mapping[a] == 1 )
+                        {
+                            ++memorySize;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    if ( (newPool._addressMin+newPool._addressSize>=(*it)._addressMin) && ((newPool._addressMin+newPool._addressSize)<=((*it)._addressMin+(*it)._addressSize)) )
-                    {
-                        return false;
-                    }
-                    if ( (newPool._addressMin<=(*it)._addressMin) && ((newPool._addressMin+newPool._addressSize)>=(*it)._addressMin) )
-                    {
-                        return false;
+
+                    //Check the size
+                    if ( (*it).getTotalSize() <= memorySize )
+                    {//size is ok !
+                        totalSize += (*it).resolveLinks(data, memoryStart);
+                        appliedPools.push_back(it);
+                        codeg::ConsoleInfoWrite( "\tPool applied at address "+std::to_string(memoryStart)+" !" );
+                        for ( unsigned int a=0; a<(*it).getTotalSize(); ++a )
+                        {//Removing memory location that will be used
+                            mapping[memoryStart + a] = 0;
+                        }
+                        isApplied = true;
+                        break;
                     }
                 }
             }
-
-            this->_data.push_back(newPool);
-            return true;
-        }
-    }
-}
-codeg::Pool* PoolList::getPool(const std::string& poolName)
-{
-    for (std::list<codeg::Pool>::iterator it=this->_data.begin(); it!=this->_data.end(); ++it)
-    {
-        if ( (*it)._name == poolName )
-        {
-            return &(*it);
-        }
-    }
-    return nullptr;
-}
-
-bool PoolList::addVar(const std::string& poolName, codeg::Variable& newVar)
-{
-    for (std::list<codeg::Pool>::iterator it=this->_data.begin(); it!=this->_data.end(); ++it)
-    {
-        if ( (*it)._name == poolName )
-        {
-            for (std::list<codeg::Variable>::iterator varit=(*it)._data.begin(); varit!=(*it)._data.end(); ++varit)
+            if (!isApplied)
             {
-                if ( (*varit)._name == newVar._name )
-                {
-                    this->_lastError = "\""+newVar._name+"\" already exist !";
-                    return false;
-                }
-            }
-
-            newVar._link.clear();
-
-            if ( (*it)._dynamicAddress )
-            {
-                if ( (*it)._addressSize )
-                {
-                    if ( ((*it)._data.size()+1) > (*it)._addressSize )
-                    {
-                        this->_lastError = "pool <"+(*it)._name+"> is overloaded, max size is : "+std::to_string((*it)._addressSize)+" !";
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                if ( ((*it)._data.size()+1) > (*it)._addressSize )
-                {
-                    this->_lastError = "pool <"+(*it)._name+"> is overloaded, max size is : "+std::to_string((*it)._addressSize)+" !";
-                    return false;
-                }
-            }
-
-            (*it)._data.push_back(newVar);
-            return true;
-        }
-    }
-
-    this->_lastError = "pool <"+poolName+"> is not declared !";
-    return false;
-}
-codeg::Variable* PoolList::getVar(const std::string& poolName, const std::string& varName)
-{
-    for (std::list<codeg::Pool>::iterator it=this->_data.begin(); it!=this->_data.end(); ++it)
-    {
-        if ( (*it)._name == poolName )
-        {
-            for (std::list<codeg::Variable>::iterator varit=(*it)._data.begin(); varit!=(*it)._data.end(); ++varit)
-            {
-                if ( (*varit)._name == varName )
-                {
-                    return &(*varit);
-                }
+                throw codeg::FatalError("\tDynamic pool doesn't have place in memory, "+(*it).getName()+" with size "+std::to_string((*it).getTotalSize())+" !");
             }
         }
     }
-    return nullptr;
-}
 
-bool PoolList::addLink(const std::string& poolName, const std::string& varName, char* varLink)
-{
-    for (std::list<codeg::Pool>::iterator it=this->_data.begin(); it!=this->_data.end(); ++it)
-    {
-        if ( (*it)._name == poolName )
-        {
-            for (std::list<codeg::Variable>::iterator varit=(*it)._data.begin(); varit!=(*it)._data.end(); ++varit)
-            {
-                if ( (*varit)._name == varName )
-                {
-                    (*varit)._link.push_back(varLink);
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
+    codeg::ConsoleInfoWrite( "OK" );
 
-bool PoolList::isVariable(const std::string& str)
-{
-    if (str.size()>1)
-    {
-        return str[0] == '$';
-    }
-    return false;
+    return totalSize;
 }
-#endif
 
 bool IsVariable(const std::string& str)
 {
@@ -554,6 +426,7 @@ bool GetVariableString(const std::string& str, const std::string& defaultPoolNam
     return false;
 }
 
+//TODO #10
 bool ReadOnRam(const std::string& poolName, const std::string& varName, codeg::PoolList& poolList, std::vector<char>& codeData, unsigned int& cursor)
 {
     #if 0
