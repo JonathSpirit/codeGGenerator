@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 #Set compiler options
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using Clang
-    set(CMAKE_CXX_FLAGS "-stdlib=libc++ -Wall -Wextra -pedantic -m32")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")

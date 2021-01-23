@@ -45,7 +45,7 @@ void CodeData::resize(uint32_t n)
     this->_capacity = n;
 
     #ifdef __clang__
-    this->_data = std::shared_ptr<uint8_t[]>( reinterpret_cast<std::nullptr_t>(reinterpret_cast<void*>(new uint8_t[n])) );
+    this->_data = std::shared_ptr<uint8_t[]>( reinterpret_cast<uint8_t*>(new uint8_t[n]) );
     #else
     this->_data = std::shared_ptr<uint8_t[]>(new uint8_t[n]);
     #endif // __clang__
