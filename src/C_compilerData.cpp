@@ -31,7 +31,12 @@ bool CodeData::push(uint8_t d)
     {
         return false;
     }
+    #ifdef __clang__
+    reinterpret_cast<unsigned char*>(this->_data.get())[this->_cursor++] = d;
+    #else
     this->_data[this->_cursor++] = d;
+    #endif // __clang__
+
     return true;
 }
 void CodeData::resize(uint32_t n)
@@ -39,7 +44,11 @@ void CodeData::resize(uint32_t n)
     this->_cursor = 0;
     this->_capacity = n;
 
+    #ifdef __clang__
+    this->_data = std::shared_ptr<uint8_t[]>( reinterpret_cast<std::nullptr_t>(new uint8_t[n]) );
+    #else
     this->_data = std::shared_ptr<uint8_t[]>(new uint8_t[n]);
+    #endif // __clang__
 }
 
 }//end codeg
