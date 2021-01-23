@@ -14,9 +14,9 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_address.h"
-#include "C_compilerData.h"
-#include "C_console.h"
+#include "C_address.hpp"
+#include "C_compilerData.hpp"
+#include "C_console.hpp"
 
 namespace codeg
 {

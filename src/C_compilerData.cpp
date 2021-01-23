@@ -14,7 +14,7 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_compilerData.h"
+#include "C_compilerData.hpp"
 #include <algorithm>
 
 namespace codeg

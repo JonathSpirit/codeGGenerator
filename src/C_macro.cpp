@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_macro.h"
-#include "main.h"
+#include "C_macro.hpp"
+#include "main.hpp"
 
 namespace codeg
 {

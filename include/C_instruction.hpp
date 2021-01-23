@@ -17,8 +17,8 @@
 #ifndef C_INSTRUCTION_H_INCLUDED
 #define C_INSTRUCTION_H_INCLUDED
 
-#include "C_stringDecomposer.h"
-#include "C_error.h"
+#include "C_stringDecomposer.hpp"
+#include "C_error.hpp"
 
 namespace codeg
 {

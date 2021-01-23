@@ -14,10 +14,10 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_variable.h"
-#include "C_compilerData.h"
-#include "C_console.h"
-#include "main.h"
+#include "C_variable.hpp"
+#include "C_compilerData.hpp"
+#include "C_console.hpp"
+#include "main.hpp"
 
 namespace codeg
 {

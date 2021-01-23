@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_target.h"
-#include "main.h"
+#include "C_target.hpp"
+#include "main.hpp"
 
 namespace codeg
 {

@@ -14,7 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
 project(codeGGenerator VERSION 0.1)
 
 #Configure header file
-configure_file(CMakeConfig.h.in CMakeConfig.h)
+configure_file(CMakeConfig.hpp.in CMakeConfig.hpp)
 
 #C++ standard
 set(CMAKE_CXX_STANDARD 17)

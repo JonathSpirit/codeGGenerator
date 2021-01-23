@@ -14,7 +14,7 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_stringDecomposer.h"
+#include "C_stringDecomposer.hpp"
 #include <sstream>
 
 namespace codeg

@@ -17,8 +17,8 @@
 #ifndef C_VARIABLE_H_INCLUDED
 #define C_VARIABLE_H_INCLUDED
 
-#include "main.h"
-#include "C_address.h"
+#include "main.hpp"
+#include "C_address.hpp"
 
 namespace codeg
 {

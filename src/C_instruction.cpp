@@ -14,12 +14,12 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_instruction.h"
-#include "C_readableBus.h"
-#include "C_compilerData.h"
-#include "C_console.h"
-#include "C_keyword.h"
-#include "C_bus.h"
+#include "C_instruction.hpp"
+#include "C_readableBus.hpp"
+#include "C_compilerData.hpp"
+#include "C_console.hpp"
+#include "C_keyword.hpp"
+#include "C_bus.hpp"
 
 namespace codeg
 {

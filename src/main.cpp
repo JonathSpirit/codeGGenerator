@@ -14,7 +14,7 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "main.h"
+#include "main.hpp"
 #include <sstream>
 #include <stack>
 #include <map>
@@ -22,12 +22,12 @@
 #include <string>
 #include <thread>
 
-#include "C_target.h"
-#include "C_value.h"
-#include "C_variable.h"
-#include "C_keyword.h"
-#include "C_compilerData.h"
-#include "C_console.h"
+#include "C_target.hpp"
+#include "C_value.hpp"
+#include "C_variable.hpp"
+#include "C_keyword.hpp"
+#include "C_compilerData.hpp"
+#include "C_console.hpp"
 
 using namespace std;
 

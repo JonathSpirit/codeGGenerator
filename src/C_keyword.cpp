@@ -14,10 +14,10 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_keyword.h"
-#include "C_bus.h"
-#include "C_value.h"
-#include "C_variable.h"
+#include "C_keyword.hpp"
+#include "C_bus.hpp"
+#include "C_value.hpp"
+#include "C_variable.hpp"
 
 namespace codeg
 {

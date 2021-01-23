@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_value.h"
-#include "main.h"
+#include "C_value.hpp"
+#include "main.hpp"
 
 namespace codeg
 {

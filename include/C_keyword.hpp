@@ -14,66 +14,59 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_COMPILERDATA_H_INCLUDED
-#define C_COMPILERDATA_H_INCLUDED
+#ifndef C_KEYWORD_H_INCLUDED
+#define C_KEYWORD_H_INCLUDED
 
-#include "C_stringDecomposer.h"
-#include "C_macro.h"
-#include "C_variable.h"
-#include "C_address.h"
-#include "C_instruction.h"
-#include <list>
-#include <memory>
-#include <stack>
+#include <string>
+#include <map>
+#include <vector>
+#include "C_target.hpp"
+#include "C_compilerData.hpp"
+#include "C_readableBus.hpp"
 
 namespace codeg
 {
 
-enum ScopeStats : uint32_t
+enum KeywordTypes : uint8_t
 {
-    SCOPE_NORMAL,
+    KEYWORD_STRING = 0,
+    KEYWORD_NAME,
 
-    SCOPE_CONDITIONAL_TRUE,
-    SCOPE_CONDITIONAL_FALSE
+    KEYWORD_TARGET,
+    KEYWORD_BUS,
+    KEYWORD_VALUE,
+
+    KEYWORD_VARIABLE,
+
+    KEYWORD_INSTRUCTION
 };
 
-struct CodeData
+struct Keyword
 {
-    bool push(uint8_t d);
-    void resize(uint32_t n);
+    void clear();
+    bool process(const std::string& str, const codeg::KeywordTypes& wantedType, codeg::CompilerData& data);
 
-    uint32_t _cursor = 0;
-    uint32_t _capacity = 0;
+    codeg::KeywordTypes _type;
 
-    std::shared_ptr<uint8_t[]> _data;
+    std::string _str;
+
+    uint32_t _value;
+    size_t _valueSize;
+    bool _valueConst;
+    codeg::ReadableBusses _valueBus;
+
+    codeg::Variable* _variable;
+
+    codeg::TargetType _target;
 };
 
-struct CompilerData
-{
-    bool isReserved(const std::string& str);
+typedef std::vector<std::string> KeywordsList;
+typedef std::map<std::string, std::string> CustomKeywordsList;
 
-    codeg::StringDecomposer _decomposer;
+void ReplaceWithCustomKeywords(codeg::KeywordsList& keywords, codeg::CustomKeywordsList& customKeywords);
 
-    std::list<codeg::Instruction*> _instructions;
-    std::list<std::string> _reservedKeywords;
-
-    codeg::PoolList _pools;
-    std::string _defaultPool;
-
-    codeg::MacroList _macros;
-
-    codeg::JumpList _jumps;
-
-    std::string _actualFunctionName;
-    std::list<std::string> _functions;
-
-    uint32_t _scopeCount=0;
-    std::stack<uint32_t> _scope;
-    std::stack<codeg::ScopeStats> _scopeStats;
-
-    codeg::CodeData _code;
-};
+bool GetKeywordsFromString(std::string& str, codeg::KeywordsList& buffKeywords);
 
 }//end codeg
 
-#endif // C_COMPILERDATA_H_INCLUDED
+#endif // C_KEYWORD_H_INCLUDED
