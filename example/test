@@ -1,0 +1,17 @@
+var test
+var test1
+var test2
+
+label MAIN
+
+affect $test 0
+affect $test1 1
+affect $test2 2
+
+jump MAIN
+
+if_not $test
+    affect $test1 0
+else
+    affect $test2 0
+end
