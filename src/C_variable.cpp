@@ -426,31 +426,4 @@ bool GetVariableString(const std::string& str, const std::string& defaultPoolNam
     return false;
 }
 
-//TODO #10
-bool ReadOnRam(const std::string& poolName, const std::string& varName, codeg::PoolList& poolList, std::vector<char>& codeData, unsigned int& cursor)
-{
-    #if 0
-    codeg::Variable* buffVar = poolList.getVar(poolName, varName);
-    if (!buffVar)
-    {
-        return false;
-    }
-    buffVar->_link.push_back( &codeData[cursor] );
-    codeData[cursor++] = OPC_BRAMADD1_CLK|RV_SRCVALUE;
-    codeData[cursor++] = 0x00;
-    codeData[cursor++] = OPC_BRAMADD2_CLK|RV_SRCVALUE;
-    codeData[cursor++] = 0x00;
-    #endif
-    return true;
-}
-void ReadOnRam(const unsigned short address, std::vector<char>& codeData, unsigned int& cursor)
-{
-    #if 0
-    codeData[cursor++] = OPC_BRAMADD1_CLK|RV_SRCVALUE;
-    codeData[cursor++] = address&0x00FF;
-    codeData[cursor++] = OPC_BRAMADD2_CLK|RV_SRCVALUE;
-    codeData[cursor++] = (address&0xFF00)>>8;
-    #endif // 0
-}
-
 }//end codeg

@@ -103,9 +103,6 @@ private:
 bool IsVariable(const std::string& str);
 bool GetVariableString(const std::string& str, const std::string& defaultPoolName, std::string& buffName, std::string& buffPool);
 
-bool ReadOnRam(const std::string& poolName, const std::string& varName, codeg::PoolList& poolList, std::vector<char>& codeData, unsigned int& cursor);
-void ReadOnRam(const unsigned short address, std::vector<char>& codeData, unsigned int& cursor);
-
 }//end codeg
 
 #endif // C_VARIABLE_H_INCLUDED
