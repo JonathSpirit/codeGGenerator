@@ -159,13 +159,8 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
         codeg::MemoryAddress varAdd = startAddress + offset;
         for ( codeg::Address& valTarget : valVar._link )
         {
-            #ifdef __clang__
-            reinterpret_cast<unsigned char*>(data._code._data.get())[valTarget + 1] = varAdd >> 8;//Address MSB
-            reinterpret_cast<unsigned char*>(data._code._data.get())[valTarget + 3] = varAdd & 0x00FF;//Address LSB
-            #else
             data._code._data[valTarget + 1] = varAdd >> 8;//Address MSB
             data._code._data[valTarget + 3] = varAdd & 0x00FF;//Address LSB
-            #endif // __clang__
         }
         ++offset;
     }
