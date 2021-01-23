@@ -69,7 +69,7 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
 
         if ( str[i] == '#' )
         {//Comment
-            if ( (lastChar == ']') )
+            if ( lastChar == ']' )
             {//Possible end of multi-line comments
                 this->_flags &=~ codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
                 ignoring = false;
