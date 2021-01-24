@@ -10,6 +10,14 @@ cmake_policy(SET CMP0076 NEW) #target_sources
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
 
+#Default is 32bit
+if (NOT DEFINED TARGET_ARCH)
+    set(TARGET_ARCH "32")
+endif()
+
+#Set cache entry
+set(TARGET_ARCH "32" CACHE STRING "Set architecture type (32 or 64)")
+
 #Project name
 project(codeGGenerator VERSION 0.1)
 
@@ -23,7 +31,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 #Set compiler options
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using Clang
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
+    if (TARGET_ARCH MATCHES "32")
+        #32bit
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
+    else()
+        #64bit
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m64")
+    endif()
+    
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -33,7 +48,14 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2")
 else()
     # using GCC
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
+    if (TARGET_ARCH MATCHES "32")
+        #32bit
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m32")
+    else()
+        #64bit
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -m64")
+    endif()
+    
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
 endif()
