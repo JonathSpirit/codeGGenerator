@@ -28,6 +28,11 @@ void JumpList::resolve(codeg::CompilerData& data)
     //Name check
     for (auto&& vLabel : this->_labels)
     {
+        if (vLabel._addressStatic >= data._code._cursor)
+        {//Address is out of code space
+            codeg::ConsoleWarningWrite("Label \""+vLabel._name+"\" is out of code space with address : "+std::to_string(vLabel._addressStatic));
+        }
+
         uint32_t jpCount = 0;
         codeg::ConsoleInfoWrite("Working on label \""+vLabel._name+"\" with no jumpPoints");
 
