@@ -1,11 +1,11 @@
-name: CMake_linux_gcc8_32bit
+name: CMake_linux_clang_64bit
 
 on: [push, pull_request]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  ARCH: "32"
+  ARCH: "64"
 
 jobs:
   build:
@@ -23,10 +23,6 @@ jobs:
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{github.workspace}}/build
       
-    - name: Install c c++ lib (32bit)
-      # Removing "file not found" bug with gcc
-      run: sudo apt-get update && sudo apt-get install gcc-8-multilib g++-8-multilib libc6 libc6-dev
-
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
@@ -35,7 +31,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -D CMAKE_C_COMPILER=gcc-8 -D CMAKE_CXX_COMPILER=g++-8 -D CMAKE_BUILD_TYPE=$BUILD_TYPE  -D TARGET_ARCH=$ARCH
+      run: cmake $GITHUB_WORKSPACE -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D TARGET_ARCH=$ARCH
 
     - name: Build
       working-directory: ${{github.workspace}}/build
