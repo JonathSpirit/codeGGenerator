@@ -60,9 +60,9 @@ const char* LineError::what() const noexcept
 
 int main(int argc, char **argv)
 {
-    if ( codeg::ConsoleInit() )
+    if ( int err = codeg::ConsoleInit() )
     {
-        std::cout << "Warning, bad console init, the console can be ugly now !" << std::endl;
+        std::cout << "Warning, bad console init, the console can be ugly now ! (error: "<<err<<")" << std::endl;
     }
 
     std::string fileInPath;
