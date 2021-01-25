@@ -1,11 +1,11 @@
-name: CMake_windows_i686-posix-dwarf
+name: CMake_windows_x86_64-posix-seh
 
 on: [push, pull_request]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  ARCH: "32"
+  ARCH: "64"
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       uses: carlosperate/download-file-action@v1.0.3
       id: download-mingw64
       with:
-        file-url: "https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-posix/dwarf/i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z"
+        file-url: "https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z"
         file-name: "mingw64.7z"
         location: "${{github.workspace}}"
     
@@ -38,7 +38,7 @@ jobs:
         pathTarget: "${{github.workspace}}\\mingw64"
         
     - name: Configuring path
-      run: echo "${{github.workspace}}\mingw64\mingw32\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      run: echo "${{github.workspace}}\mingw64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
@@ -48,7 +48,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -G "MinGW Makefiles" -D CMAKE_C_COMPILER="i686-w64-mingw32-gcc.exe" -D CMAKE_CXX_COMPILER="i686-w64-mingw32-g++.exe" -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D TARGET_ARCH=$ARCH
+      run: cmake $GITHUB_WORKSPACE -G "MinGW Makefiles" -D CMAKE_C_COMPILER="x86_64-w64-mingw32-gcc.exe" -D CMAKE_CXX_COMPILER="x86_64-w64-mingw32-g++.exe" -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D TARGET_ARCH=$ARCH
 
     - name: Build
       working-directory: ${{github.workspace}}/build
