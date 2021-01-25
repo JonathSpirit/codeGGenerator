@@ -271,7 +271,7 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
             codeg::ConsoleInfoWrite( "\tstart address: "+std::to_string((*it).getStartAddress()) );
             if ( (*it).getTotalSize() == 0 )
             {//No variable and dynamic size
-                codeg::ConsoleWarningWrite("\tNo variable in this pool with a dynamic size, the pool will be ignored !");
+                codeg::ConsoleWarningWrite("\tThe pool have a dynamic size with no variable, it will be ignored !");
                 continue;
             }
 
@@ -317,7 +317,7 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
             codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
             if ( (*it).getTotalSize() == 0 )
             {//No variable and dynamic size
-                codeg::ConsoleWarningWrite("\tNo variable in this pool with a dynamic size, the pool will be ignored !");
+                codeg::ConsoleWarningWrite("\tThe pool have a dynamic size with no variable, it will be ignored !");
                 continue;
             }
 

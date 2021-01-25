@@ -25,6 +25,8 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
     std::string str = buffStr;
     buff = 0;
 
+    //Return the size in byte
+
     if ( !str.size() )
     {
         return 0;
@@ -53,7 +55,7 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                     }
                     else if ( (str[i] >= 'A') && (str[i] <= 'F') )
                     {
-                        buff |= static_cast<uint32_t>(str[i]-'A') << hexShift;
+                        buff |= static_cast<uint32_t>(str[i]-'A'+10) << hexShift;
                     }
                     else
                     {//Bad hex char
@@ -89,7 +91,7 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                     binShift -= 1;
                 }
 
-                return ((binCount-1)/4) + 1;
+                return ((binCount-1)/8) + 1;
             }
         }
     }
