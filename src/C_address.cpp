@@ -34,7 +34,6 @@ void JumpList::resolve(codeg::CompilerData& data)
         }
 
         uint32_t jpCount = 0;
-        codeg::ConsoleInfoWrite("Working on label \""+vLabel._name+"\" with no jumpPoints");
 
         for (auto&& vJumpPoint : this->_jumpPoints)
         {
@@ -43,9 +42,11 @@ void JumpList::resolve(codeg::CompilerData& data)
                 data._code._data[vJumpPoint._addressStatic+1] = (vLabel._addressStatic&0x00FF0000)>>16; //MSB
                 data._code._data[vJumpPoint._addressStatic+3] = (vLabel._addressStatic&0x0000FF00)>>8;
                 data._code._data[vJumpPoint._addressStatic+5] = (vLabel._addressStatic&0x000000FF); //LSB
-                codeg::ConsoleInfoWrite("\x1b[1AWorking on label \""+vLabel._name+"\" with "+std::to_string(++jpCount)+" jumpPoints    ");
+                ++jpCount;
             }
         }
+
+        codeg::ConsoleInfoWrite("\tLabel \""+vLabel._name+"\" with "+std::to_string(jpCount)+" jump points");
     }
 }
 
