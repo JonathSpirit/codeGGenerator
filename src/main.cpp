@@ -58,7 +58,7 @@ const char* LineError::what() const noexcept
     return this->g_errstr.c_str();
 }
 
-int main()
+int main(int argc, char **argv)
 {
     if ( codeg::ConsoleInit() )
     {
@@ -66,8 +66,21 @@ int main()
     }
 
     std::string fileInPath;
-    std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
-    std::getline(std::cin, fileInPath);
+
+    if ( argc-1 == 0 )
+    {
+        std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
+        std::getline(std::cin, fileInPath);
+    }
+    else if ( argc-1 == 1 )
+    {
+        fileInPath = std::string(argv[1]);
+    }
+    else
+    {
+        std::cout << "Too many arguments !" << std::endl;
+        return -1;
+    }
 
     std::ifstream fileIn( fileInPath );
     if ( !fileIn )
@@ -88,6 +101,8 @@ int main()
         std::cout << "Can't write the file \""<< fileInPath <<".rcg\"" << std::endl;
         return -1;
     }
+
+    std::cout << "Input file : \""<< fileInPath <<"\"" << std::endl;
 
     ///Creating default pool
     codeg::Pool defaultPool("global");
@@ -231,14 +246,17 @@ int main()
     catch (const codeg::CompileError& e)
     {
         codeg::ConsoleErrorWrite("at line "+std::to_string(linePosition)+" : "+e.what());
+        return -1;
     }
     catch (const codeg::FatalError& e)
     {
         codeg::ConsoleFatalWrite(e.what());
+        return -1;
     }
     catch (const std::exception& e)
     {
         codeg::ConsoleFatalWrite( "unknown exception : "+std::string(e.what()) );
+        return -1;
     }
 
     #if 0

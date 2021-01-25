@@ -3,12 +3,18 @@ cmake_minimum_required(VERSION 3.10)
 #Project
 project(codeGGenerator)
 
+#Enabling CTest
+enable_testing()
+
 #Policy
 cmake_policy(SET CMP0076 NEW) #target_sources
 
 #Variables
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
+
+#Copy example folder
+file(COPY "example/" DESTINATION "example/")
 
 #Default is 32bit
 if (NOT DEFINED TARGET_ARCH)
@@ -60,8 +66,6 @@ else()
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
 endif()
 
-
-
 #Executable
 add_executable(${PROJECT_NAME})
 
@@ -81,3 +85,6 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_instruction.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_console.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_compilerData.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_address.cpp")
+
+#Add test
+add_test(NAME "Compiling test file" COMMAND ${PROJECT_NAME} "example/test")
