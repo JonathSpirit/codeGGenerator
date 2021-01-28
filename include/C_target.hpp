@@ -30,8 +30,6 @@ enum TargetType
     TARGET_OPERATION
 };
 
-codeg::TargetType ProcessTarget(const std::string& strTarget);
-
 }//end codeg
 
 #endif // C_TARGET_H_INCLUDED

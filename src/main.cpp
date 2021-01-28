@@ -15,12 +15,13 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "main.hpp"
+
+#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <stack>
-#include <map>
 #include <vector>
 #include <string>
-#include <thread>
 
 #include "C_target.hpp"
 #include "C_value.hpp"
@@ -28,11 +29,10 @@
 #include "C_keyword.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
+
 #include "CMakeConfig.hpp"
 
 using namespace std;
-
-std::vector<std::string> _global_bannedKeywords;
 
 std::string ToStrHexa(unsigned int val)
 {
@@ -47,16 +47,6 @@ std::string ToStrHexa(unsigned int val)
     }
 
     return out;
-}
-
-LineError::LineError(const std::string& err)
-{
-    this->g_errstr = err;
-}
-
-const char* LineError::what() const noexcept
-{
-    return this->g_errstr.c_str();
 }
 
 void printHelp()

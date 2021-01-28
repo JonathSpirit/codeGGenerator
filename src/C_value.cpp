@@ -16,6 +16,7 @@
 
 #include "C_value.hpp"
 #include "main.hpp"
+#include <algorithm>
 
 namespace codeg
 {

@@ -20,17 +20,4 @@
 namespace codeg
 {
 
-codeg::TargetType ProcessTarget(const std::string& strTarget)
-{
-    if ( (strTarget == "PERIPHERAL") || (strTarget == "P") )
-    {
-        return codeg::TargetType::TARGET_PERIPHERAL;
-    }
-    if ( (strTarget == "OPERATION") || (strTarget == "OP") )
-    {
-        return codeg::TargetType::TARGET_OPERATION;
-    }
-    throw LineError("invalid [target] ("+strTarget+")");
-}
-
 }//end codeg

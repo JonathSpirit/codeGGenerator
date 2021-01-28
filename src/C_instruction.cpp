@@ -20,6 +20,7 @@
 #include "C_console.hpp"
 #include "C_keyword.hpp"
 #include "C_bus.hpp"
+#include <algorithm>
 
 namespace codeg
 {
