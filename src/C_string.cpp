@@ -14,35 +14,21 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_STRINGDECOMPOSER_H_INCLUDED
-#define C_STRINGDECOMPOSER_H_INCLUDED
-
 #include "C_string.hpp"
-#include <string>
-#include <vector>
+#include <sstream>
 
 namespace codeg
 {
 
-enum StringDecomposerFlags : uint8_t
+size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
 {
-    FLAGS_EMPTY = 0x00,
-
-    FLAG_NOCONTENT = 0x01,
-    FLAG_IGNORE_CHAINING = 0x02
-};
-
-struct StringDecomposer
-{
-    void clear();
-    void decompose(const std::string& str, uint8_t lastFlags=codeg::StringDecomposerFlags::FLAGS_EMPTY);
-
-    uint8_t _flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
-    std::string _brut;
-    std::string _cleaned;
-    std::vector<std::string> _keywords;
-};
+   std::string buffStr;
+   std::istringstream strStream(str);
+   while (std::getline(strStream, buffStr, delimiter))
+   {
+      buff.push_back(buffStr);
+   }
+   return buff.size();
+}
 
 }//end codeg
-
-#endif // C_STRINGDECOMPOSER_H_INCLUDED

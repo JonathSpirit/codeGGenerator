@@ -20,17 +20,6 @@
 namespace codeg
 {
 
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
-{
-   std::string buffStr;
-   std::istringstream strStream(str);
-   while (std::getline(strStream, buffStr, delimiter))
-   {
-      buff.push_back(buffStr);
-   }
-   return buff.size();
-}
-
 void StringDecomposer::clear()
 {
     this->_flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
