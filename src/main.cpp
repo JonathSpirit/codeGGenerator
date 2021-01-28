@@ -34,21 +34,6 @@
 
 using namespace std;
 
-std::string ToStrHexa(unsigned int val)
-{
-    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    std::string out;
-    out = "x";
-    unsigned int mask = 0xF0000000;
-    for (unsigned int i=0; i<8; ++i)
-    {
-        out += buff[(val&mask) >> 4*(7-i)];
-        mask >>= 4;
-    }
-
-    return out;
-}
-
 void printHelp()
 {
     std::cout << "codeGGcompiler usage :" << std::endl << std::endl;

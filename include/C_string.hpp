@@ -25,6 +25,8 @@ namespace codeg
 
 size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
 
+std::string StrToHex(uint32_t val);
+
 }//end codeg
 
 #endif // C_STRING_H_INCLUDED
