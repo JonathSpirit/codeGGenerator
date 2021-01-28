@@ -28,6 +28,7 @@
 #include "C_keyword.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
+#include "CMakeConfig.hpp"
 
 using namespace std;
 
@@ -58,6 +59,27 @@ const char* LineError::what() const noexcept
     return this->g_errstr.c_str();
 }
 
+void printHelp()
+{
+    std::cout << "codeGGcompiler usage :" << std::endl << std::endl;
+
+    std::cout << "Set the input file to be compiled" << std::endl;
+    std::cout << "\tcodeGGcompiler --in=<path>" << std::endl << std::endl;
+
+    std::cout << "Print the version (and do nothing else)" << std::endl;
+    std::cout << "\tcodeGGcompiler --version" << std::endl << std::endl;
+
+    std::cout << "Print the help page (and do nothing else)" << std::endl;
+    std::cout << "\tcodeGGcompiler --help" << std::endl << std::endl;
+
+    std::cout << "Ask the user how he want to compile his file (interactive compiling)" << std::endl;
+    std::cout << "\tcodeGGcompiler --ask" << std::endl << std::endl;
+}
+void printVersion()
+{
+    std::cout << "codeGGcompiler created by Guillaume Guillet, version " << CGG_VERSION_MAJOR << "." << CGG_VERSION_MINOR << std::endl;
+}
+
 int main(int argc, char **argv)
 {
     if ( int err = codeg::ConsoleInit() )
@@ -67,21 +89,59 @@ int main(int argc, char **argv)
 
     std::string fileInPath;
 
-    if ( argc-1 == 0 )
+    std::vector<std::string> commands(argv, argv + argc);
+
+    if (commands.size() <= 1)
     {
-        std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
-        std::getline(std::cin, fileInPath);
-    }
-    else if ( argc-1 == 1 )
-    {
-        fileInPath = std::string(argv[1]);
-    }
-    else
-    {
-        std::cout << "Too many arguments !" << std::endl;
+        printHelp();
         return -1;
     }
 
+    for (unsigned int i=1; i<commands.size(); ++i)
+    {
+        //Commands
+        if ( commands[i] == "--help")
+        {
+            printHelp();
+            return 0;
+        }
+        if ( commands[i] == "--version")
+        {
+            printVersion();
+            return 0;
+        }
+        if ( commands[i] == "--ask")
+        {
+            std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
+            std::getline(std::cin, fileInPath);
+            continue;
+        }
+
+        //Commands with an argument
+        std::vector<std::string> splitedCommand;
+        codeg::Split(commands[i], splitedCommand, '=');
+
+        if (splitedCommand.size() == 2)
+        {
+            if ( splitedCommand[0] == "--in")
+            {
+                fileInPath = splitedCommand[1];
+                continue;
+            }
+        }
+
+        //Unknown command
+        std::cout << "Unknown command : \""<< commands[i] <<"\" !" << std::endl;
+        return -1;
+    }
+
+    if ( fileInPath.empty() )
+    {
+        std::cout << "No input file !" << std::endl;
+        return -1;
+    }
+
+    ///Opening files
     std::ifstream fileIn( fileInPath );
     if ( !fileIn )
     {

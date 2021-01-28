@@ -68,4 +68,7 @@ private:
     std::string g_errstr;
 };
 
+void printHelp();
+void printVersion();
+
 #endif // MAIN_H_INCLUDED
