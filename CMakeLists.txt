@@ -16,7 +16,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
 #Copy example folder
 file(COPY "example/" DESTINATION "example/")
 
-#TARGET_ARCH
+#Set cache entry
+set(TARGET_ARCH "" CACHE STRING "Set architecture type (32 or 64)")
+
+#Not defined = default to empty
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH "")
 endif()
@@ -31,9 +34,6 @@ if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         set(TARGET_ARCH_FLAG "-m64")
     endif()
 endif()
-
-#Set cache entry
-set(TARGET_ARCH "32" CACHE STRING "Set architecture type (32 or 64)")
 
 #Project name
 project(codeGGenerator VERSION 0.1)
