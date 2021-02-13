@@ -41,6 +41,9 @@ void printHelp()
     std::cout << "Set the input file to be compiled" << std::endl;
     std::cout << "\tcodeGGcompiler --in=<path>" << std::endl << std::endl;
 
+    std::cout << "Set the output file (default is the input path+.cg)" << std::endl;
+    std::cout << "\tcodeGGcompiler --out=<path>" << std::endl << std::endl;
+
     std::cout << "Print the version (and do nothing else)" << std::endl;
     std::cout << "\tcodeGGcompiler --version" << std::endl << std::endl;
 
@@ -63,6 +66,7 @@ int main(int argc, char **argv)
     }
 
     std::string fileInPath;
+    std::string fileOutPath;
 
     std::vector<std::string> commands(argv, argv + argc);
 
@@ -103,6 +107,11 @@ int main(int argc, char **argv)
                 fileInPath = splitedCommand[1];
                 continue;
             }
+            if ( splitedCommand[0] == "--out")
+            {
+                fileOutPath = splitedCommand[1];
+                continue;
+            }
         }
 
         //Unknown command
@@ -115,6 +124,10 @@ int main(int argc, char **argv)
         std::cout << "No input file !" << std::endl;
         return -1;
     }
+    if ( fileOutPath.empty() )
+    {
+        fileOutPath = fileInPath+".cg";
+    }
 
     ///Opening files
     std::ifstream fileIn( fileInPath );
@@ -124,10 +137,10 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    std::ofstream fileOutBinary( fileInPath+".cg", std::ios::binary | std::ios::trunc );
+    std::ofstream fileOutBinary( fileOutPath, std::ios::binary | std::ios::trunc );
     if ( !fileOutBinary )
     {
-        std::cout << "Can't write the file \""<< fileInPath <<".cg\"" << std::endl;
+        std::cout << "Can't write the file \""<< fileOutPath <<".cg\"" << std::endl;
         return -1;
     }
     std::ofstream fileOutReadable( fileInPath+".rcg", std::ios::trunc );
@@ -138,6 +151,7 @@ int main(int argc, char **argv)
     }
 
     std::cout << "Input file : \""<< fileInPath <<"\"" << std::endl;
+    std::cout << "Output file : \""<< fileOutPath <<"\"" << std::endl;
 
     ///Creating default pool
     codeg::Pool defaultPool("global");
