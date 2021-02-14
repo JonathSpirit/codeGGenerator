@@ -678,11 +678,6 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
         throw codeg::CompileError("function : bad function (function \""+argName._str+"\" already exist)");
     }
 
-    if ( !data._jumps.addLabel({argName._str, 0, data._code._cursor}) )
-    {
-        throw codeg::CompileError("function : label error (label \""+argName._str+"\" already exist)");
-    }
-
     if ( !data._actualFunctionName.empty() )
     {
         throw codeg::CompileError("function : function error (can't create a function in a function)");
@@ -695,7 +690,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     data._actualFunctionName = argName._str;
     data._functions.push_back(argName._str);
 
-    data._jumps._jumpPoints.push_back({"%%"+argName._str, data._code._cursor});
+    data._jumps._jumpPoints.push_back({"%%E"+argName._str, data._code._cursor}); //Jump to the end of the function
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -703,6 +698,11 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
+
+    if ( !data._jumps.addLabel({"%%"+argName._str, 0, data._code._cursor}) )
+    {//Label to the start of the function
+        throw codeg::CompileError("function : label error (label \"%%"+argName._str+"\" already exist)");
+    }
 }
 
 ///Instruction_if
@@ -902,9 +902,9 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
         }
         else
         {//End a function
-            if ( !data._jumps.addLabel({"%%"+data._actualFunctionName, 0, data._code._cursor}) )
+            if ( !data._jumps.addLabel({"%%E"+data._actualFunctionName, 0, data._code._cursor}) )
             {
-                throw codeg::CompileError("end : label error (label \"%%"+data._actualFunctionName+"\" already exist)");
+                throw codeg::CompileError("end : label error (label \"%%E"+data._actualFunctionName+"\" already exist)");
             }
             data._actualFunctionName.clear();
             return;
@@ -970,7 +970,7 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
 
     codeg::JumpPoint tmpPoint;
     tmpPoint._addressStatic = data._code._cursor;
-    tmpPoint._labelName = argName._str;
+    tmpPoint._labelName = "%%"+argName._str;
 
     if ( !data._jumps.addJumpPoint(tmpPoint) )
     {
