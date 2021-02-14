@@ -952,9 +952,9 @@ std::string Instruction_call::getName() const
 
 void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._keywords.size() != 2 )
+    if ( input._keywords.size() != 5 )
     {//Check size
-        throw codeg::CompileError("call : bad arguments size (wanted 2 got "+std::to_string(input._keywords.size())+")");
+        throw codeg::CompileError("call : bad arguments size (wanted 5 got "+std::to_string(input._keywords.size())+")");
     }
 
     codeg::Keyword argName;
@@ -962,11 +962,53 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
     {
         throw codeg::CompileError("call : bad argument (argument 1 \""+argName._str+"\" is not a name)");
     }
-
     if ( std::find(data._functions.begin(), data._functions.end(), argName._str) == data._functions.end() )
     {
         throw codeg::CompileError("call : bad function (unknown function \""+argName._str+"\")");
     }
+
+    codeg::Keyword argVar1;
+    if ( !argVar1.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+    {
+        throw codeg::CompileError("call : bad argument (argument 2 \""+argVar1._str+"\" is not a valid variable)");
+    }
+    codeg::Keyword argVar2;
+    if ( !argVar2.process(input._keywords[3], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+    {
+        throw codeg::CompileError("call : bad argument (argument 3 \""+argVar2._str+"\" is not a valid variable)");
+    }
+    codeg::Keyword argVar3;
+    if ( !argVar3.process(input._keywords[4], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+    {
+        throw codeg::CompileError("call : bad argument (argument 4 \""+argVar3._str+"\" is not a valid variable)");
+    }
+
+    //Prepare return address
+    uint32_t returnAddress = data._code._cursor + 25;
+
+    argVar1._variable->_link.push_back(data._code._cursor); //MSB
+    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+    data._code.push(0x00);
+    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+    data._code.push(0x00);
+    data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
+    data._code.push((returnAddress&0x00FF0000)>>16);
+
+    argVar2._variable->_link.push_back(data._code._cursor); //MSB
+    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+    data._code.push(0x00);
+    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+    data._code.push(0x00);
+    data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
+    data._code.push((returnAddress&0x0000FF00)>>8);
+
+    argVar3._variable->_link.push_back(data._code._cursor); //MSB
+    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+    data._code.push(0x00);
+    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+    data._code.push(0x00);
+    data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
+    data._code.push(returnAddress&0x000000FF);
 
     codeg::JumpPoint tmpPoint;
     tmpPoint._addressStatic = data._code._cursor;
@@ -974,9 +1016,8 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
 
     if ( !data._jumps.addJumpPoint(tmpPoint) )
     {
-        throw codeg::CompileError("call : bad label (unknown label \""+argName._str+"\")");
+        throw codeg::CompileError("call : bad label (unknown label \"%%"+argName._str+"\")");
     }
-
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);

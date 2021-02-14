@@ -319,8 +319,8 @@ public:
 class Instruction_call : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                   DESCRIPTION
-    call            call [name]                 Call a function.
+    KEYWORD         ARGUMENTS                                           DESCRIPTION
+    call            call [name] [variable] [variable] [variable]        Call a function.
     **/
 public:
     Instruction_call();
