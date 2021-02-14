@@ -1152,37 +1152,51 @@ std::string Instruction_clock::getName() const
 
 void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( (input._keywords.size() != 1) && (input._keywords.size() != 2) )
+    if ( (input._keywords.size() != 2) && (input._keywords.size() != 3) )
     {//Check size
-        throw codeg::CompileError("clock : bad arguments size (wanted 1-2 got "+std::to_string(input._keywords.size())+")");
+        throw codeg::CompileError("clock : bad arguments size (wanted 2-3 got "+std::to_string(input._keywords.size())+")");
     }
 
-    if (input._keywords.size() == 1)
+    codeg::Keyword argTarget;
+    if ( !argTarget.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_TARGET, data) )
     {
-        data._code.push(codeg::OPCODE_PERIPHERAL_CLK);
-        data._code.push(0x00);
-        return;
+        throw codeg::CompileError("clock : bad argument (argument 1 [target] is not a valid target)");
     }
 
-    codeg::Keyword argValue;
-    if ( argValue.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if ( argValue._valueConst )
-        {
+    uint8_t targetOpcode;
+    switch (argTarget._target)
+    {
+    case codeg::TARGET_PERIPHERAL:
+        targetOpcode = codeg::OPCODE_PERIPHERAL_CLK;
+        break;
+    case codeg::TARGET_SPI:
+        targetOpcode = codeg::OPCODE_SPI_CLK;
+        break;
+    default:
+        throw codeg::CompileError("clock : bad argument (argument 1 [target] is not a valid target)");
+        break;
+    }
+
+    if (input._keywords.size() == 3)
+    {
+        codeg::Keyword argValue;
+        if ( argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//A value
             for (uint32_t i=0; i<argValue._value; ++i)
             {
-                data._code.push(codeg::OPCODE_PERIPHERAL_CLK);
+                data._code.push(targetOpcode);
                 data._code.push(0x00);
             }
         }
         else
         {
-            throw codeg::CompileError("clock : bad value (argument 1 \""+argValue._str+"\" is not a valid constant value)");
+            throw codeg::CompileError("clock : bad argument (argument 2 [value] is not valid constant value)");
         }
     }
     else
     {
-        throw codeg::CompileError("clock : bad argument (argument 1 [value] is not a value)");
+        data._code.push(targetOpcode);
+        data._code.push(0x00);
     }
 }
 

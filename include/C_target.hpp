@@ -27,7 +27,8 @@ enum TargetType
     TARGET_NULL = 0,
 
     TARGET_PERIPHERAL,
-    TARGET_OPERATION
+    TARGET_OPERATION,
+    TARGET_SPI
 };
 
 }//end codeg
