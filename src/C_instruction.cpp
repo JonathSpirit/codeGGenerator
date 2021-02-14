@@ -177,33 +177,147 @@ std::string Instruction_jump::getName() const
 
 void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._keywords.size() != 2 )
-    {//Check size
-        throw codeg::CompileError("jump : bad arguments size (wanted 2 got "+std::to_string(input._keywords.size())+")");
+    if ( input._keywords.size() == 2 )
+    {//Label name or fixed address
+        codeg::Keyword arg1;
+        if ( arg1.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {//Check label name
+            codeg::JumpPoint tmpPoint;
+            tmpPoint._addressStatic = data._code._cursor;
+            tmpPoint._labelName = arg1._str;
+
+            if ( !data._jumps.addJumpPoint(tmpPoint) )
+            {
+                throw codeg::CompileError("jump : bad label (unknown label \""+arg1._str+"\")");
+            }
+
+            data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_JMPSRC_CLK);
+        }
+        else if ( arg1._type == codeg::KeywordTypes::KEYWORD_VALUE )
+        {//Check constant value
+            if ( arg1._valueSize <= 3 )
+            {
+                uint32_t address = arg1._value;
+
+                data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+                data._code.push( (address&0x00FF0000)>>16 );
+                data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+                data._code.push( (address&0x0000FF00)>>8 );
+                data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+                data._code.push( address&0x000000FF );
+                data._code.push(codeg::OPCODE_JMPSRC_CLK);
+            }
+            else
+            {
+                throw codeg::CompileError("jump : bad size (argument 1 [value] byte size must be <= 3)");
+            }
+        }
+        else
+        {
+            throw codeg::CompileError("jump : bad argument (argument 1 [name]/[value] must be a valid name or constant value)");
+        }
     }
+    else if ( input._keywords.size() == 4 )
+    {//3 separate values or variables
+        codeg::Keyword arg1;
+        if ( arg1.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//A constant value
+            if ( arg1._valueSize == 1 )
+            {
+                data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+                data._code.push( arg1._value );
+            }
+            else
+            {
+                throw codeg::CompileError("jump : bad size (argument 1 [value] byte size must be == 1)");
+            }
+        }
+        else if ( arg1._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
+        {//A variable
+            arg1._variable->_link.push_back(data._code._cursor);
 
-    codeg::Keyword argName;
-    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
-    {//Check label name
-        throw codeg::CompileError("jump : bad argument (argument 1 [name] must be a valid name)");
+            data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_RAM);
+            data._code.push(0x00);
+        }
+        else
+        {
+            throw codeg::CompileError("jump : bad argument (argument 1 [value] must be a valid value)");
+        }
+
+        codeg::Keyword arg2;
+        if ( arg2.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//A constant value
+            if ( arg2._valueSize == 1 )
+            {
+                data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+                data._code.push( arg2._value );
+            }
+            else
+            {
+                throw codeg::CompileError("jump : bad size (argument 2 [value] byte size must be == 1)");
+            }
+        }
+        else if ( arg2._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
+        {//A variable
+            arg2._variable->_link.push_back(data._code._cursor);
+
+            data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_RAM);
+            data._code.push(0x00);
+        }
+        else
+        {
+            throw codeg::CompileError("jump : bad argument (argument 2 [value] must be a valid value)");
+        }
+
+        codeg::Keyword arg3;
+        if ( arg3.process(input._keywords[3], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//A constant value
+            if ( arg3._valueSize == 1 )
+            {
+                data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+                data._code.push( arg3._value );
+            }
+            else
+            {
+                throw codeg::CompileError("jump : bad size (argument 3 [value] byte size must be == 1)");
+            }
+        }
+        else if ( arg3._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
+        {//A variable
+            arg3._variable->_link.push_back(data._code._cursor);
+
+            data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_RAM);
+            data._code.push(0x00);
+        }
+        else
+        {
+            throw codeg::CompileError("jump : bad argument (argument 3 [value] must be a valid value)");
+        }
+
+        data._code.push(codeg::OPCODE_JMPSRC_CLK);
     }
-
-    codeg::JumpPoint tmpPoint;
-    tmpPoint._addressStatic = data._code._cursor;
-    tmpPoint._labelName = argName._str;
-
-    if ( !data._jumps.addJumpPoint(tmpPoint) )
-    {
-        throw codeg::CompileError("jump : bad label (unknown label \""+argName._str+"\")");
+    else
+    {//Bad size
+        throw codeg::CompileError("jump : bad arguments size (wanted 2 or 4 got "+std::to_string(input._keywords.size())+")");
     }
-
-    data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_JMPSRC_CLK);
 }
 
 ///Instruction_restart

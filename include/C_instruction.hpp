@@ -124,8 +124,8 @@ public:
 class Instruction_jump : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                   DESCRIPTION
-    jump            jump [name]                 Jump to a certain label.
+    KEYWORD         ARGUMENTS                                               DESCRIPTION
+    jump            jump [name] / [value] / [value] [value] [value]         Jump to a certain label or on a fixed/dynamic address with varaibles.
     **/
 public:
     Instruction_jump();

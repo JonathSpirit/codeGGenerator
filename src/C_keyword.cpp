@@ -80,20 +80,10 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     this->_valueSize = GetIntegerFromString(this->_str, this->_value);
     if (this->_valueSize)
     {
-        if (wantedType == codeg::KeywordTypes::KEYWORD_VALUE)
-        {
-            this->_type = codeg::KeywordTypes::KEYWORD_VALUE;
-            this->_valueBus = codeg::ReadableBusses::READABLE_SOURCE;
-            this->_valueConst = true;
-            return true;
-        }
-        else if (wantedType == codeg::KeywordTypes::KEYWORD_BUS)
-        {
-            this->_type = codeg::KeywordTypes::KEYWORD_BUS;
-            this->_valueConst = true;
-            return true;
-        }
-        return false;
+        this->_type = (wantedType==codeg::KeywordTypes::KEYWORD_BUS) ? codeg::KeywordTypes::KEYWORD_BUS : codeg::KeywordTypes::KEYWORD_VALUE;
+        this->_valueBus = codeg::ReadableBusses::READABLE_SOURCE;
+        this->_valueConst = true;
+        return this->_type == wantedType;
     }
 
     ///ReadableBusses (Value)

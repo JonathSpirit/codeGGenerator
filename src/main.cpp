@@ -265,6 +265,7 @@ int main(int argc, char **argv)
                 }
             }
         }
+
         codeg::ConsoleInfoWrite("Step 1 : OK !\n");
         codeg::ConsoleInfoWrite("Compiled size : "+std::to_string(data._code._cursor)+" bytes\n");
 
