@@ -24,6 +24,7 @@ FileReader::FileReader()
 }
 FileReader::~FileReader()
 {
+    this->closeAll();
 }
 
 void FileReader::closeAll()
