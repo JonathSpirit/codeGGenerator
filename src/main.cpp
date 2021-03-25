@@ -243,8 +243,6 @@ int main(int argc, char **argv)
 
             data._decomposer.decompose(readedLine, data._decomposer._flags);
 
-            //std::cout << "line["<<linePosition<<"] " << data._decomposer._cleaned << std::endl;
-
             if (data._decomposer._keywords.size() > 0)
             {
                 validInstruction = false;
@@ -284,14 +282,35 @@ int main(int argc, char **argv)
         codeg::ConsoleInfoWrite("Step 3 : OK !\n");
 
         ///Writing on the output file
-        codeg::ConsoleInfoWrite("Step 4 : Writing the files ...");
-        codeg::ConsoleInfoWrite("Binary size : "+std::to_string(data._code._cursor)+" Bytes");
-
+        codeg::ConsoleInfoWrite("Writing codeG file (binary size : "+std::to_string(data._code._cursor)+" bytes) ...");
         fileOutBinary.write(reinterpret_cast<char*>(data._code._data.get()), data._code._cursor);
         fileOutBinary.close();
 
+        codeg::ConsoleInfoWrite("Writing readable codeG file ...");
+
+        bool tmpFlagOpcode = true;
+        for (uint32_t i = 0; i<data._code._cursor; ++i)
+        {
+            fileOutReadable << "["<<codeg::Uint8ToHex(data._code._data[i])<<"]";
+
+            if ( tmpFlagOpcode )
+            {
+                if ((data._code._data[i]&0x1F) != codeg::OPCODE_JMPSRC_CLK)
+                {//The jump instruction does not have an argument
+                    tmpFlagOpcode = false;
+                }
+                fileOutReadable << " " << ToReadableOpcode(data._code._data[i]) << " <" << ToReadableBus(data._code._data[i]) << ">";
+            }
+            else
+            {
+                tmpFlagOpcode = true;
+            }
+
+            fileOutReadable << std::endl;
+        }
+
         fileOutReadable.close();
-        codeg::ConsoleInfoWrite("Step 4 : OK !\n");
+        codeg::ConsoleInfoWrite("OK !\n");
     }
     catch (const codeg::CompileError& e)
     {

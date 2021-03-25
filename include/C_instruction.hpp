@@ -61,8 +61,13 @@ enum BinaryOpcodes : uint8_t
     */
     OPCODE_LTICK          = 0x17
 };
+extern const char* ReadableStringBinaryOpcodes[];
+
+#define ToReadableOpcode(x) codeg::ReadableStringBinaryOpcodes[ (x&0x1F)>0x17 ? 0x13 : (x&0x1F) ]
 
 struct CompilerData;
+
+/// --------- Instructions ---------
 
 class Instruction
 {

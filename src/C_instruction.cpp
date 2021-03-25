@@ -25,6 +25,45 @@
 namespace codeg
 {
 
+const char* ReadableStringBinaryOpcodes[]=
+{
+    "BWRITE1_CLK",
+    "BWRITE2_CLK",
+
+    "BPCS_CLK",
+
+    "OPLEFT_CLK",
+    "OPRIGHT_CLK",
+    "OPCHOOSE_CLK",
+
+    "PERIPHERAL_CLK",
+
+    "BJMPSRC1_CLK",
+    "BJMPSRC2_CLK",
+    "BJMPSRC3_CLK",
+    "JMPSRC_CLK",
+
+    "BRAMADD1_CLK",
+    "BRAMADD2_CLK",
+
+    "SPI_CLK",
+    "BCFG_SPI_CLK",
+
+    "STICK",
+
+    "IF",
+    "IFNOT",
+
+    "RAMW",
+
+    "UOP",
+    "UOP",
+    "UOP",
+    "UOP",
+
+    "LTICK"
+};
+
 Instruction::Instruction(){}
 Instruction::~Instruction(){}
 

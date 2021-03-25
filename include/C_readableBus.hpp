@@ -32,8 +32,12 @@ enum ReadableBusses : uint8_t
     READABLE_SPI = 0xA0,
 
     READABLE_EXT1 = 0xC0,
-    READABLE_EXT2 = 0xEC
+    READABLE_EXT2 = 0xE0
 };
+
+extern const char* ReadableStringBusses[];
+
+#define ToReadableBus(x) codeg::ReadableStringBusses[(x&0xE0)>>5]
 
 }//end codeg
 

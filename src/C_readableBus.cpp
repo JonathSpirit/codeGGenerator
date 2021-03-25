@@ -14,20 +14,25 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_STRING_H_INCLUDED
-#define C_STRING_H_INCLUDED
-
-#include <string>
-#include <vector>
+#include <cstdint>
+#include "C_readableBus.hpp"
 
 namespace codeg
 {
 
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
+const char* ReadableStringBusses[]=
+{
+    "SOURCE",
 
-std::string ValueToHex(uint32_t val, bool removeExtraZero=false);
-std::string Uint8ToHex(uint8_t val);
+    "BREAD1",
+    "BREAD2",
+
+    "RESULT",
+    "RAM",
+    "SPI",
+
+    "EXT1",
+    "EXT2"
+};
 
 }//end codeg
-
-#endif // C_STRING_H_INCLUDED
