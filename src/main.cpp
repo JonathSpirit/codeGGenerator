@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 
+#include "C_fileReader.hpp"
 #include "C_target.hpp"
 #include "C_value.hpp"
 #include "C_variable.hpp"
@@ -130,8 +131,9 @@ int main(int argc, char **argv)
     }
 
     ///Opening files
-    std::ifstream fileIn( fileInPath );
-    if ( !fileIn )
+    codeg::FileReader reader;
+
+    if ( !reader.open(fileInPath) )
     {
         std::cout << "Can't read the file \""<< fileInPath <<"\"" << std::endl;
         return -1;
@@ -229,7 +231,6 @@ int main(int argc, char **argv)
     data._code.resize(65536);
 
     std::string readedLine;
-    uint32_t linePosition = 0;
     bool validInstruction = false;
 
     try
@@ -237,10 +238,8 @@ int main(int argc, char **argv)
         ///First step reading and compiling
         codeg::ConsoleInfoWrite("Step 1 : Reading and compiling ...");
 
-        while( std::getline(fileIn, readedLine) )
+        while( reader.getline(readedLine) )
         {
-            ++linePosition;
-
             data._decomposer.decompose(readedLine, data._decomposer._flags);
 
             if (data._decomposer._keywords.size() > 0)
@@ -314,17 +313,17 @@ int main(int argc, char **argv)
     }
     catch (const codeg::CompileError& e)
     {
-        codeg::ConsoleErrorWrite("at line "+std::to_string(linePosition)+" : "+e.what());
+        codeg::ConsoleErrorWrite("at line "+std::to_string(reader.getlineCount())+" : "+e.what());
         return -1;
     }
     catch (const codeg::FatalError& e)
     {
-        codeg::ConsoleFatalWrite(e.what());
+        codeg::ConsoleFatalWrite("at line "+std::to_string(reader.getlineCount())+" : "+e.what());
         return -1;
     }
     catch (const std::exception& e)
     {
-        codeg::ConsoleFatalWrite( "unknown exception : "+std::string(e.what()) );
+        codeg::ConsoleFatalWrite("at line "+std::to_string(reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
         return -1;
     }
 
