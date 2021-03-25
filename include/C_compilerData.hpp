@@ -17,6 +17,7 @@
 #ifndef C_COMPILERDATA_H_INCLUDED
 #define C_COMPILERDATA_H_INCLUDED
 
+#include "C_fileReader.hpp"
 #include "C_stringDecomposer.hpp"
 #include "C_macro.hpp"
 #include "C_variable.hpp"
@@ -70,6 +71,8 @@ struct CompilerData
     uint32_t _scopeCount=0;
     std::stack<uint32_t> _scope;
     std::stack<codeg::ScopeStats> _scopeStats;
+
+    codeg::FileReader _reader;
 
     codeg::CodeData _code;
 };

@@ -23,7 +23,6 @@
 #include <vector>
 #include <string>
 
-#include "C_fileReader.hpp"
 #include "C_target.hpp"
 #include "C_value.hpp"
 #include "C_variable.hpp"
@@ -130,10 +129,11 @@ int main(int argc, char **argv)
         fileOutPath = fileInPath+".cg";
     }
 
-    ///Opening files
-    codeg::FileReader reader;
+    ///Compiler data
+    codeg::CompilerData data;
 
-    if ( !reader.open(fileInPath) )
+    ///Opening files
+    if ( !data._reader.open(fileInPath) )
     {
         std::cout << "Can't read the file \""<< fileInPath <<"\"" << std::endl;
         return -1;
@@ -159,9 +159,6 @@ int main(int argc, char **argv)
     codeg::Pool defaultPool("global");
     defaultPool.setStartAddressType(codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC);
     defaultPool.setAddress(0x00, 0x0000);
-
-    ///Compiler data
-    codeg::CompilerData data;
 
     ///Set default pool
     data._defaultPool = "global";
@@ -238,7 +235,7 @@ int main(int argc, char **argv)
         ///First step reading and compiling
         codeg::ConsoleInfoWrite("Step 1 : Reading and compiling ...");
 
-        while( reader.getline(readedLine) )
+        while( data._reader.getline(readedLine) )
         {
             data._decomposer.decompose(readedLine, data._decomposer._flags);
 
@@ -313,17 +310,17 @@ int main(int argc, char **argv)
     }
     catch (const codeg::CompileError& e)
     {
-        codeg::ConsoleErrorWrite("at line "+std::to_string(reader.getlineCount())+" : "+e.what());
+        codeg::ConsoleErrorWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
         return -1;
     }
     catch (const codeg::FatalError& e)
     {
-        codeg::ConsoleFatalWrite("at line "+std::to_string(reader.getlineCount())+" : "+e.what());
+        codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
         return -1;
     }
     catch (const std::exception& e)
     {
-        codeg::ConsoleFatalWrite("at line "+std::to_string(reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
+        codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
         return -1;
     }
 
