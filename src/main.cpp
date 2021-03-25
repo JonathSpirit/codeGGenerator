@@ -313,16 +313,19 @@ int main(int argc, char **argv)
     }
     catch (const codeg::CompileError& e)
     {
+        codeg::ConsoleErrorWrite("at file "+data._reader.getPath());
         codeg::ConsoleErrorWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
         return -1;
     }
     catch (const codeg::FatalError& e)
     {
+        codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
         codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
         return -1;
     }
     catch (const std::exception& e)
     {
+        codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
         codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
         return -1;
     }
