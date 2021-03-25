@@ -25,7 +25,7 @@ jobs:
       
     - name: Install c c++ lib (32bit)
       # Removing "file not found" bug with clang
-      run: sudo apt-get update && sudo apt-get install gcc-8-multilib g++-8-multilib libc6 libc6-dev
+      run: sudo apt-get update && sudo apt-get install gcc-9-multilib g++-9-multilib libc6 libc6-dev
       
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
