@@ -45,7 +45,7 @@ bool FileReader::open(const std::string& path)
     {
         return false;
     }
-    this->g_files.push( {std::move(file), 0} );
+    this->g_files.push( {std::move(file), 0, path} );
     return true;
 }
 bool FileReader::getline(std::string& buffLine)
@@ -81,6 +81,14 @@ unsigned int FileReader::getlineCount() const
 unsigned int FileReader::getSize() const
 {
     return this->g_files.size();
+}
+std::string FileReader::getPath() const
+{
+    if ( this->g_files.size() )
+    {
+        return this->g_files.top()._path;
+    }
+    return "";
 }
 
 }//end codeg

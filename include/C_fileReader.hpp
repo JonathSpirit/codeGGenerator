@@ -31,6 +31,7 @@ public:
     {
         std::ifstream _file;
         unsigned int _lineCount;
+        std::string _path;
     };
 
     FileReader();
@@ -43,6 +44,7 @@ public:
     bool getline(std::string& buffLine);
     unsigned int getlineCount() const;
     unsigned int getSize() const;
+    std::string getPath() const;
 
 private:
     std::stack<codeg::FileReader::Data> g_files;

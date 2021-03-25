@@ -138,6 +138,7 @@ int main(int argc, char **argv)
         std::cout << "Can't read the file \""<< fileInPath <<"\"" << std::endl;
         return -1;
     }
+    data._relativePath = codeg::GetRelativePath(fileInPath);
 
     std::ofstream fileOutBinary( fileOutPath, std::ios::binary | std::ios::trunc );
     if ( !fileOutBinary )
@@ -202,6 +203,7 @@ int main(int argc, char **argv)
     data._reservedKeywords.push_back("#[");
     data._reservedKeywords.push_back("]#");
     data._reservedKeywords.push_back("SPI");
+    data._reservedKeywords.push_back("import");
 
     ///Instructions
     data._instructions.push_back(new codeg::Instruction_set());
@@ -223,6 +225,7 @@ int main(int argc, char **argv)
     data._instructions.push_back(new codeg::Instruction_call());
     data._instructions.push_back(new codeg::Instruction_clock());
     data._instructions.push_back(new codeg::Instruction_pool());
+    data._instructions.push_back(new codeg::Instruction_import());
 
     ///Code
     data._code.resize(65536);

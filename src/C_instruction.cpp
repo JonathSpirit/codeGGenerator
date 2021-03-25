@@ -1323,4 +1323,28 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
     }
 }
 
+///Instruction_import
+Instruction_import::Instruction_import(){}
+Instruction_import::~Instruction_import(){}
+
+std::string Instruction_import::getName() const
+{
+    return "import";
+}
+
+void Instruction_import::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    if ( input._keywords.size() != 2 )
+    {//Check size
+        throw codeg::CompileError("import : bad arguments size (wanted 2 got "+std::to_string(input._keywords.size())+")");
+    }
+
+    std::string path = data._relativePath + input._keywords[1];
+
+    if ( !data._reader.open(path) )
+    {
+        throw codeg::CompileError("import : can't open the file : "+path+")");
+    }
+}
+
 }//end codeg

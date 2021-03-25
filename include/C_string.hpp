@@ -28,6 +28,8 @@ size_t Split(const std::string& str, std::vector<std::string>& buff, char delimi
 std::string ValueToHex(uint32_t val, bool removeExtraZero=false);
 std::string Uint8ToHex(uint8_t val);
 
+std::string GetRelativePath(const std::string& filePath);
+
 }//end codeg
 
 #endif // C_STRING_H_INCLUDED

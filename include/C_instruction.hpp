@@ -366,6 +366,21 @@ public:
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
+class Instruction_import : public Instruction
+{
+    /**
+    KEYWORD         ARGUMENTS                   DESCRIPTION
+    import          pool [string]               import a another codeG file into the current 'import' call
+    **/
+public:
+    Instruction_import();
+    virtual ~Instruction_import();
+
+    virtual std::string getName() const;
+
+    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+};
+
 /*
 KEYWORD         ARGUMENTS                   DESCRIPTION
 repeat          repeat [variable] [value]   Repeat the code.

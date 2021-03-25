@@ -73,6 +73,7 @@ struct CompilerData
     std::stack<codeg::ScopeStats> _scopeStats;
 
     codeg::FileReader _reader;
+    std::string _relativePath;
 
     codeg::CodeData _code;
 };
