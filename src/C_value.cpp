@@ -97,6 +97,16 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
         }
     }
 
+    //Char
+    if (str.size() == 3)
+    {
+        if ( (str[0] == '\'') && (str[2] == '\'') )
+        {
+            buff = str[1];
+            return 1;
+        }
+    }
+
     //Decimal
     try
     {
