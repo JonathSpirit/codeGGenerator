@@ -38,6 +38,13 @@ enum ScopeStats : uint32_t
     SCOPE_CONDITIONAL_FALSE
 };
 
+struct Scope
+{
+    uint32_t _id;
+    unsigned int _startLine;
+    std::string _startFile;
+};
+
 struct CodeData
 {
     bool push(uint8_t d);
@@ -69,7 +76,7 @@ struct CompilerData
     std::list<std::string> _functions;
 
     uint32_t _scopeCount=0;
-    std::stack<uint32_t> _scope;
+    std::stack<codeg::Scope> _scope;
     std::stack<codeg::ScopeStats> _scopeStats;
 
     codeg::FileReader _reader;

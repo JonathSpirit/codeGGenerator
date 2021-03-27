@@ -263,6 +263,11 @@ int main(int argc, char **argv)
             }
         }
 
+        if ( data._scope.size() > 0 )
+        {//A scope is not terminated by 'end'
+            throw codeg::CompileError("scope without an 'end' (maybe at line: "+std::to_string(data._scope.top()._startLine)+" and file: "+data._scope.top()._startFile+")");
+        }
+
         codeg::ConsoleInfoWrite("Step 1 : OK !\n");
         codeg::ConsoleInfoWrite("Compiled size : "+std::to_string(data._code._cursor)+" bytes\n");
 
@@ -313,20 +318,56 @@ int main(int argc, char **argv)
     }
     catch (const codeg::CompileError& e)
     {
-        codeg::ConsoleErrorWrite("at file "+data._reader.getPath());
-        codeg::ConsoleErrorWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+        std::string tmpPath = data._reader.getPath();
+        unsigned int tmpLine = data._reader.getlineCount();
+        if (!tmpPath.empty())
+        {
+            codeg::ConsoleErrorWrite("at file "+data._reader.getPath());
+        }
+        if (tmpLine > 0)
+        {
+            codeg::ConsoleErrorWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+        }
+        else
+        {
+            codeg::ConsoleErrorWrite(e.what());
+        }
         return -1;
     }
     catch (const codeg::FatalError& e)
     {
-        codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
-        codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+        std::string tmpPath = data._reader.getPath();
+        unsigned int tmpLine = data._reader.getlineCount();
+        if (!tmpPath.empty())
+        {
+            codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
+        }
+        if (tmpLine > 0)
+        {
+            codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+        }
+        else
+        {
+            codeg::ConsoleFatalWrite(e.what());
+        }
         return -1;
     }
     catch (const std::exception& e)
     {
-        codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
-        codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
+        std::string tmpPath = data._reader.getPath();
+        unsigned int tmpLine = data._reader.getlineCount();
+        if (!tmpPath.empty())
+        {
+            codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
+        }
+        if (tmpLine > 0)
+        {
+            codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
+        }
+        else
+        {
+            codeg::ConsoleFatalWrite("unknown exception : "+std::string(e.what()));
+        }
         return -1;
     }
 

@@ -905,7 +905,7 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     if there is no "else" keyword, the label %%Fn will be the end of the condition
     */
 
-    data._scope.push(++data._scopeCount); //New scope
+    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
     data._scopeStats.push(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE);
 
     data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code._cursor});
@@ -958,9 +958,9 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 
-    if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()), 0, data._code._cursor}) )
+    if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
     {
-        throw codeg::CompileError("else : label error (label \"%%F"+std::to_string(data._scope.top())+"\" already exist)");
+        throw codeg::CompileError("else : label error (label \"%%F"+std::to_string(data._scope.top()._id)+"\" already exist)");
     }
 
     data._scopeStats.top() = codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE;
@@ -1013,7 +1013,7 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     if there is no "else" keyword, the label %%Fn will be the end of the condition
     */
 
-    data._scope.push(++data._scopeCount); //New scope
+    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
     data._scopeStats.push(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE);
 
     data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code._cursor});
@@ -1069,20 +1069,20 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
     {
     case codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE:
         //Ending a conditional scope with the "else" keyword
-        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()), 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
         {
-            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top())+"\" already exist)");
+            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top()._id)+"\" already exist)");
         }
         break;
     case codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE:
         //Ending a conditional scope without the "else" keyword
-        if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()), 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
         {
-            throw codeg::CompileError("end : label error (label \"%%F"+std::to_string(data._scope.top())+"\" already exist)");
+            throw codeg::CompileError("end : label error (label \"%%F"+std::to_string(data._scope.top()._id)+"\" already exist)");
         }
-        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()), 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
         {
-            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top())+"\" already exist)");
+            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top()._id)+"\" already exist)");
         }
         break;
     default:
