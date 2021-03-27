@@ -64,8 +64,15 @@ const char* ReadableStringBinaryOpcodes[]=
     "LTICK"
 };
 
+///Instruction
+
 Instruction::Instruction(){}
 Instruction::~Instruction(){}
+
+void Instruction::compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    data._functions.back().addLine(input._cleaned);
+}
 
 ///Instruction_set
 Instruction_set::Instruction_set(){}
@@ -1104,79 +1111,105 @@ std::string Instruction_call::getName() const
 
 void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._keywords.size() != 5 )
-    {//Check size
-        throw codeg::CompileError("call : bad arguments size (wanted 5 got "+std::to_string(input._keywords.size())+")");
-    }
+    if ( input._keywords.size() == 5 )
+    {//call a function
+        codeg::Keyword argName;
+        if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {
+            throw codeg::CompileError("call : bad argument (argument 1 \""+argName._str+"\" is not a name)");
+        }
+        std::list<codeg::Function>::iterator it = std::find(data._functions.begin(), data._functions.end(), argName._str);
+        if ( it == data._functions.end() )
+        {
+            throw codeg::CompileError("call : bad function (unknown function \""+argName._str+"\")");
+        }
+        if ( it->isDefinition() )
+        {
+            throw codeg::CompileError("call : bad function (can't call a definition with return address)");
+        }
 
-    codeg::Keyword argName;
-    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        codeg::Keyword argVar1;
+        if ( !argVar1.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        {
+            throw codeg::CompileError("call : bad argument (argument 2 \""+argVar1._str+"\" is not a valid variable)");
+        }
+        codeg::Keyword argVar2;
+        if ( !argVar2.process(input._keywords[3], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        {
+            throw codeg::CompileError("call : bad argument (argument 3 \""+argVar2._str+"\" is not a valid variable)");
+        }
+        codeg::Keyword argVar3;
+        if ( !argVar3.process(input._keywords[4], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        {
+            throw codeg::CompileError("call : bad argument (argument 4 \""+argVar3._str+"\" is not a valid variable)");
+        }
+
+        //Prepare return address
+        uint32_t returnAddress = data._code._cursor + 25;
+
+        argVar1._variable->_link.push_back(data._code._cursor); //MSB
+        data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
+        data._code.push((returnAddress&0x00FF0000)>>16);
+
+        argVar2._variable->_link.push_back(data._code._cursor); //MSB
+        data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
+        data._code.push((returnAddress&0x0000FF00)>>8);
+
+        argVar3._variable->_link.push_back(data._code._cursor); //MSB
+        data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
+        data._code.push(returnAddress&0x000000FF);
+
+        codeg::JumpPoint tmpPoint;
+        tmpPoint._addressStatic = data._code._cursor;
+        tmpPoint._labelName = "%%"+argName._str;
+
+        if ( !data._jumps.addJumpPoint(tmpPoint) )
+        {
+            throw codeg::CompileError("call : bad label (unknown label \"%%"+argName._str+"\")");
+        }
+        data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+        data._code.push(0x00);
+        data._code.push(codeg::OPCODE_JMPSRC_CLK);
+    }
+    else if ( input._keywords.size() == 2 )
+    {//call a definition
+        codeg::Keyword argName;
+        if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {
+            throw codeg::CompileError("call : bad argument (argument 1 \""+argName._str+"\" is not a name)");
+        }
+        std::list<codeg::Function>::iterator it = std::find(data._functions.begin(), data._functions.end(), argName._str);
+        if ( it == data._functions.end() )
+        {
+            throw codeg::CompileError("call : bad definition (unknown definition \""+argName._str+"\")");
+        }
+        if ( !it->isDefinition() )
+        {
+            throw codeg::CompileError("call : bad definition (\""+argName._str+"\" is not a definition)");
+        }
+
+        data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_definition( &(*it) )) );
+    }
+    else
     {
-        throw codeg::CompileError("call : bad argument (argument 1 \""+argName._str+"\" is not a name)");
+        throw codeg::CompileError("call : bad arguments size (wanted 5 or 2 got "+std::to_string(input._keywords.size())+")");
     }
-    if ( std::find(data._functions.begin(), data._functions.end(), argName._str) == data._functions.end() )
-    {
-        throw codeg::CompileError("call : bad function (unknown function \""+argName._str+"\")");
-    }
-
-    codeg::Keyword argVar1;
-    if ( !argVar1.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-    {
-        throw codeg::CompileError("call : bad argument (argument 2 \""+argVar1._str+"\" is not a valid variable)");
-    }
-    codeg::Keyword argVar2;
-    if ( !argVar2.process(input._keywords[3], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-    {
-        throw codeg::CompileError("call : bad argument (argument 3 \""+argVar2._str+"\" is not a valid variable)");
-    }
-    codeg::Keyword argVar3;
-    if ( !argVar3.process(input._keywords[4], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-    {
-        throw codeg::CompileError("call : bad argument (argument 4 \""+argVar3._str+"\" is not a valid variable)");
-    }
-
-    //Prepare return address
-    uint32_t returnAddress = data._code._cursor + 25;
-
-    argVar1._variable->_link.push_back(data._code._cursor); //MSB
-    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
-    data._code.push((returnAddress&0x00FF0000)>>16);
-
-    argVar2._variable->_link.push_back(data._code._cursor); //MSB
-    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
-    data._code.push((returnAddress&0x0000FF00)>>8);
-
-    argVar3._variable->_link.push_back(data._code._cursor); //MSB
-    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
-    data._code.push(returnAddress&0x000000FF);
-
-    codeg::JumpPoint tmpPoint;
-    tmpPoint._addressStatic = data._code._cursor;
-    tmpPoint._labelName = "%%"+argName._str;
-
-    if ( !data._jumps.addJumpPoint(tmpPoint) )
-    {
-        throw codeg::CompileError("call : bad label (unknown label \"%%"+argName._str+"\")");
-    }
-    data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
-    data._code.push(0x00);
-    data._code.push(codeg::OPCODE_JMPSRC_CLK);
 }
 
 ///Instruction_clock
@@ -1340,10 +1373,78 @@ void Instruction_import::compile(const codeg::StringDecomposer& input, codeg::Co
 
     std::string path = data._relativePath + input._keywords[1];
 
-    if ( !data._reader.open(path) )
+    if ( !data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_file(path)) ) )
     {
         throw codeg::CompileError("import : can't open the file : "+path+")");
     }
+}
+
+///Instruction_definition
+Instruction_definition::Instruction_definition(){}
+Instruction_definition::~Instruction_definition(){}
+
+std::string Instruction_definition::getName() const
+{
+    return "definition";
+}
+
+void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    if ( input._keywords.size() != 2 )
+    {//Check size
+        throw codeg::CompileError("definition : bad arguments size (wanted 2 got "+std::to_string(input._keywords.size())+")");
+    }
+
+    codeg::Keyword argName;
+    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+    {
+        throw codeg::CompileError("definition : bad argument (argument 1 [name] bad name)");
+    }
+
+    if ( std::find(data._functions.begin(), data._functions.end(), argName._str) != data._functions.end() )
+    {
+        throw codeg::CompileError("definition : bad definition (definition/function \""+argName._str+"\" already exist)");
+    }
+
+    if ( data._scope.size() )
+    {
+        throw codeg::CompileError("definition : definition error (can't create a definition in a scope)");
+    }
+
+    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
+    data._scopeStats.push(codeg::ScopeStats::SCOPE_DEFINITION);
+
+    data._actualFunctionName = argName._str;
+    data._functions.emplace_back(argName._str, true);
+
+    data._writeLinesIntoDefinition = true;
+}
+///Instruction_enddef
+Instruction_enddef::Instruction_enddef(){}
+Instruction_enddef::~Instruction_enddef(){}
+
+std::string Instruction_enddef::getName() const
+{
+    return "end_def";
+}
+
+void Instruction_enddef::compile( [[maybe_unused]] const codeg::StringDecomposer& input, [[maybe_unused]] codeg::CompilerData& data)
+{
+    throw codeg::CompileError("end_def : 'end_def' can only be placed to end a definition scope");
+}
+void Instruction_enddef::compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    if ( input._keywords.size() != 1 )
+    {//Check size
+        throw codeg::CompileError("end_def : bad arguments size (wanted 1 got "+std::to_string(input._keywords.size())+")");
+    }
+
+    //Ending the definition
+    data._writeLinesIntoDefinition = false;
+    data._actualFunctionName.clear();
+
+    data._scope.pop();
+    data._scopeStats.pop();
 }
 
 }//end codeg

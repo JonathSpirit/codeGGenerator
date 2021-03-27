@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     codeg::CompilerData data;
 
     ///Opening files
-    if ( !data._reader.open(fileInPath) )
+    if ( !data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_file(fileInPath)) ) )
     {
         std::cout << "Can't read the file \""<< fileInPath <<"\"" << std::endl;
         return -1;
@@ -204,6 +204,8 @@ int main(int argc, char **argv)
     data._reservedKeywords.push_back("]#");
     data._reservedKeywords.push_back("SPI");
     data._reservedKeywords.push_back("import");
+    data._reservedKeywords.push_back("definition");
+    data._reservedKeywords.push_back("end_def");
 
     ///Instructions
     data._instructions.push_back(new codeg::Instruction_set());
@@ -226,6 +228,8 @@ int main(int argc, char **argv)
     data._instructions.push_back(new codeg::Instruction_clock());
     data._instructions.push_back(new codeg::Instruction_pool());
     data._instructions.push_back(new codeg::Instruction_import());
+    data._instructions.push_back(new codeg::Instruction_definition());
+    data._instructions.push_back(new codeg::Instruction_enddef());
 
     ///Code
     data._code.resize(65536);
@@ -251,7 +255,15 @@ int main(int argc, char **argv)
                     if (instruction->getName() == data._decomposer._keywords[0])
                     {
                         validInstruction = true;
-                        instruction->compile(data._decomposer, data);
+
+                        if ( data._writeLinesIntoDefinition )
+                        {//Compile in a definition (detect the end_def keyword)
+                            instruction->compileDefinition(data._decomposer, data);
+                        }
+                        else
+                        {//Compile
+                            instruction->compile(data._decomposer, data);
+                        }
                         break;
                     }
                 }

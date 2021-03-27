@@ -79,6 +79,7 @@ public:
     virtual std::string getName() const = 0;
 
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) = 0;
+    virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
 class Instruction_set : public Instruction
@@ -325,7 +326,7 @@ class Instruction_call : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                                           DESCRIPTION
-    call            call [name] [variable] [variable] [variable]        Call a function.
+    call            call [name] ([variable] [variable] [variable])      Call a function or definition.
     **/
 public:
     Instruction_call();
@@ -370,7 +371,7 @@ class Instruction_import : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    import          pool [string]               import a another codeG file into the current 'import' call
+    import          import [string]             import a another codeG file into the current 'import' call
     **/
 public:
     Instruction_import();
@@ -379,6 +380,36 @@ public:
     virtual std::string getName() const;
 
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+};
+
+class Instruction_definition : public Instruction
+{
+    /**
+    KEYWORD         ARGUMENTS                   DESCRIPTION
+    definition      definition [name]           Creates a definition with a certain [name].
+    **/
+public:
+    Instruction_definition();
+    virtual ~Instruction_definition();
+
+    virtual std::string getName() const;
+
+    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+};
+class Instruction_enddef : public Instruction
+{
+    /**
+    KEYWORD         ARGUMENTS                   DESCRIPTION
+    end_def         end_def                     end a definition.
+    **/
+public:
+    Instruction_enddef();
+    virtual ~Instruction_enddef();
+
+    virtual std::string getName() const;
+
+    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
 /*

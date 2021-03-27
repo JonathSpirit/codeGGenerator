@@ -17,37 +17,90 @@
 #ifndef C_FILEREADER_H_INCLUDED
 #define C_FILEREADER_H_INCLUDED
 
+#include "C_function.hpp"
 #include <fstream>
 #include <stack>
 #include <string>
+#include <memory>
 
 namespace codeg
 {
 
+class ReaderData
+{
+public:
+    ReaderData();
+    virtual ~ReaderData() = 0;
+
+    virtual bool getline(std::string& buffLine) = 0;
+    virtual bool isValid() const = 0;
+    virtual void close() = 0;
+
+    void setlineCount(unsigned int n);
+    void addlineCount(unsigned int n = 1);
+
+    unsigned int getlineCount() const;
+    const std::string& getPath() const;
+
+protected:
+    unsigned int _g_lineCount;
+    std::string _g_path;
+};
+
+class ReaderData_file : public ReaderData
+{
+public:
+    ReaderData_file();
+    ReaderData_file(const std::string& filePath);
+    ~ReaderData_file();
+
+    bool getline(std::string& buffLine);
+    bool isValid() const;
+    void close();
+
+    std::ifstream& getstream();
+
+private:
+    std::ifstream g_file;
+};
+
+class ReaderData_definition : public ReaderData
+{
+public:
+    ReaderData_definition();
+    ReaderData_definition(const codeg::Function* func);
+    ~ReaderData_definition();
+
+    bool getline(std::string& buffLine);
+    bool isValid() const;
+    void close();
+
+    const codeg::Function* getfunction();
+
+private:
+    const codeg::Function* g_func;
+    std::list<std::string>::const_iterator g_it;
+};
+
+
 class FileReader
 {
 public:
-    struct Data
-    {
-        std::ifstream _file;
-        unsigned int _lineCount;
-        std::string _path;
-    };
-
     FileReader();
     ~FileReader();
 
     void closeAll();
 
-    bool open(const std::string& path);
+    bool open(std::shared_ptr<codeg::ReaderData> newData);
 
     bool getline(std::string& buffLine);
     unsigned int getlineCount() const;
-    unsigned int getSize() const;
     std::string getPath() const;
 
+    unsigned int getSize() const;
+
 private:
-    std::stack<codeg::FileReader::Data> g_files;
+    std::stack<std::shared_ptr<codeg::ReaderData> > g_data;
 };
 
 }//end codeg

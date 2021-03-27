@@ -17,6 +17,7 @@
 #ifndef C_COMPILERDATA_H_INCLUDED
 #define C_COMPILERDATA_H_INCLUDED
 
+#include "C_function.hpp"
 #include "C_fileReader.hpp"
 #include "C_stringDecomposer.hpp"
 #include "C_macro.hpp"
@@ -33,6 +34,7 @@ namespace codeg
 enum ScopeStats : uint32_t
 {
     SCOPE_FUNCTION,
+    SCOPE_DEFINITION,
 
     SCOPE_CONDITIONAL_TRUE,
     SCOPE_CONDITIONAL_FALSE
@@ -72,8 +74,9 @@ struct CompilerData
 
     codeg::JumpList _jumps;
 
+    bool _writeLinesIntoDefinition=false;
     std::string _actualFunctionName;
-    std::list<std::string> _functions;
+    std::list<codeg::Function> _functions;
 
     uint32_t _scopeCount=0;
     std::stack<codeg::Scope> _scope;

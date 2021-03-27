@@ -19,6 +19,110 @@
 namespace codeg
 {
 
+///ReaderData
+ReaderData::ReaderData()
+{
+}
+ReaderData::~ReaderData()
+{
+
+}
+
+void ReaderData::setlineCount(unsigned int n)
+{
+    this->_g_lineCount = n;
+}
+void ReaderData::addlineCount(unsigned int n)
+{
+    this->_g_lineCount += n;
+}
+
+unsigned int ReaderData::getlineCount() const
+{
+    return this->_g_lineCount;
+}
+const std::string& ReaderData::getPath() const
+{
+    return this->_g_path;
+}
+
+///ReaderData_file
+ReaderData_file::ReaderData_file() : ReaderData()
+{
+
+}
+ReaderData_file::ReaderData_file(const std::string& filePath)
+{
+    this->g_file.open(filePath);
+    this->_g_lineCount = 0;
+    this->_g_path = filePath;
+}
+ReaderData_file::~ReaderData_file()
+{
+
+}
+
+bool ReaderData_file::getline(std::string& buffLine)
+{
+    return static_cast<bool>(std::getline(this->g_file, buffLine));
+}
+bool ReaderData_file::isValid() const
+{
+    return this->g_file.good();
+}
+void ReaderData_file::close()
+{
+    this->g_file.close();
+}
+
+std::ifstream& ReaderData_file::getstream()
+{
+    return this->g_file;
+}
+
+///ReaderData_definition
+ReaderData_definition::ReaderData_definition()
+{
+
+}
+ReaderData_definition::ReaderData_definition(const codeg::Function* func)
+{
+    this->g_func = func;
+    this->g_it = this->g_func->getIteratorBegin();
+
+    this->_g_lineCount = 0;
+    this->_g_path = "\"definition call: "+func->getName()+"\"";
+}
+ReaderData_definition::~ReaderData_definition()
+{
+
+}
+
+bool ReaderData_definition::getline(std::string& buffLine)
+{
+    if (this->g_it != this->g_func->getIteratorEnd())
+    {
+        buffLine = *this->g_it;
+        ++this->g_it;
+        return true;
+    }
+    return false;
+}
+bool ReaderData_definition::isValid() const
+{
+    return this->g_func->isDefinition();
+}
+void ReaderData_definition::close()
+{
+
+}
+
+const codeg::Function* ReaderData_definition::getfunction()
+{
+    return this->g_func;
+}
+
+///FileReader
 FileReader::FileReader()
 {
 }
@@ -29,41 +133,40 @@ FileReader::~FileReader()
 
 void FileReader::closeAll()
 {
-    unsigned int stackSize = this->g_files.size();
+    unsigned int stackSize = this->g_data.size();
 
     for (unsigned int i=0; i<stackSize; ++i)
     {
-        this->g_files.top()._file.close();
-        this->g_files.pop();
+        this->g_data.top()->close();
+        this->g_data.pop();
     }
 }
 
-bool FileReader::open(const std::string& path)
+bool FileReader::open(std::shared_ptr<codeg::ReaderData> newData)
 {
-    std::ifstream file( path );
-    if ( !file )
+    if ( newData->isValid() )
     {
-        return false;
+        this->g_data.push(newData);
+        return true;
     }
-    this->g_files.push( {std::move(file), 0, path} );
-    return true;
+    return false;
 }
 bool FileReader::getline(std::string& buffLine)
 {
-    if (!this->g_files.size())
+    if (!this->g_data.size())
     {
         return false;
     }
 
-    if ( std::getline(this->g_files.top()._file, buffLine) )
+    if ( this->g_data.top()->getline(buffLine) )
     {
-        ++this->g_files.top()._lineCount;
+        this->g_data.top()->addlineCount();
         return true;
     }
-    this->g_files.top()._file.close();
-    this->g_files.pop();
+    this->g_data.top()->close();
+    this->g_data.pop();
 
-    if ( this->g_files.size() > 0 )
+    if ( this->g_data.size() > 0 )
     {
         buffLine.clear();
         return true;
@@ -72,21 +175,21 @@ bool FileReader::getline(std::string& buffLine)
 }
 unsigned int FileReader::getlineCount() const
 {
-    if ( this->g_files.size() )
+    if ( this->g_data.size() )
     {
-        return this->g_files.top()._lineCount;
+        return this->g_data.top()->getlineCount();
     }
     return 0;
 }
 unsigned int FileReader::getSize() const
 {
-    return this->g_files.size();
+    return this->g_data.size();
 }
 std::string FileReader::getPath() const
 {
-    if ( this->g_files.size() )
+    if ( this->g_data.size() )
     {
-        return this->g_files.top()._path;
+        return this->g_data.top()->getPath();
     }
     return "";
 }
