@@ -28,7 +28,7 @@
             <Keywords name="Keywords2">label jump call</Keywords>
             <Keywords name="Keywords3">P PERIPHERAL OP OPERATION SPI simple long</Keywords>
             <Keywords name="Keywords4">var set pool import</Keywords>
-            <Keywords name="Keywords5">function end if if_not else</Keywords>
+            <Keywords name="Keywords5">function end if if_not else definition end_def</Keywords>
             <Keywords name="Keywords6">_src _bread1 _bread2 _result _ram _spi _ext1 _ext2</Keywords>
             <Keywords name="Keywords7"></Keywords>
             <Keywords name="Keywords8">$</Keywords>
