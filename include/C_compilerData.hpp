@@ -32,7 +32,7 @@ namespace codeg
 
 enum ScopeStats : uint32_t
 {
-    SCOPE_NORMAL,
+    SCOPE_FUNCTION,
 
     SCOPE_CONDITIONAL_TRUE,
     SCOPE_CONDITIONAL_FALSE

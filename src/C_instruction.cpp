@@ -840,6 +840,9 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
         throw codeg::CompileError("function : function error (can't create a function in a scope)");
     }
 
+    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
+    data._scopeStats.push(codeg::ScopeStats::SCOPE_FUNCTION);
+
     data._actualFunctionName = argName._str;
     data._functions.push_back(argName._str);
 
@@ -1049,24 +1052,20 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
 
     if ( data._scope.empty() )
     {
-        if ( data._actualFunctionName.empty() )
-        {
-            throw codeg::CompileError("end : scope error (end must be placed to end a scope or a function)");
-        }
-        else
-        {//End a function
-            if ( !data._jumps.addLabel({"%%E"+data._actualFunctionName, 0, data._code._cursor}) )
-            {
-                throw codeg::CompileError("end : label error (label \"%%E"+data._actualFunctionName+"\" already exist)");
-            }
-            data._actualFunctionName.clear();
-            return;
-        }
+        throw codeg::CompileError("end : scope error ('end' must be placed to end a scope)");
     }
-    //End a scope
 
+    //Ending a scope
     switch ( data._scopeStats.top() )
     {
+    case codeg::ScopeStats::SCOPE_FUNCTION:
+        //Ending a function
+        if ( !data._jumps.addLabel({"%%E"+data._actualFunctionName, 0, data._code._cursor}) )
+        {
+            throw codeg::CompileError("end : label error (label \"%%E"+data._actualFunctionName+"\" already exist)");
+        }
+        data._actualFunctionName.clear();
+        break;
     case codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE:
         //Ending a conditional scope with the "else" keyword
         if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
