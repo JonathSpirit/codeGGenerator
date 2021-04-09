@@ -959,7 +959,7 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
         throw codeg::CompileError("else : scope error (else must be placed after a conditional keyword)");
     }
 
-    data._jumps._jumpPoints.push_back({"%%E"+std::to_string(data._scopeCount), data._code._cursor});
+    data._jumps._jumpPoints.push_back({"%%E"+std::to_string(data._scope.top()._id), data._code._cursor});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
