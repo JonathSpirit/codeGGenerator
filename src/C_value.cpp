@@ -15,8 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "C_value.hpp"
-#include "main.hpp"
-#include <algorithm>
+#include "C_error.hpp"
 
 namespace codeg
 {
@@ -42,10 +41,8 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                 uint32_t hexCount = str.size()-2;
                 if ( hexCount>8 )
                 {//Bad size
-                    return 0;
+                    throw codeg::SyntaxError("hex value must have a maximum size of 8, got "+std::to_string(hexCount));
                 }
-
-                std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
                 uint32_t hexShift = 4*(hexCount-1);
                 for (uint32_t i=2; i<str.size(); ++i)
@@ -58,9 +55,13 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                     {
                         buff |= static_cast<uint32_t>(str[i]-'A'+10) << hexShift;
                     }
+                    else if ( (str[i] >= 'a') && (str[i] <= 'f') )
+                    {
+                        buff |= static_cast<uint32_t>(str[i]-'a'+10) << hexShift;
+                    }
                     else
                     {//Bad hex char
-                        return 0;
+                        throw codeg::SyntaxError(std::string("bad char in hex value \'")+str[i]+"\'");
                     }
 
                     hexShift -= 4;
@@ -74,7 +75,7 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                 uint32_t binCount = str.size()-2;
                 if ( binCount>32 )
                 {//Bad size
-                    return 0;
+                    throw codeg::SyntaxError("binary value must have a maximum size of 32, got "+std::to_string(binCount));
                 }
 
                 uint32_t binShift = binCount-1;
@@ -86,7 +87,7 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                     }
                     else if ( str[i] != '0' )
                     {//Bad bin char
-                        return 0;
+                        throw codeg::SyntaxError(std::string("bad char in binary value \'")+str[i]+"\'");
                     }
 
                     binShift -= 1;
@@ -97,46 +98,60 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
         }
     }
 
-    //Char
-    if (str.size() == 3)
-    {
-        if ( (str[0] == '\'') && (str[2] == '\'') )
+    if ( str[0] == '\'' )
+    {//Char
+        if (str.size() == 3)
         {
-            buff = str[1];
-            return 1;
-        }
-    }
-
-    //Decimal
-    try
-    {
-        buff = std::stoul(str);
-
-        if (buff < 0x10000)
-        {
-            if (buff < 0x100)
-            {// 8 bit
+            if ( str[2] == '\'' )
+            {
+                buff = str[1];
                 return 1;
             }
             else
-            {// 16 bit
-                return 2;
+            {
+                throw codeg::SyntaxError(std::string("missing second quote (\') in char value, got \'")+str[2]+"\'");
             }
         }
-        else if (buff < 0x1000000L)
-        {// 24 bit
-            return 3;
-        }
         else
-        {// 32 bit
-            return 4;
+        {
+            throw codeg::SyntaxError("char value must be a length of 3 characters, got "+std::to_string(str.size()));
         }
     }
-    catch (std::exception& e)
-    {
-        //Bad value
-        return 0;
+
+    if ( (str[0] >= '0') && (str[0] <= '9') )
+    {//Integer
+        try
+        {
+            buff = std::stoul(str);
+
+            if (buff < 0x10000)
+            {
+                if (buff < 0x100)
+                {// 8 bit
+                    return 1;
+                }
+                else
+                {// 16 bit
+                    return 2;
+                }
+            }
+            else if (buff < 0x1000000L)
+            {// 24 bit
+                return 3;
+            }
+            else
+            {// 32 bit
+                return 4;
+            }
+        }
+        catch (std::exception& e)
+        {//Bad integer
+            throw codeg::SyntaxError("integer value must be a valid max 32bit integer composed with 0-9");
+        }
     }
+
+    //Not a constant value
+    return 0;
 }
 
 }//end codeg
