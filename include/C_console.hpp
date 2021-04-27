@@ -30,6 +30,7 @@ void ConsoleFatalWrite(const std::string& str);
 void ConsoleErrorWrite(const std::string& str);
 void ConsoleWarningWrite(const std::string& str);
 void ConsoleInfoWrite(const std::string& str);
+void ConsoleSyntaxWrite(const std::string& str);
 
 }//end codeg
 

@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "C_stringDecomposer.hpp"
+#include "C_error.hpp"
 
 namespace codeg
 {
@@ -61,6 +62,10 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
             {//Comment
                 if ( lastChar == ']' )
                 {//Possible end of multi-line comments
+                    if (!ignoring)
+                    {
+                        throw codeg::SyntaxError("Unexpected end of multi-line comments !");
+                    }
                     this->_flags &=~ codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
                     ignoring = false;
                     lastChar = '#';
@@ -120,6 +125,11 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
         {
             this->_cleaned.pop_back();
         }
+    }
+
+    if (isChar || isString)
+    {
+        throw codeg::SyntaxError("char/string quotation mark without an end !");
     }
 
     this->_cleaned.shrink_to_fit();

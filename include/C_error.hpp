@@ -56,6 +56,23 @@ private:
     std::string g_str;
 };
 
+class SyntaxError : public std::exception
+{
+public:
+    SyntaxError(const std::string& err)
+    {
+        this->g_str = err;
+    }
+
+    virtual const char* what() const noexcept
+    {
+        return this->g_str.c_str();
+    }
+
+private:
+    std::string g_str;
+};
+
 }//end codeg
 
 #endif // C_ERROR_H_INCLUDED

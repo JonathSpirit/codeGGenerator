@@ -95,4 +95,12 @@ void ConsoleInfoWrite(const std::string& str)
     std::cout << "[info](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
 }
 
+void ConsoleSyntaxWrite(const std::string& str)
+{
+    std::time_t t = std::time(nullptr);
+    std::cout << "\x1b[33m";
+    std::cout << "[syntax error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    std::cout << "\x1b[0m";
+}
+
 }//end codeg

@@ -364,6 +364,24 @@ int main(int argc, char **argv)
         }
         return -1;
     }
+    catch (const codeg::SyntaxError& e)
+    {
+        std::string tmpPath = data._reader.getPath();
+        unsigned int tmpLine = data._reader.getlineCount();
+        if (!tmpPath.empty())
+        {
+            codeg::ConsoleSyntaxWrite("at file "+data._reader.getPath());
+        }
+        if (tmpLine > 0)
+        {
+            codeg::ConsoleSyntaxWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+        }
+        else
+        {
+            codeg::ConsoleSyntaxWrite(e.what());
+        }
+        return -1;
+    }
     catch (const std::exception& e)
     {
         std::string tmpPath = data._reader.getPath();
