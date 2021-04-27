@@ -122,7 +122,7 @@ size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
     {//Integer
         try
         {
-            buff = std::stoul(str);
+            buff = std::stoul(str); ///TODO: replace stoul with custom function
 
             if (buff < 0x10000)
             {
