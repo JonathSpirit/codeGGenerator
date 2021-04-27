@@ -1330,8 +1330,7 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
     }
 
     codeg::Keyword argStart;
-    argStart._value = 0;
-
+    bool isDynamic = true;
     if (input._keywords.size() == 4)
     {
         if ( !argStart.process(input._keywords[3], codeg::KeywordTypes::KEYWORD_VALUE, data) )
@@ -1342,13 +1341,14 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
         {
             throw codeg::CompileError("pool : bad value (argument 3 [value] must be a valid constant value)");
         }
+        isDynamic = false;
     }
 
     if ( codeg::Pool* tmpPool = data._pools.getPool(argName._str) )
     {//Pool already exist
-        codeg::ConsoleWrite("Warning : pool \""+argName._str+"\" already exist and will be replaced !");
+        codeg::ConsoleWarningWrite("Warning : pool \""+argName._str+"\" already exist and will be replaced !");
 
-        if (argStart._value == 0)
+        if (isDynamic)
         {
             tmpPool->setStartAddressType(codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC);
             tmpPool->setAddress(argStart._value, argSize._value);
@@ -1363,7 +1363,7 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
     {//Pool must be created
         codeg::Pool tmpNewPool(argName._str);
 
-        if (argStart._value == 0)
+        if (isDynamic)
         {
             tmpNewPool.setStartAddressType(codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC);
             tmpNewPool.setAddress(argStart._value, argSize._value);
