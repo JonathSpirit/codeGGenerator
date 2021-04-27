@@ -22,7 +22,7 @@ namespace codeg
 
 bool MacroReplace(const codeg::MacroList& macroList, std::string& str)
 {
-    for (auto&& [first,second] : macroList)
+    for (auto& [first,second] : macroList)
     {
         if (str == first)
         {
@@ -32,10 +32,17 @@ bool MacroReplace(const codeg::MacroList& macroList, std::string& str)
     }
     return false;
 }
-
-bool MacroCheck(const codeg::MacroList& l, const std::string& r)
+void MacroSet(codeg::MacroList& macroList, const std::string& key, const std::string& str)
 {
-    return l.find(r) != l.cend();
+    macroList[key] = str;
+}
+bool MacroRemove(codeg::MacroList& macroList, const std::string& key)
+{
+    return macroList.erase(key) > 0;
+}
+bool MacroCheck(const codeg::MacroList& macroList, const std::string& key)
+{
+    return macroList.find(key) != macroList.cend();
 }
 
 }//end codeg

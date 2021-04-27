@@ -96,6 +96,21 @@ public:
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
+class Instruction_unset : public Instruction
+{
+    /**
+    KEYWORD         ARGUMENTS                   DESCRIPTION
+    unset           unset [string]              Undefine an existing macro with a name [string].
+    **/
+public:
+    Instruction_unset();
+    virtual ~Instruction_unset();
+
+    virtual std::string getName() const;
+
+    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+};
+
 class Instruction_var : public Instruction
 {
     /**

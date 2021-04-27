@@ -26,8 +26,9 @@ namespace codeg
 typedef std::map<std::string, std::string> MacroList;
 
 bool MacroReplace(const codeg::MacroList& macroList, std::string& str);
-
-bool MacroCheck(const codeg::MacroList& l, const std::string& r);
+void MacroSet(codeg::MacroList& macroList, const std::string& key, const std::string& str);
+bool MacroRemove(codeg::MacroList& macroList, const std::string& key);
+bool MacroCheck(const codeg::MacroList& macroList, const std::string& key);
 
 }//end codeg
 

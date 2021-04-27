@@ -168,6 +168,7 @@ int main(int argc, char **argv)
 
     ///Reserved keywords
     data._reservedKeywords.push_back("set");
+    data._reservedKeywords.push_back("unset");
     data._reservedKeywords.push_back("var");
     data._reservedKeywords.push_back("label");
     data._reservedKeywords.push_back("affect");
@@ -210,6 +211,7 @@ int main(int argc, char **argv)
 
     ///Instructions
     data._instructions.push_back(new codeg::Instruction_set());
+    data._instructions.push_back(new codeg::Instruction_unset());
     data._instructions.push_back(new codeg::Instruction_var());
     data._instructions.push_back(new codeg::Instruction_label());
     data._instructions.push_back(new codeg::Instruction_jump());

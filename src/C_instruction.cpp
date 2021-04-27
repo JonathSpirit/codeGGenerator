@@ -105,13 +105,38 @@ void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::Compi
 
     if ( codeg::MacroCheck(data._macros, argName._str) )
     {//Check if already set
-        data._macros[argName._str] = argString._str;
+        codeg::MacroSet(data._macros, argName._str, argString._str);
         codeg::ConsoleWrite("[warning] set : macro \""+ argName._str +"\" already exist and will be replaced");
     }
     else
     {
-        data._macros[argName._str] = argString._str;
+        codeg::MacroSet(data._macros, argName._str, argString._str);
     }
+}
+
+///Instruction_unset
+Instruction_unset::Instruction_unset(){}
+Instruction_unset::~Instruction_unset(){}
+
+std::string Instruction_unset::getName() const
+{
+    return "unset";
+}
+
+void Instruction_unset::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    if ( input._keywords.size() != 2 )
+    {//Check size
+        throw codeg::CompileError("unset : bad arguments size (wanted 2 got "+std::to_string(input._keywords.size())+")");
+    }
+
+    codeg::Keyword argName;
+    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_STRING, data) )
+    {//Check name
+        throw codeg::CompileError("unset : bad argument (argument 1 [string] must be a valid string)");
+    }
+
+    codeg::MacroRemove(data._macros, argName._str);
 }
 
 ///Instruction_var
