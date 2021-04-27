@@ -15,7 +15,6 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "C_stringDecomposer.hpp"
-#include <sstream>
 
 namespace codeg
 {
@@ -32,6 +31,8 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
     char lastChar = ' ';
     bool ignoringSpace = true;
     bool ignoring = false;
+    bool isChar = false;
+    bool isString = false;
 
     this->_brut = str;
 
@@ -49,36 +50,36 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
 
     for (uint32_t i=0; i<str.size(); ++i)
     {
-        if ( (lastChar == '#') && (str[i] == '[') )
-        {//Possible begin of multi-line comments
-            this->_flags |= codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
-            ignoring = true;
-            //goto skip;
-        }
+        if (!isString && !isChar)
+        {//Not ignoring comments
+            if ( (lastChar == '#') && (str[i] == '[') )
+            {//Possible begin of multi-line comments
+                this->_flags |= codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
+                ignoring = true;
+            }
+            else if ( str[i] == '#' )
+            {//Comment
+                if ( lastChar == ']' )
+                {//Possible end of multi-line comments
+                    this->_flags &=~ codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
+                    ignoring = false;
+                    lastChar = '#';
+                    ignoringSpace = true;
+                    continue;
+                }
+                else
+                {
+                    ignoring = true;
+                }
+            }
 
-        if ( str[i] == '#' )
-        {//Comment
-            if ( lastChar == ']' )
-            {//Possible end of multi-line comments
-                this->_flags &=~ codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
-                ignoring = false;
-                lastChar = '#';
+            if (ignoring)
+            {
+                lastChar = str[i];
                 ignoringSpace = true;
                 continue;
             }
-            else
-            {
-                ignoring = true;
-            }
         }
-
-        if (ignoring)
-        {
-            lastChar = str[i];
-            ignoringSpace = true;
-            continue;
-        }
-
 
         if ( str[i] == ' ' )
         {//Space
@@ -88,6 +89,23 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
                 ignoringSpace = true;
             }
         }
+        else if ( (str[i] == '\"') )
+        {
+            this->_cleaned.push_back('\"');
+
+            if (!isChar)
+            {
+                isString = !isString;
+            }
+            ignoringSpace = false;
+        }
+        else if ( (str[i] == '\'') )
+        {
+            this->_cleaned.push_back('\'');
+
+            isChar = !isChar;
+            ignoringSpace = false;
+        }
         else if ( (str[i] > 0x20) && (str[i] < 0x7F) )
         {//Only certain ASCII char
             this->_cleaned.push_back(str[i]);
@@ -96,13 +114,16 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
 
         lastChar = str[i];
     }
-    if ( this->_cleaned.back() == ' ' )
+    if (this->_cleaned.length() > 0)
     {
-        this->_cleaned.pop_back();
+        if ( this->_cleaned.back() == ' ' )
+        {
+            this->_cleaned.pop_back();
+        }
     }
 
     this->_cleaned.shrink_to_fit();
-    codeg::Split(this->_cleaned, this->_keywords, ' ');
+    codeg::SplitKeywords(this->_cleaned, this->_keywords);
 }
 
 }//end codeg

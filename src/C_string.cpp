@@ -22,13 +22,85 @@ namespace codeg
 
 size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
 {
-   std::string buffStr;
-   std::istringstream strStream(str);
-   while (std::getline(strStream, buffStr, delimiter))
-   {
-      buff.push_back(buffStr);
-   }
-   return buff.size();
+    std::string buffStr;
+    std::istringstream strStream(str);
+    while (std::getline(strStream, buffStr, delimiter))
+    {
+        buff.push_back(buffStr);
+    }
+    return buff.size();
+}
+
+size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff)
+{
+    bool isString = false;
+    bool isChar = false;
+
+    std::string splitString;
+    splitString.reserve(str.size());
+
+    for (unsigned int i=0; i<str.size(); ++i)
+    {
+        if (isString)
+        {//In a string
+            if (str[i] == '\"')
+            {//End of the string or quotation in a char
+                if (isChar)
+                {
+                    splitString += '\"';
+                }
+                else
+                {
+                    isString = false;
+                }
+            }
+            else if (str[i] == '\'')
+            {//Start of a char in a string
+                isChar = !isChar;
+                splitString += '\'';
+            }
+            else
+            {
+                splitString += str[i];
+            }
+        }
+        else if (isChar)
+        {//In a char
+            if (str[i] == '\'')
+            {//End of the char
+                isChar = false;
+                splitString += '\'';
+            }
+            else
+            {
+                splitString += str[i];
+            }
+        }
+        else if (str[i] == '\'')
+        {//Start of a char
+            isChar = true;
+            splitString += '\'';
+        }
+        else if (str[i] == '\"')
+        {//Start of a string
+            isString = true;
+        }
+        else if (str[i] == ' ')
+        {//We must split
+            buff.push_back(std::move(splitString));
+            splitString.reserve(str.size()-i);
+        }
+        else
+        {
+            splitString += str[i];
+        }
+    }
+
+    if (splitString.size() > 0)
+    {//Push the remaining char
+        buff.push_back(std::move(splitString));
+    }
+    return buff.size();
 }
 
 std::string ValueToHex(uint32_t val, bool removeExtraZero)
