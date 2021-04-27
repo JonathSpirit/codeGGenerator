@@ -18,7 +18,6 @@
 #define C_INSTRUCTION_H_INCLUDED
 
 #include "C_stringDecomposer.hpp"
-#include "C_error.hpp"
 
 namespace codeg
 {
@@ -86,7 +85,7 @@ class Instruction_set : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    set             set [name] [string]         Define a new macro with a [name] by the content of the [string].
+    set             set [string] [string]       Define a new macro with a name [string] by the content of the argument [string].
     **/
 public:
     Instruction_set();

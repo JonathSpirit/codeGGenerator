@@ -17,7 +17,7 @@
 #include "C_variable.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
-#include "main.hpp"
+#include "C_error.hpp"
 
 namespace codeg
 {

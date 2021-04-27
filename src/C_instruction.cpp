@@ -20,6 +20,7 @@
 #include "C_console.hpp"
 #include "C_keyword.hpp"
 #include "C_bus.hpp"
+#include "C_error.hpp"
 #include <algorithm>
 
 namespace codeg
@@ -91,9 +92,9 @@ void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::Compi
     }
 
     codeg::Keyword argName;
-    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_STRING, data) )
     {//Check name
-        throw codeg::CompileError("set : bad argument (argument 1 [name] must be a valid name)");
+        throw codeg::CompileError("set : bad argument (argument 1 [string] must be a valid string)");
     }
 
     codeg::Keyword argString;

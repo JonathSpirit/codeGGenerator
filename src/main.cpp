@@ -29,6 +29,7 @@
 #include "C_keyword.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
+#include "C_error.hpp"
 
 #include "CMakeConfig.hpp"
 
