@@ -106,7 +106,7 @@ void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::Compi
     if ( codeg::MacroCheck(data._macros, argName._str) )
     {//Check if already set
         codeg::MacroSet(data._macros, argName._str, argString._str);
-        codeg::ConsoleWrite("[warning] set : macro \""+ argName._str +"\" already exist and will be replaced");
+        codeg::ConsoleWarningWrite("[warning] set : macro \""+ argName._str +"\" already exist and will be replaced");
     }
     else
     {
