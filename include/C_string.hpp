@@ -26,8 +26,7 @@ namespace codeg
 size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
 size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff);
 
-std::string ValueToHex(uint32_t val, bool removeExtraZero=false);
-std::string Uint8ToHex(uint8_t val);
+std::string ValueToHex(uint32_t val, unsigned int hexSize=8, bool removeExtraZero=false, bool removePrefix=false);
 
 std::string GetRelativePath(const std::string& filePath);
 

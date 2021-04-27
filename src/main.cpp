@@ -307,7 +307,7 @@ int main(int argc, char **argv)
         bool tmpFlagOpcode = true;
         for (uint32_t i = 0; i<data._code._cursor; ++i)
         {
-            fileOutReadable << "["<<codeg::Uint8ToHex(data._code._data[i])<<"]";
+            fileOutReadable << "["<<codeg::ValueToHex(data._code._data[i], 2)<<"]";
 
             if ( tmpFlagOpcode )
             {

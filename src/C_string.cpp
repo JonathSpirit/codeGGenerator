@@ -103,18 +103,27 @@ size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff)
     return buff.size();
 }
 
-std::string ValueToHex(uint32_t val, bool removeExtraZero)
+std::string ValueToHex(uint32_t val, unsigned int hexSize, bool removeExtraZero, bool removePrefix)
 {
-    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    std::string out = "0x";
-
-    bool extraZeroFlag = true;
-
-    uint32_t mask = 0xF0000000;
-    for (unsigned int i=0; i<8; ++i)
+    if (hexSize==0)
     {
-        char buffChar = buff[(val&mask) >> 4*(7-i)];
-        if (extraZeroFlag && removeExtraZero)
+        return "";
+    }
+    else if (hexSize>8)
+    {
+        hexSize = 8;
+    }
+
+    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+    std::string out = removePrefix ? "" : "0x";
+
+    bool extraZeroFlag = removeExtraZero;
+
+    uint32_t mask = 0x0000000F << (4*(hexSize-1));
+    for (unsigned int i=0; i<hexSize; ++i)
+    {
+        char buffChar = buff[(val&mask) >> 4*((hexSize-1)-i)];
+        if (extraZeroFlag)
         {
             if (buffChar != '0')
             {
@@ -129,20 +138,9 @@ std::string ValueToHex(uint32_t val, bool removeExtraZero)
         mask >>= 4;
     }
     if (extraZeroFlag)
-    {
+    {//The result is only 0
         out += '0';
     }
-
-    return out;
-}
-
-std::string Uint8ToHex(uint8_t val)
-{
-    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    std::string out = "0x";
-
-    out += buff[(val&0xF0) >> 4];
-    out += buff[(val&0x0F)];
 
     return out;
 }
