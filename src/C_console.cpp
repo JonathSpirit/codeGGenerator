@@ -84,7 +84,7 @@ void ConsoleErrorWrite(const std::string& str)
 void ConsoleWarningWrite(const std::string& str)
 {
     std::time_t t = std::time(nullptr);
-    std::cout << "\x1b[34m";
+    std::cout << "\x1b[36m";
     std::cout << "[warning](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
     std::cout << "\x1b[0m";
 }
