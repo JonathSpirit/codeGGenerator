@@ -19,8 +19,6 @@
 #include <ctime>
 #include <iomanip>
 
-#include <wchar.h>
-
 #ifdef _WIN32
 #include <windows.h>
 
