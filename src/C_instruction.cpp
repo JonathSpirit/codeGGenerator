@@ -216,25 +216,54 @@ std::string Instruction_label::getName() const
 
 void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._keywords.size() != 2 )
-    {//Check size
-        throw codeg::CompileError("label : bad arguments size (wanted 2 got "+std::to_string(input._keywords.size())+")");
+    if ( input._keywords.size() == 2 )
+    {//Label name with determined cursor address
+        codeg::Keyword argName;
+        if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {//Check label name
+            throw codeg::CompileError("label : bad argument (argument 1 [name] must be a valid name)");
+        }
+
+        codeg::Label tmpLabel;
+        tmpLabel._addressStatic = data._code._cursor;
+        tmpLabel._uniqueIndex = 0;
+        tmpLabel._name = argName._str;
+
+        if ( !data._jumps.addLabel(tmpLabel) )
+        {//Check name
+            throw codeg::CompileError("label : bad label (label "+argName._str+" already exist)");
+        }
     }
+    else if ( input._keywords.size() == 3 )
+    {//Label name with fixed address
+        codeg::Keyword argName;
+        if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {//Check label name
+            throw codeg::CompileError("label : bad argument (argument 1 [name] must be a valid name)");
+        }
+        codeg::Keyword argValue;
+        if ( !argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//Check const value
+            throw codeg::CompileError("label : bad argument (argument 2 [value] must be a valid constant value)");
+        }
+        if ( !argValue._valueConst )
+        {
+            throw codeg::CompileError("label : bad argument (argument 2 [value] must be a valid constant value)");
+        }
 
-    codeg::Keyword argName;
-    if ( !argName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
-    {//Check label name
-        throw codeg::CompileError("label : bad argument (argument 1 [name] must be a valid name)");
+        codeg::Label tmpLabel;
+        tmpLabel._addressStatic = argValue._value;
+        tmpLabel._uniqueIndex = 0;
+        tmpLabel._name = argName._str;
+
+        if ( !data._jumps.addLabel(tmpLabel) )
+        {//Check name
+            throw codeg::CompileError("label : bad label (label "+argName._str+" already exist)");
+        }
     }
-
-    codeg::Label tmpLabel;
-    tmpLabel._addressStatic = data._code._cursor;
-    tmpLabel._uniqueIndex = 0;
-    tmpLabel._name = argName._str;
-
-    if ( !data._jumps.addLabel(tmpLabel) )
-    {//Check name
-        throw codeg::CompileError("label : bad label (label "+argName._str+" already exist)");
+    else
+    {
+        throw codeg::CompileError("label : bad arguments size (wanted 2 or 3 got "+std::to_string(input._keywords.size())+")");
     }
 }
 

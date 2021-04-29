@@ -130,7 +130,7 @@ class Instruction_label : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    label           label [name]                Define a new jump label to a position in the code.
+    label           label [name] ([value])      Define a new jump label to a position in the code.
     **/
 public:
     Instruction_label();
@@ -145,7 +145,7 @@ class Instruction_jump : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                                               DESCRIPTION
-    jump            jump [name] / [value] / [value] [value] [value]         Jump to a certain label or on a fixed/dynamic address with varaibles.
+    jump            jump [name] / [value] / [value] [value] [value]         Jump to a certain label or on a fixed/dynamic address with variables.
     **/
 public:
     Instruction_jump();
