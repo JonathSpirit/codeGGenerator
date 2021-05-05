@@ -581,6 +581,14 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                         data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
                         data._code.push(argValue._value);
                     }
+                    else if ( argValue._valueIsVariable )
+                    {
+                        throw codeg::CompileError("affect : can't copy a variable in another location in memory");
+                    }
+                    else
+                    {
+                        throw codeg::CompileError("affect : bad argument (argument "+std::to_string(i+3)+" [value] must be a valid value)");
+                    }
                 }
             }
             else
