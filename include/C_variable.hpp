@@ -68,6 +68,13 @@ public:
 
     codeg::MemorySize resolveLinks(codeg::CompilerData& data, const codeg::MemoryAddress& startAddress);
 
+    struct PoolLink
+    {
+        codeg::Address _address;
+        codeg::Address _offset;
+    };
+    std::list<codeg::Pool::PoolLink> _link;
+
 private:
     std::string g_name;
 

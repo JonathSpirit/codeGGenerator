@@ -165,6 +165,13 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
         ++offset;
     }
 
+    for ( codeg::Pool::PoolLink& link : this->_link )
+    {
+        codeg::MemoryAddress varAdd = startAddress + link._offset;
+        data._code._data[link._address + 1] = varAdd >> 8;//Address MSB
+        data._code._data[link._address + 3] = varAdd & 0x00FF;//Address LSB
+    }
+
     return this->g_variables.size();
 }
 

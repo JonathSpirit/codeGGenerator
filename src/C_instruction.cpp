@@ -246,7 +246,7 @@ void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::Com
         {//Check const value
             throw codeg::CompileError("label : bad argument (argument 2 [value] must be a valid constant value)");
         }
-        if ( !argValue._valueConst )
+        if ( !argValue._valueIsConst )
         {
             throw codeg::CompileError("label : bad argument (argument 2 [value] must be a valid constant value)");
         }
@@ -457,49 +457,146 @@ std::string Instruction_affect::getName() const
 
 void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._keywords.size() != 3 )
-    {//Check size
-        throw codeg::CompileError("affect : bad arguments size (wanted 3 got "+std::to_string(input._keywords.size())+")");
-    }
+    if ( input._keywords.size() == 3 )
+    {//fixed specified address or variable
+        codeg::Keyword argVar;
+        if ( argVar.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        {//Variable
+            codeg::Keyword argValue;
+            if ( argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+            {//A value
+                if ( !argValue._valueIsVariable )
+                {
+                    if (argValue._valueSize != 1)
+                    {
+                        throw codeg::CompileError("affect : bad value (require size is 1 byte got \""+std::to_string(argValue._valueSize)+"\")");
+                    }
 
-    codeg::Keyword argVar;
-    if ( !argVar.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-    {//Check variable
-        throw codeg::CompileError("affect : bad argument (argument 1 [variable] must be a valid variable)");
-    }
+                    argVar._variable->_link.push_back(data._code._cursor);
 
-    codeg::Keyword argValue;
-    if ( argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if (argValue._valueSize != 1)
-        {
-            throw codeg::CompileError("affect : bad value (require size is 1 byte got \""+std::to_string(argValue._valueSize)+"\")");
+                    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+                    data._code.push(0x00);
+                    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+                    data._code.push(0x00);
+
+                    data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
+                    data._code.push(argValue._value);
+                }
+                else
+                {//A variable
+                    throw codeg::CompileError("affect : can't copy (for now) a variable in another variable");
+                }
+            }
+            else
+            {
+                throw codeg::CompileError("affect : bad argument (argument 2 \""+argValue._str+"\" is not a value)");
+            }
         }
+        else if ( argVar._type == codeg::KeywordTypes::KEYWORD_CONSTANT )
+        {//Constant
+            if ( argVar._valueSize > 2 )
+            {
+                throw codeg::CompileError("affect : bad constant (require size is <= 2 byte got \""+std::to_string(argVar._valueSize)+"\")");
+            }
 
-        argVar._variable->_link.push_back(data._code._cursor);
+            codeg::Keyword argValue;
+            if ( argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+            {//A value
+                if ( !argValue._valueIsVariable )
+                {
+                    if (argValue._valueSize != 1)
+                    {
+                        throw codeg::CompileError("affect : bad value (require size is 1 byte got \""+std::to_string(argValue._valueSize)+"\")");
+                    }
 
-        data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
-        data._code.push(0x00);
-        data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
-        data._code.push(0x00);
+                    data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+                    data._code.push((argVar._value&0xFF00)>>8);
+                    data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+                    data._code.push(argVar._value&0x00FF);
 
-        data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-        data._code.push(argValue._value);
-        return;
-    }
-    else
-    {//Possibly a variable
-        if ( argValue._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
-        {
-            throw codeg::CompileError("affect : bad argument (argument 2 [value] can't be (for now) a variable)");
+                    data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
+                    data._code.push(argValue._value);
+                }
+                else
+                {//A variable
+                    throw codeg::CompileError("affect : can't copy (for now) a variable in another variable");
+                }
+            }
+            else
+            {
+                throw codeg::CompileError("affect : bad argument (argument 2 \""+argValue._str+"\" is not a value)");
+            }
         }
         else
         {
-            throw codeg::CompileError("affect : bad argument (argument 2 \""+argValue._str+"\" is not a value)");
+            throw codeg::CompileError("affect : bad argument (argument 1 [variable]/[constant] must be valid)");
         }
     }
+    else if ( input._keywords.size() >= 4 )
+    {//fixed size pool
+        codeg::Keyword argPoolName;
+        if ( argPoolName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {//Pool name
+            codeg::Pool* pool = data._pools.getPool(argPoolName._str);
+            if (!pool)
+            {
+                throw codeg::CompileError("affect : bad argument (unknown pool : \""+argPoolName._str+"\")");
+            }
+            if ( pool->getMaxSize() == 0 )
+            {
+                throw codeg::CompileError("affect : bad argument (pool must have a fixed size)");
+            }
 
-    throw codeg::CompileError("affect : bad variable (unknown variable \""+argVar._str+"\")");
+            codeg::Keyword argOffset;
+            if ( argOffset.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
+            {//Offset
+                if (argOffset._valueSize > 2)
+                {
+                    throw codeg::CompileError("affect : bad argument (argument 2 [constant] must have a byte size of <= 2)");
+                }
+
+                unsigned int numOfValue = input._keywords.size() - 3;
+                if (numOfValue > pool->getMaxSize())
+                {
+                    throw codeg::CompileError("affect : pool overflow (try to affect "+std::to_string(numOfValue)+" values but the max size is "+std::to_string(pool->getMaxSize())+")");
+                }
+
+                for (unsigned int i=0; i<numOfValue; ++i)
+                {
+                    codeg::Keyword argValue;
+                    if ( argValue.process(input._keywords[i+3], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+                    {//Value
+                        if (argValue._valueSize != 1)
+                        {
+                            throw codeg::CompileError("affect : bad argument (argument "+std::to_string(i+3)+" [value] must have a byte size of 1)");
+                        }
+
+                        pool->_link.push_back({data._code._cursor, i});
+
+                        data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+                        data._code.push(0x00);
+                        data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+                        data._code.push(0x00);
+
+                        data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
+                        data._code.push(argValue._value);
+                    }
+                }
+            }
+            else
+            {
+                throw codeg::CompileError("affect : bad argument (argument 2 [constant] must be a valid constant)");
+            }
+        }
+        else
+        {
+            throw codeg::CompileError("affect : bad argument (argument 1 [name] must be a valid name)");
+        }
+    }
+    else
+    {
+        throw codeg::CompileError("affect : bad arguments size (wanted 3 or 4 got "+std::to_string(input._keywords.size())+")");
+    }
 }
 
 ///Instruction_write
@@ -769,7 +866,7 @@ void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::Comp
                 codeg::Keyword argValue;
                 if ( !argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
                 {
-                    if ( !argValue._valueConst )
+                    if ( !argValue._valueIsConst )
                     {
                         throw codeg::CompileError("tick : bad argument (argument 2 [value] must be a valid constant value)");
                     }
@@ -793,7 +890,7 @@ void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::Comp
                 codeg::Keyword argValue;
                 if ( !argValue.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
                 {
-                    if ( !argValue._valueConst )
+                    if ( !argValue._valueIsConst )
                     {
                         throw codeg::CompileError("tick : bad argument (argument 2 [value] must be a valid constant value)");
                     }
@@ -843,7 +940,7 @@ void Instruction_brut::compile(const codeg::StringDecomposer& input, codeg::Comp
     {
         if ( argValue.process(input._keywords[i], codeg::KeywordTypes::KEYWORD_VALUE, data) )
         {//A value
-            if ( argValue._valueConst )
+            if ( argValue._valueIsConst )
             {
                 if ( argValue._valueSize == 1 )
                 {
@@ -1353,7 +1450,7 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
     {//A value
         throw codeg::CompileError("pool : bad argument (argument 2 [value] is not a value)");
     }
-    if ( !argSize._valueConst )
+    if ( !argSize._valueIsConst )
     {
         throw codeg::CompileError("pool : bad value (argument 2 [value] must be a valid constant value)");
     }
@@ -1366,7 +1463,7 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
         {//A value
             throw codeg::CompileError("pool : bad argument (argument 3 [value] is not a value)");
         }
-        if ( !argStart._valueConst )
+        if ( !argStart._valueIsConst )
         {
             throw codeg::CompileError("pool : bad value (argument 3 [value] must be a valid constant value)");
         }

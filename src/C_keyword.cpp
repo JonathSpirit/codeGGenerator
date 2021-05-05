@@ -30,7 +30,9 @@ void Keyword::clear()
 
     this->_value = 0;
     this->_valueSize = 0;
-    this->_valueConst = false;
+
+    this->_valueIsConst = false;
+    this->_valueIsVariable = false;
 
     this->_variable = nullptr;
 
@@ -82,17 +84,26 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
         return this->_type == wantedType;
     }
 
-    ///Value
+    ///Value (constant)
     this->_valueSize = GetIntegerFromString(this->_str, this->_value);
     if (this->_valueSize)
     {
-        this->_type = (wantedType==codeg::KeywordTypes::KEYWORD_BUS) ? codeg::KeywordTypes::KEYWORD_BUS : codeg::KeywordTypes::KEYWORD_VALUE;
+        if ( (wantedType==codeg::KeywordTypes::KEYWORD_BUS) ||
+             (wantedType==codeg::KeywordTypes::KEYWORD_VALUE) )
+        {
+            this->_type = wantedType;
+        }
+        else
+        {
+            this->_type = codeg::KeywordTypes::KEYWORD_CONSTANT;
+        }
+
         this->_valueBus = codeg::ReadableBusses::READABLE_SOURCE;
-        this->_valueConst = true;
+        this->_valueIsConst = true;
         return this->_type == wantedType;
     }
 
-    ///ReadableBusses (Value)
+    ///ReadableBusses
     if (this->_str == "_src")
     {
         this->_type = codeg::KeywordTypes::KEYWORD_VALUE;
@@ -163,6 +174,7 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     {
         this->_type = codeg::KeywordTypes::KEYWORD_VARIABLE;
         this->_valueBus = codeg::ReadableBusses::READABLE_RAM;
+        this->_valueIsVariable = true;
         return this->_type == wantedType;
     }
 

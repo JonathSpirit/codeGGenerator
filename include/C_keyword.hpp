@@ -34,9 +34,10 @@ enum KeywordTypes : uint8_t
 
     KEYWORD_TARGET,
     KEYWORD_BUS,
-    KEYWORD_VALUE,
 
+    KEYWORD_VALUE,
     KEYWORD_VARIABLE,
+    KEYWORD_CONSTANT,
 
     KEYWORD_INSTRUCTION
 };
@@ -52,7 +53,10 @@ struct Keyword
 
     uint32_t _value;
     size_t _valueSize;
-    bool _valueConst;
+
+    bool _valueIsVariable;
+    bool _valueIsConst;
+
     codeg::ReadableBusses _valueBus;
 
     codeg::Variable* _variable;

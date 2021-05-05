@@ -174,8 +174,10 @@ public:
 class Instruction_affect : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                   DESCRIPTION
-    affect          affect [variable] [value]   Assigns a [variable] to a certain [value].
+    KEYWORD         ARGUMENTS                                   DESCRIPTION
+    affect          [constant] [value]                          Assigns a fixed specified address [constant] to a certain [value].
+                    [variable] [value]                          Assigns a [variable] to a certain [value].
+                    [name] [constant] [value] ([value]...)      Assigns in a fixed size pool [name] with an fixed address offset [constant] a certain [value].
     **/
 public:
     Instruction_affect();
