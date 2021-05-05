@@ -555,10 +555,11 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                     throw codeg::CompileError("affect : bad argument (argument 2 [constant] must have a byte size of <= 2)");
                 }
 
+                codeg::Address offset = argOffset._value;
                 unsigned int numOfValue = input._keywords.size() - 3;
-                if (numOfValue > pool->getMaxSize())
+                if ( (numOfValue+offset) > pool->getMaxSize())
                 {
-                    throw codeg::CompileError("affect : pool overflow (try to affect "+std::to_string(numOfValue)+" values but the max size is "+std::to_string(pool->getMaxSize())+")");
+                    throw codeg::CompileError("affect : pool overflow (try to affect "+std::to_string(numOfValue)+" values with offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
                 }
 
                 for (unsigned int i=0; i<numOfValue; ++i)
@@ -571,7 +572,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                             throw codeg::CompileError("affect : bad argument (argument "+std::to_string(i+3)+" [value] must have a byte size of 1)");
                         }
 
-                        pool->_link.push_back({data._code._cursor, i});
+                        pool->_link.push_back({data._code._cursor, i+offset});
 
                         data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
                         data._code.push(0x00);
