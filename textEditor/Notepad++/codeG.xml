@@ -24,7 +24,7 @@
             <Keywords name="Folders in comment, open">if if_not function definition</Keywords>
             <Keywords name="Folders in comment, middle">else</Keywords>
             <Keywords name="Folders in comment, close">end end_def</Keywords>
-            <Keywords name="Keywords1">choose do write brut clock restart tick affect</Keywords>
+            <Keywords name="Keywords1">choose do write brut clock restart tick affect get</Keywords>
             <Keywords name="Keywords2">label jump call</Keywords>
             <Keywords name="Keywords3">P PERIPHERAL OP OPERATION SPI simple long</Keywords>
             <Keywords name="Keywords4">var set unset pool import</Keywords>
