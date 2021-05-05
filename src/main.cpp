@@ -172,6 +172,7 @@ int main(int argc, char **argv)
     data._reservedKeywords.push_back("var");
     data._reservedKeywords.push_back("label");
     data._reservedKeywords.push_back("affect");
+    data._reservedKeywords.push_back("get");
     data._reservedKeywords.push_back("function");
     data._reservedKeywords.push_back("do");
     data._reservedKeywords.push_back("if_not");
@@ -217,6 +218,7 @@ int main(int argc, char **argv)
     data._instructions.push_back(new codeg::Instruction_jump());
     data._instructions.push_back(new codeg::Instruction_restart());
     data._instructions.push_back(new codeg::Instruction_affect());
+    data._instructions.push_back(new codeg::Instruction_get());
     data._instructions.push_back(new codeg::Instruction_write());
     data._instructions.push_back(new codeg::Instruction_choose());
     data._instructions.push_back(new codeg::Instruction_do());

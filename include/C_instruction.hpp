@@ -188,6 +188,25 @@ public:
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
+class Instruction_get : public Instruction
+{
+    /**
+    KEYWORD         ARGUMENTS               DESCRIPTION
+    get             [constant]              Get a fixed specified address [constant].
+                    [variable]              Get a [variable].
+                    [name] [constant]       Get in a fixed size pool [name] with an fixed address offset [constant].
+    You can use the result with keyword "_ram".
+    **/
+public:
+    Instruction_get();
+    virtual ~Instruction_get();
+
+    virtual std::string getName() const;
+
+    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+};
+
+
 class Instruction_write : public Instruction
 {
     /**

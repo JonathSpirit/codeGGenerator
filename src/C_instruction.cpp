@@ -607,6 +607,98 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
     }
 }
 
+///Instruction_get
+Instruction_get::Instruction_get(){}
+Instruction_get::~Instruction_get(){}
+
+std::string Instruction_get::getName() const
+{
+    return "get";
+}
+
+void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    if ( input._keywords.size() == 2 )
+    {//fixed specified address or variable
+        codeg::Keyword argVar;
+        if ( argVar.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        {//Variable
+            argVar._variable->_link.push_back(data._code._cursor);
+
+            data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+            data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+            data._code.push(0x00);
+        }
+        else if ( argVar._type == codeg::KeywordTypes::KEYWORD_CONSTANT )
+        {//Constant
+            if ( argVar._valueSize > 2 )
+            {
+                throw codeg::CompileError("get : bad constant (require size is <= 2 byte got \""+std::to_string(argVar._valueSize)+"\")");
+            }
+
+            data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+            data._code.push((argVar._value&0xFF00)>>8);
+            data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+            data._code.push(argVar._value&0x00FF);
+        }
+        else
+        {
+            throw codeg::CompileError("get : bad argument (argument 1 [variable]/[constant] must be valid)");
+        }
+    }
+    else if ( input._keywords.size() == 3 )
+    {//fixed size pool
+        codeg::Keyword argPoolName;
+        if ( argPoolName.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
+        {//Pool name
+            codeg::Pool* pool = data._pools.getPool(argPoolName._str);
+            if (!pool)
+            {
+                throw codeg::CompileError("get : bad argument (unknown pool : \""+argPoolName._str+"\")");
+            }
+            if ( pool->getMaxSize() == 0 )
+            {
+                throw codeg::CompileError("get : bad argument (pool must have a fixed size)");
+            }
+
+            codeg::Keyword argOffset;
+            if ( argOffset.process(input._keywords[2], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
+            {//Offset
+                if (argOffset._valueSize > 2)
+                {
+                    throw codeg::CompileError("get : bad argument (argument 2 [constant] must have a byte size of <= 2)");
+                }
+
+                codeg::Address offset = argOffset._value;
+                if (offset >= pool->getMaxSize())
+                {
+                    throw codeg::CompileError("get : pool overflow (try to get value at offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
+                }
+
+                pool->_link.push_back({data._code._cursor, offset});
+
+                data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+                data._code.push(0x00);
+                data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+                data._code.push(0x00);
+            }
+            else
+            {
+                throw codeg::CompileError("get : bad argument (argument 2 [constant] must be a valid constant)");
+            }
+        }
+        else
+        {
+            throw codeg::CompileError("get : bad argument (argument 1 [name] must be a valid name)");
+        }
+    }
+    else
+    {
+        throw codeg::CompileError("get : bad arguments size (wanted 2 or 3 got "+std::to_string(input._keywords.size())+")");
+    }
+}
+
 ///Instruction_write
 Instruction_write::Instruction_write(){}
 Instruction_write::~Instruction_write(){}
