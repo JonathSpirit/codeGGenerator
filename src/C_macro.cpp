@@ -15,34 +15,40 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "C_macro.hpp"
-#include "main.hpp"
 
 namespace codeg
 {
 
-bool MacroReplace(const codeg::MacroList& macroList, std::string& str)
+void MacroList::clear()
 {
-    for (auto& [first,second] : macroList)
+    this->g_data.clear();
+}
+
+bool MacroList::replace(std::string& str) const
+{
+    for (auto& [key,value] : this->g_data)
     {
-        if (str == first)
+        if (str == key)
         {
-            str = second;
+            str = value;
             return true;
         }
     }
     return false;
 }
-void MacroSet(codeg::MacroList& macroList, const std::string& key, const std::string& str)
+
+void MacroList::set(const std::string& key, const std::string& str)
 {
-    macroList[key] = str;
+    this->g_data[key] = str;
 }
-bool MacroRemove(codeg::MacroList& macroList, const std::string& key)
+
+bool MacroList::remove(const std::string& key)
 {
-    return macroList.erase(key) > 0;
+    return this->g_data.erase(key) > 0;
 }
-bool MacroCheck(const codeg::MacroList& macroList, const std::string& key)
+bool MacroList::check(const std::string& key) const
 {
-    return macroList.find(key) != macroList.cend();
+    return this->g_data.find(key) != this->g_data.cend();
 }
 
 }//end codeg

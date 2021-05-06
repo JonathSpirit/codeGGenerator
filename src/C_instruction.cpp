@@ -103,14 +103,14 @@ void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::Compi
         throw codeg::CompileError("set : bad argument (argument 2 [string] must be a valid string)");
     }
 
-    if ( codeg::MacroCheck(data._macros, argName._str) )
+    if ( data._macros.check(argName._str) )
     {//Check if already set
-        codeg::MacroSet(data._macros, argName._str, argString._str);
+        data._macros.set(argName._str, argString._str);
         codeg::ConsoleWarningWrite("[warning] set : macro \""+ argName._str +"\" already exist and will be replaced");
     }
     else
     {
-        codeg::MacroSet(data._macros, argName._str, argString._str);
+        data._macros.set(argName._str, argString._str);
     }
 }
 
@@ -136,7 +136,7 @@ void Instruction_unset::compile(const codeg::StringDecomposer& input, codeg::Com
         throw codeg::CompileError("unset : bad argument (argument 1 [string] must be a valid string)");
     }
 
-    codeg::MacroRemove(data._macros, argName._str);
+    data._macros.remove(argName._str);
 }
 
 ///Instruction_var

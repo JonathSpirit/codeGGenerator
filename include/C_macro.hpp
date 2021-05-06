@@ -18,17 +18,31 @@
 #define C_MACRO_H_INCLUDED
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 namespace codeg
 {
 
-typedef std::map<std::string, std::string> MacroList;
+class MacroList
+{
+public:
+    using MacroListType = std::unordered_map<std::string, std::string>;
 
-bool MacroReplace(const codeg::MacroList& macroList, std::string& str);
-void MacroSet(codeg::MacroList& macroList, const std::string& key, const std::string& str);
-bool MacroRemove(codeg::MacroList& macroList, const std::string& key);
-bool MacroCheck(const codeg::MacroList& macroList, const std::string& key);
+    MacroList() = default;
+    ~MacroList() = default;
+
+    void clear();
+
+    bool replace(std::string& str) const;
+
+    void set(const std::string& key, const std::string& str);
+
+    bool remove(const std::string& key);
+    bool check(const std::string& key) const;
+
+private:
+    codeg::MacroList::MacroListType g_data;
+};
 
 }//end codeg
 

@@ -62,7 +62,7 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     }
 
     ///Replacing with an existing macro
-    codeg::MacroReplace(data._macros, this->_str);
+    data._macros.replace(this->_str);
 
     ///Target
     if ( (this->_str == "PERIPHERAL") || (this->_str == "P") )
