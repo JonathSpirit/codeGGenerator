@@ -245,7 +245,7 @@ void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::Com
         }
 
         codeg::Label tmpLabel;
-        tmpLabel._addressStatic = data._code._cursor;
+        tmpLabel._addressStatic = data._code.getCursor();
         tmpLabel._uniqueIndex = 0;
         tmpLabel._name = argName._str;
 
@@ -304,7 +304,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         if ( arg1.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
         {//Check label name
             codeg::JumpPoint tmpPoint;
-            tmpPoint._addressStatic = data._code._cursor;
+            tmpPoint._addressStatic = data._code.getCursor();
             tmpPoint._labelName = arg1._str;
 
             if ( !data._jumps.addJumpPoint(tmpPoint) )
@@ -361,7 +361,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         }
         else if ( arg1._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {//A variable
-            arg1._variable->_link.push_back(data._code._cursor);
+            arg1._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -390,7 +390,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         }
         else if ( arg2._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {//A variable
-            arg2._variable->_link.push_back(data._code._cursor);
+            arg2._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -419,7 +419,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         }
         else if ( arg3._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {//A variable
-            arg3._variable->_link.push_back(data._code._cursor);
+            arg3._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -492,7 +492,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                         throw codeg::CompileError("affect : bad value (require size is 1 byte got \""+std::to_string(argValue._valueSize)+"\")");
                     }
 
-                    argVar._variable->_link.push_back(data._code._cursor);
+                    argVar._variable->_link.push_back(data._code.getCursor());
 
                     data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
                     data._code.push(0x00);
@@ -592,7 +592,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                             throw codeg::CompileError("affect : bad argument (argument "+std::to_string(i+3)+" [value] must have a byte size of 1)");
                         }
 
-                        pool->_link.push_back({data._code._cursor, i+offset});
+                        pool->_link.push_back({data._code.getCursor(), i+offset});
 
                         data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
                         data._code.push(0x00);
@@ -644,7 +644,7 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
         codeg::Keyword argVar;
         if ( argVar.process(input._keywords[1], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
         {//Variable
-            argVar._variable->_link.push_back(data._code._cursor);
+            argVar._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -697,7 +697,7 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
                     throw codeg::CompileError("get : pool overflow (try to get value at offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
                 }
 
-                pool->_link.push_back({data._code._cursor, offset});
+                pool->_link.push_back({data._code.getCursor(), offset});
 
                 data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
                 data._code.push(0x00);
@@ -751,7 +751,7 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
         {//Possibly a variable
             if ( argValue._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
             {
-                argValue._variable->_link.push_back(data._code._cursor);
+                argValue._variable->_link.push_back(data._code.getCursor());
 
                 data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
                 data._code.push(0x00);
@@ -825,7 +825,7 @@ void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::Co
         {//Possibly a variable
             if ( argValue._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
             {
-                argValue._variable->_link.push_back(data._code._cursor);
+                argValue._variable->_link.push_back(data._code.getCursor());
 
                 data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
                 data._code.push(0x00);
@@ -889,7 +889,7 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//Possibly a variable
         if ( argValueLeft._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {
-            argValueLeft._variable->_link.push_back(data._code._cursor);
+            argValueLeft._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -917,7 +917,7 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//Possibly a variable
         if ( argValueOp._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {
-            argValueOp._variable->_link.push_back(data._code._cursor);
+            argValueOp._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -945,7 +945,7 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//Possibly a variable
         if ( argValueRight._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {
-            argValueRight._variable->_link.push_back(data._code._cursor);
+            argValueRight._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -1126,7 +1126,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     data._actualFunctionName = argName._str;
     data._functions.push_back(argName._str);
 
-    data._jumps._jumpPoints.push_back({"%%E"+argName._str, data._code._cursor}); //Jump to the end of the function
+    data._jumps._jumpPoints.push_back({"%%E"+argName._str, data._code.getCursor()}); //Jump to the end of the function
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1135,7 +1135,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 
-    if ( !data._jumps.addLabel({"%%"+argName._str, 0, data._code._cursor}) )
+    if ( !data._jumps.addLabel({"%%"+argName._str, 0, data._code.getCursor()}) )
     {//Label to the start of the function
         throw codeg::CompileError("function : label error (label \"%%"+argName._str+"\" already exist)");
     }
@@ -1169,7 +1169,7 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//Possibly a variable
         if ( argValue._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {
-            argValue._variable->_link.push_back(data._code._cursor);
+            argValue._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -1191,7 +1191,7 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
     data._scopeStats.push(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE);
 
-    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code._cursor});
+    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code.getCursor()});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1232,7 +1232,7 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
         throw codeg::CompileError("else : scope error (else must be placed after a conditional keyword)");
     }
 
-    data._jumps._jumpPoints.push_back({"%%E"+std::to_string(data._scope.top()._id), data._code._cursor});
+    data._jumps._jumpPoints.push_back({"%%E"+std::to_string(data._scope.top()._id), data._code.getCursor()});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1241,7 +1241,7 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 
-    if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
+    if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
     {
         throw codeg::CompileError("else : label error (label \"%%F"+std::to_string(data._scope.top()._id)+"\" already exist)");
     }
@@ -1277,7 +1277,7 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     {//Possibly a variable
         if ( argValue._type == codeg::KeywordTypes::KEYWORD_VARIABLE )
         {
-            argValue._variable->_link.push_back(data._code._cursor);
+            argValue._variable->_link.push_back(data._code.getCursor());
 
             data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
@@ -1299,7 +1299,7 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
     data._scopeStats.push(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE);
 
-    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code._cursor});
+    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code.getCursor()});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1340,7 +1340,7 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
     {
     case codeg::ScopeStats::SCOPE_FUNCTION:
         //Ending a function
-        if ( !data._jumps.addLabel({"%%E"+data._actualFunctionName, 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%E"+data._actualFunctionName, 0, data._code.getCursor()}) )
         {
             throw codeg::CompileError("end : label error (label \"%%E"+data._actualFunctionName+"\" already exist)");
         }
@@ -1348,18 +1348,18 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
         break;
     case codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE:
         //Ending a conditional scope with the "else" keyword
-        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
         {
             throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top()._id)+"\" already exist)");
         }
         break;
     case codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE:
         //Ending a conditional scope without the "else" keyword
-        if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
         {
             throw codeg::CompileError("end : label error (label \"%%F"+std::to_string(data._scope.top()._id)+"\" already exist)");
         }
-        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code._cursor}) )
+        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
         {
             throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top()._id)+"\" already exist)");
         }
@@ -1418,9 +1418,9 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         }
 
         //Prepare return address
-        uint32_t returnAddress = data._code._cursor + 25;
+        uint32_t returnAddress = data._code.getCursor() + 25;
 
-        argVar1._variable->_link.push_back(data._code._cursor); //MSB
+        argVar1._variable->_link.push_back(data._code.getCursor()); //MSB
         data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
         data._code.push(0x00);
         data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
@@ -1428,7 +1428,7 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push((returnAddress&0x00FF0000)>>16);
 
-        argVar2._variable->_link.push_back(data._code._cursor); //MSB
+        argVar2._variable->_link.push_back(data._code.getCursor()); //MSB
         data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
         data._code.push(0x00);
         data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
@@ -1436,7 +1436,7 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push((returnAddress&0x0000FF00)>>8);
 
-        argVar3._variable->_link.push_back(data._code._cursor); //MSB
+        argVar3._variable->_link.push_back(data._code.getCursor()); //MSB
         data._code.push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
         data._code.push(0x00);
         data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
@@ -1445,7 +1445,7 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         data._code.push(returnAddress&0x000000FF);
 
         codeg::JumpPoint tmpPoint;
-        tmpPoint._addressStatic = data._code._cursor;
+        tmpPoint._addressStatic = data._code.getCursor();
         tmpPoint._labelName = "%%"+argName._str;
 
         if ( !data._jumps.addJumpPoint(tmpPoint) )

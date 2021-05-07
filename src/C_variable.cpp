@@ -159,8 +159,8 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
         codeg::MemoryAddress varAdd = startAddress + offset;
         for ( codeg::Address& valTarget : valVar._link )
         {
-            data._code._data[valTarget + 1] = varAdd >> 8;//Address MSB
-            data._code._data[valTarget + 3] = varAdd & 0x00FF;//Address LSB
+            data._code[valTarget + 1] = varAdd >> 8;//Address MSB
+            data._code[valTarget + 3] = varAdd & 0x00FF;//Address LSB
         }
         ++offset;
     }
@@ -168,8 +168,8 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
     for ( codeg::Pool::PoolLink& link : this->_link )
     {
         codeg::MemoryAddress varAdd = startAddress + link._offset;
-        data._code._data[link._address + 1] = varAdd >> 8;//Address MSB
-        data._code._data[link._address + 3] = varAdd & 0x00FF;//Address LSB
+        data._code[link._address + 1] = varAdd >> 8;//Address MSB
+        data._code[link._address + 3] = varAdd & 0x00FF;//Address LSB
     }
 
     return this->g_variables.size();

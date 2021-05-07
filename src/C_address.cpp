@@ -28,7 +28,7 @@ void JumpList::resolve(codeg::CompilerData& data)
     //Name check
     for (auto&& vLabel : this->_labels)
     {
-        if (vLabel._addressStatic >= data._code._cursor)
+        if (vLabel._addressStatic >= data._code.getCursor())
         {//Address is out of code space
             codeg::ConsoleWarningWrite("Label \""+vLabel._name+"\" is out of code space with address : "+std::to_string(vLabel._addressStatic));
         }
@@ -39,9 +39,9 @@ void JumpList::resolve(codeg::CompilerData& data)
         {
             if (vLabel._name == vJumpPoint._labelName)
             {
-                data._code._data[vJumpPoint._addressStatic+1] = (vLabel._addressStatic&0x00FF0000)>>16; //MSB
-                data._code._data[vJumpPoint._addressStatic+3] = (vLabel._addressStatic&0x0000FF00)>>8;
-                data._code._data[vJumpPoint._addressStatic+5] = (vLabel._addressStatic&0x000000FF); //LSB
+                data._code[vJumpPoint._addressStatic+1] = (vLabel._addressStatic&0x00FF0000)>>16; //MSB
+                data._code[vJumpPoint._addressStatic+3] = (vLabel._addressStatic&0x0000FF00)>>8;
+                data._code[vJumpPoint._addressStatic+5] = (vLabel._addressStatic&0x000000FF); //LSB
                 ++jpCount;
             }
         }

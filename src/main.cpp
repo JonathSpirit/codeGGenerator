@@ -278,7 +278,7 @@ int main(int argc, char **argv)
         }
 
         codeg::ConsoleInfoWrite("Step 1 : OK !\n");
-        codeg::ConsoleInfoWrite("Compiled size : "+std::to_string(data._code._cursor)+" bytes\n");
+        codeg::ConsoleInfoWrite("Compiled size : "+std::to_string(data._code.getCursor())+" bytes\n");
 
         ///Second step resolving jumplist
         codeg::ConsoleInfoWrite("Step 2 : Resolving jumpList ...");
@@ -295,24 +295,25 @@ int main(int argc, char **argv)
         codeg::ConsoleInfoWrite("Step 3 : OK !\n");
 
         ///Writing on the output file
-        codeg::ConsoleInfoWrite("Writing codeG file (binary size : "+std::to_string(data._code._cursor)+" bytes) ...");
-        fileOutBinary.write(reinterpret_cast<char*>(data._code._data.get()), data._code._cursor);
+        codeg::ConsoleInfoWrite("Writing codeG file (binary size : "+std::to_string(data._code.getCursor())+" bytes) ...");
+        fileOutBinary.write(reinterpret_cast<char*>(data._code.getData()), data._code.getCursor());
         fileOutBinary.close();
 
         codeg::ConsoleInfoWrite("Writing readable codeG file ...");
 
         bool tmpFlagOpcode = true;
-        for (uint32_t i = 0; i<data._code._cursor; ++i)
+        uint8_t* dataPtr = data._code.getData();
+        for (uint32_t i = 0; i<data._code.getCursor(); ++i)
         {
-            fileOutReadable << "["<<codeg::ValueToHex(data._code._data[i], 2)<<"]";
+            fileOutReadable << "["<<codeg::ValueToHex(dataPtr[i], 2)<<"]";
 
             if ( tmpFlagOpcode )
             {
-                if ((data._code._data[i]&0x1F) != codeg::OPCODE_JMPSRC_CLK)
+                if ((dataPtr[i]&0x1F) != codeg::OPCODE_JMPSRC_CLK)
                 {//The jump instruction does not have an argument
                     tmpFlagOpcode = false;
                 }
-                fileOutReadable << " " << ToReadableOpcode(data._code._data[i]) << " <" << ToReadableBus(data._code._data[i]) << ">";
+                fileOutReadable << " " << ToReadableOpcode(dataPtr[i]) << " <" << ToReadableBus(dataPtr[i]) << ">";
             }
             else
             {

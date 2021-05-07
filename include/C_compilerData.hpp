@@ -48,15 +48,34 @@ struct Scope
     std::string _startFile;
 };
 
-struct CodeData
+class CodeData
 {
-    bool push(uint8_t d);
+public:
+    CodeData() = default;
+    ~CodeData() = default;
+
+    void clear();
+
+    void push(uint8_t d);
     void resize(uint32_t n);
 
-    uint32_t _cursor = 0;
-    uint32_t _capacity = 0;
+    uint32_t getCapacity() const;
+    uint32_t getCursor() const;
 
-    std::shared_ptr<uint8_t[]> _data;
+    void set(uint32_t index, uint32_t value);
+    uint8_t get(uint32_t index) const;
+
+    uint8_t& operator[](uint32_t index);
+    const uint8_t& operator[](uint32_t index) const;
+
+    uint8_t* getData();
+    std::shared_ptr<uint8_t[]>& getSharedData();
+
+private:
+    uint32_t g_cursor = 0;
+    uint32_t g_capacity = 0;
+
+    std::shared_ptr<uint8_t[]> g_data;
 };
 
 struct CompilerData
