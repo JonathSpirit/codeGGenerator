@@ -18,6 +18,8 @@
 #define C_INSTRUCTION_H_INCLUDED
 
 #include "C_stringDecomposer.hpp"
+#include <forward_list>
+#include <memory>
 
 namespace codeg
 {
@@ -66,20 +68,36 @@ extern const char* ReadableStringBinaryOpcodes[];
 
 struct CompilerData;
 
-/// --------- Instructions ---------
-
 class Instruction
 {
-protected:
-    Instruction();
-    virtual ~Instruction();
-
 public:
+    Instruction() = default;
+    virtual ~Instruction() = default;
+
     virtual std::string getName() const = 0;
 
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) = 0;
     virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
+
+class InstructionList
+{
+public:
+    using InstructionListType = std::forward_list<std::unique_ptr<codeg::Instruction> >;
+
+    InstructionList() = default;
+    ~InstructionList() = default;
+
+    void clear();
+
+    void push(codeg::Instruction* newInstruction);
+    codeg::Instruction* get(const std::string& name) const;
+
+private:
+    codeg::InstructionList::InstructionListType g_data;
+};
+
+/// --------- Instructions ---------
 
 class Instruction_set : public Instruction
 {

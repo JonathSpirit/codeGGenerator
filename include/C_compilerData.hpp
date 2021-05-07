@@ -63,7 +63,7 @@ struct CompilerData
 {
     codeg::StringDecomposer _decomposer;
 
-    std::list<codeg::Instruction*> _instructions;
+    codeg::InstructionList _instructions;
     codeg::ReservedList _reservedKeywords;
 
     codeg::PoolList _pools;

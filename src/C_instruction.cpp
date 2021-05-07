@@ -67,12 +67,32 @@ const char* ReadableStringBinaryOpcodes[]=
 
 ///Instruction
 
-Instruction::Instruction(){}
-Instruction::~Instruction(){}
-
 void Instruction::compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
     data._functions.back().addLine(input._cleaned);
+}
+
+///InstructionList
+
+void InstructionList::clear()
+{
+    this->g_data.clear();
+}
+
+void InstructionList::push(codeg::Instruction* newInstruction)
+{
+    this->g_data.push_front( std::unique_ptr<codeg::Instruction>(newInstruction) );
+}
+codeg::Instruction* InstructionList::get(const std::string& name) const
+{
+    for (auto& valPtr : this->g_data)
+    {
+        if (valPtr.get()->getName() == name)
+        {
+            return valPtr.get();
+        }
+    }
+    return nullptr;
 }
 
 ///Instruction_set

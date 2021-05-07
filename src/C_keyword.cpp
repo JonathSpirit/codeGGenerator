@@ -52,13 +52,10 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     }
 
     ///Instruction
-    for (auto&& value : data._instructions)
+    if ( data._instructions.get(str) != nullptr )
     {
-        if (value->getName() == str)
-        {
-            this->_type = codeg::KeywordTypes::KEYWORD_INSTRUCTION;
-            return this->_type == wantedType;
-        }
+        this->_type = codeg::KeywordTypes::KEYWORD_INSTRUCTION;
+        return this->_type == wantedType;
     }
 
     ///Replacing with an existing macro

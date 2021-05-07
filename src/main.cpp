@@ -211,36 +211,35 @@ int main(int argc, char **argv)
     data._reservedKeywords.push("end_def");
 
     ///Instructions
-    data._instructions.push_back(new codeg::Instruction_set());
-    data._instructions.push_back(new codeg::Instruction_unset());
-    data._instructions.push_back(new codeg::Instruction_var());
-    data._instructions.push_back(new codeg::Instruction_label());
-    data._instructions.push_back(new codeg::Instruction_jump());
-    data._instructions.push_back(new codeg::Instruction_restart());
-    data._instructions.push_back(new codeg::Instruction_affect());
-    data._instructions.push_back(new codeg::Instruction_get());
-    data._instructions.push_back(new codeg::Instruction_write());
-    data._instructions.push_back(new codeg::Instruction_choose());
-    data._instructions.push_back(new codeg::Instruction_do());
-    data._instructions.push_back(new codeg::Instruction_tick());
-    data._instructions.push_back(new codeg::Instruction_brut());
-    data._instructions.push_back(new codeg::Instruction_function());
-    data._instructions.push_back(new codeg::Instruction_if());
-    data._instructions.push_back(new codeg::Instruction_else());
-    data._instructions.push_back(new codeg::Instruction_ifnot());
-    data._instructions.push_back(new codeg::Instruction_end());
-    data._instructions.push_back(new codeg::Instruction_call());
-    data._instructions.push_back(new codeg::Instruction_clock());
-    data._instructions.push_back(new codeg::Instruction_pool());
-    data._instructions.push_back(new codeg::Instruction_import());
-    data._instructions.push_back(new codeg::Instruction_definition());
-    data._instructions.push_back(new codeg::Instruction_enddef());
+    data._instructions.push(new codeg::Instruction_set());
+    data._instructions.push(new codeg::Instruction_unset());
+    data._instructions.push(new codeg::Instruction_var());
+    data._instructions.push(new codeg::Instruction_label());
+    data._instructions.push(new codeg::Instruction_jump());
+    data._instructions.push(new codeg::Instruction_restart());
+    data._instructions.push(new codeg::Instruction_affect());
+    data._instructions.push(new codeg::Instruction_get());
+    data._instructions.push(new codeg::Instruction_write());
+    data._instructions.push(new codeg::Instruction_choose());
+    data._instructions.push(new codeg::Instruction_do());
+    data._instructions.push(new codeg::Instruction_tick());
+    data._instructions.push(new codeg::Instruction_brut());
+    data._instructions.push(new codeg::Instruction_function());
+    data._instructions.push(new codeg::Instruction_if());
+    data._instructions.push(new codeg::Instruction_else());
+    data._instructions.push(new codeg::Instruction_ifnot());
+    data._instructions.push(new codeg::Instruction_end());
+    data._instructions.push(new codeg::Instruction_call());
+    data._instructions.push(new codeg::Instruction_clock());
+    data._instructions.push(new codeg::Instruction_pool());
+    data._instructions.push(new codeg::Instruction_import());
+    data._instructions.push(new codeg::Instruction_definition());
+    data._instructions.push(new codeg::Instruction_enddef());
 
     ///Code
     data._code.resize(65536);
 
     std::string readedLine;
-    bool validInstruction = false;
 
     try
     {
@@ -253,28 +252,21 @@ int main(int argc, char **argv)
 
             if (data._decomposer._keywords.size() > 0)
             {
-                validInstruction = false;
+                codeg::Instruction* instruction = data._instructions.get( data._decomposer._keywords[0] );
 
-                for (auto&& instruction : data._instructions)
-                {
-                    if (instruction->getName() == data._decomposer._keywords[0])
-                    {
-                        validInstruction = true;
-
-                        if ( data._writeLinesIntoDefinition )
-                        {//Compile in a definition (detect the end_def keyword)
-                            instruction->compileDefinition(data._decomposer, data);
-                        }
-                        else
-                        {//Compile
-                            instruction->compile(data._decomposer, data);
-                        }
-                        break;
+                if (instruction != nullptr)
+                {//Instruction founded
+                    if ( data._writeLinesIntoDefinition )
+                    {//Compile in a definition (detect the end_def keyword)
+                        instruction->compileDefinition(data._decomposer, data);
+                    }
+                    else
+                    {//Compile
+                        instruction->compile(data._decomposer, data);
                     }
                 }
-
-                if (!validInstruction)
-                {
+                else
+                {//Bad instruction
                     throw codeg::FatalError("unknown instruction \""+data._decomposer._keywords[0]+"\"");
                 }
             }
