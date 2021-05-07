@@ -90,6 +90,7 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_address.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_readableBus.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_fileReader.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_function.cpp")
+target_sources(${PROJECT_NAME} PUBLIC "src/C_reserved.cpp")
 
 #Add test
 add_test(NAME "CompilingTestFile" COMMAND ${PROJECT_NAME} "--in=example/test")

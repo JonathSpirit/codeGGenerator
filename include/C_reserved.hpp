@@ -14,27 +14,33 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_compilerData.hpp"
+#ifndef C_RESERVED_H_INCLUDED
+#define C_RESERVED_H_INCLUDED
+
+#include <forward_list>
+#include <string>
 
 namespace codeg
 {
 
-bool CodeData::push(uint8_t d)
+class ReservedList
 {
-    if (this->_capacity == this->_cursor)
-    {
-        return false;
-    }
+public:
+    using ReservedListType = std::forward_list<std::string>;
 
-    this->_data[this->_cursor++] = d;
-    return true;
-}
-void CodeData::resize(uint32_t n)
-{
-    this->_cursor = 0;
-    this->_capacity = n;
+    ReservedList() = default;
+    ~ReservedList() = default;
 
-    this->_data = std::shared_ptr<uint8_t[]>(new uint8_t[n]);
-}
+    void clear();
+
+    bool isReserved(const std::string& str);
+    void push(const std::string& str);
+    void push(std::string&& str);
+
+private:
+    codeg::ReservedList::ReservedListType g_data;
+};
 
 }//end codeg
+
+#endif // C_RESERVED_H_INCLUDED

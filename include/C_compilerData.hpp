@@ -17,6 +17,7 @@
 #ifndef C_COMPILERDATA_H_INCLUDED
 #define C_COMPILERDATA_H_INCLUDED
 
+#include "C_reserved.hpp"
 #include "C_function.hpp"
 #include "C_fileReader.hpp"
 #include "C_stringDecomposer.hpp"
@@ -60,12 +61,10 @@ struct CodeData
 
 struct CompilerData
 {
-    bool isReserved(const std::string& str);
-
     codeg::StringDecomposer _decomposer;
 
     std::list<codeg::Instruction*> _instructions;
-    std::list<std::string> _reservedKeywords;
+    codeg::ReservedList _reservedKeywords;
 
     codeg::PoolList _pools;
     std::string _defaultPool;

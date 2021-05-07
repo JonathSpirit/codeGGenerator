@@ -182,7 +182,7 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
     if (wantedType == codeg::KeywordTypes::KEYWORD_NAME)
     {
         this->_type = codeg::KeywordTypes::KEYWORD_NAME;
-        return !data.isReserved(str);
+        return !data._reservedKeywords.isReserved(str);
     }
 
     return false;

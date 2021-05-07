@@ -14,27 +14,48 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_compilerData.hpp"
+#include "C_reserved.hpp"
 
 namespace codeg
 {
 
-bool CodeData::push(uint8_t d)
+void ReservedList::clear()
 {
-    if (this->_capacity == this->_cursor)
-    {
-        return false;
-    }
-
-    this->_data[this->_cursor++] = d;
-    return true;
+    this->g_data.clear();
 }
-void CodeData::resize(uint32_t n)
-{
-    this->_cursor = 0;
-    this->_capacity = n;
 
-    this->_data = std::shared_ptr<uint8_t[]>(new uint8_t[n]);
+bool ReservedList::isReserved(const std::string& str)
+{
+    for (auto& val : this->g_data)
+    {
+        if (val == str)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+void ReservedList::push(const std::string& str)
+{
+    for (auto& val : this->g_data)
+    {
+        if (val == str)
+        {
+            return;
+        }
+    }
+    this->g_data.push_front(str);
+}
+void ReservedList::push(std::string&& str)
+{
+    for (auto& val : this->g_data)
+    {
+        if (val == str)
+        {
+            return;
+        }
+    }
+    this->g_data.push_front(std::move(str));
 }
 
 }//end codeg
