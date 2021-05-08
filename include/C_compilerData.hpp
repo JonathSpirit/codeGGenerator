@@ -25,14 +25,13 @@
 #include "C_variable.hpp"
 #include "C_address.hpp"
 #include "C_instruction.hpp"
-#include <list>
 #include <memory>
 #include <stack>
 
 namespace codeg
 {
 
-enum ScopeStats : uint32_t
+enum ScopeStats
 {
     SCOPE_FUNCTION,
     SCOPE_DEFINITION,
@@ -44,8 +43,36 @@ enum ScopeStats : uint32_t
 struct Scope
 {
     uint32_t _id;
+    codeg::ScopeStats _stat;
+
     unsigned int _startLine;
     std::string _startFile;
+};
+
+class ScopeList
+{
+public:
+    using ScopeListType = std::stack<codeg::Scope>;
+
+    ScopeList() = default;
+    ~ScopeList() = default;
+
+    void clear();
+
+    void newScope(codeg::ScopeStats stat, unsigned int startLine, const std::string& startFile);
+
+    const codeg::Scope& top() const;
+    codeg::Scope& top();
+
+    void pop();
+
+    bool empty() const;
+    size_t size() const;
+    uint32_t getScopeCount() const;
+
+private:
+    codeg::ScopeList::ScopeListType g_data;
+    uint32_t g_scopeCount = 0;
 };
 
 class CodeData
@@ -96,9 +123,7 @@ struct CompilerData
     std::string _actualFunctionName;
     codeg::FunctionList _functions;
 
-    uint32_t _scopeCount=0;
-    std::stack<codeg::Scope> _scope;
-    std::stack<codeg::ScopeStats> _scopeStats;
+    codeg::ScopeList _scopes;
 
     codeg::FileReader _reader;
     std::string _relativePath;

@@ -272,9 +272,9 @@ int main(int argc, char **argv)
             }
         }
 
-        if ( data._scope.size() > 0 )
+        if ( data._scopes.size() > 0 )
         {//A scope is not terminated by 'end'
-            throw codeg::CompileError("scope without an 'end' (maybe at line: "+std::to_string(data._scope.top()._startLine)+" and file: "+data._scope.top()._startFile+")");
+            throw codeg::CompileError("scope without an 'end' (maybe at line: "+std::to_string(data._scopes.top()._startLine)+" and file: "+data._scopes.top()._startFile+")");
         }
 
         codeg::ConsoleInfoWrite("Step 1 : OK !\n");

@@ -20,6 +20,51 @@
 namespace codeg
 {
 
+///ScopeList
+
+void ScopeList::clear()
+{
+    while ( !this->g_data.empty() )
+    {
+        this->g_data.pop();
+    }
+    this->g_scopeCount = 0;
+}
+
+void ScopeList::newScope(codeg::ScopeStats stat, unsigned int startLine, const std::string& startFile)
+{
+    this->g_data.push({++this->g_scopeCount, stat, startLine, startFile});
+}
+
+const codeg::Scope& ScopeList::top() const
+{
+    return this->g_data.top();
+}
+codeg::Scope& ScopeList::top()
+{
+    return this->g_data.top();
+}
+
+void ScopeList::pop()
+{
+    this->g_data.pop();
+}
+
+bool ScopeList::empty() const
+{
+    return this->g_data.empty();
+}
+size_t ScopeList::size() const
+{
+    return this->g_data.size();
+}
+uint32_t ScopeList::getScopeCount() const
+{
+    return this->g_scopeCount;
+}
+
+///CodeData
+
 void CodeData::clear()
 {
     this->g_data = nullptr;

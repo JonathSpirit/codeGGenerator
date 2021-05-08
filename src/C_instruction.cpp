@@ -1114,13 +1114,12 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     {
         throw codeg::CompileError("function : function error (can't create a function in a function)");
     }
-    if ( data._scope.size() )
+    if ( data._scopes.size() )
     {
         throw codeg::CompileError("function : function error (can't create a function in a scope)");
     }
 
-    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
-    data._scopeStats.push(codeg::ScopeStats::SCOPE_FUNCTION);
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_FUNCTION, data._reader.getlineCount(), data._reader.getPath()); //New scope
 
     data._actualFunctionName = argName._str;
     data._functions.push(argName._str);
@@ -1187,10 +1186,9 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     if there is no "else" keyword, the label %%Fn will be the end of the condition
     */
 
-    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
-    data._scopeStats.push(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE);
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE, data._reader.getlineCount(), data._reader.getPath()); //New scope
 
-    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code.getCursor()});
+    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopes.getScopeCount()), data._code.getCursor()});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1221,17 +1219,17 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
         throw codeg::CompileError("else : bad arguments size (wanted 1 got "+std::to_string(input._keywords.size())+")");
     }
 
-    if ( data._scope.empty() )
+    if ( data._scopes.empty() )
     {
         throw codeg::CompileError("else : scope error (else must be placed in a valid conditional scope)");
     }
 
-    if ( data._scopeStats.top() != codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE )
+    if ( data._scopes.top()._stat != codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE )
     {
         throw codeg::CompileError("else : scope error (else must be placed after a conditional keyword)");
     }
 
-    data._jumps._jumpPoints.push_back({"%%E"+std::to_string(data._scope.top()._id), data._code.getCursor()});
+    data._jumps._jumpPoints.push_back({"%%E"+std::to_string(data._scopes.top()._id), data._code.getCursor()});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1240,12 +1238,12 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 
-    if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
+    if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scopes.top()._id), 0, data._code.getCursor()}) )
     {
-        throw codeg::CompileError("else : label error (label \"%%F"+std::to_string(data._scope.top()._id)+"\" already exist)");
+        throw codeg::CompileError("else : label error (label \"%%F"+std::to_string(data._scopes.top()._id)+"\" already exist)");
     }
 
-    data._scopeStats.top() = codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE;
+    data._scopes.top()._stat = codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE;
 }
 
 ///Instruction_ifnot
@@ -1295,10 +1293,9 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     if there is no "else" keyword, the label %%Fn will be the end of the condition
     */
 
-    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
-    data._scopeStats.push(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE);
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE, data._reader.getlineCount(), data._reader.getPath()); //New scope
 
-    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopeCount), data._code.getCursor()});
+    data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopes.getScopeCount()), data._code.getCursor()});
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
     data._code.push(0x00);
     data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
@@ -1329,13 +1326,13 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
         throw codeg::CompileError("end : bad arguments size (wanted 1 got "+std::to_string(input._keywords.size())+")");
     }
 
-    if ( data._scope.empty() )
+    if ( data._scopes.empty() )
     {
         throw codeg::CompileError("end : scope error ('end' must be placed to end a scope)");
     }
 
     //Ending a scope
-    switch ( data._scopeStats.top() )
+    switch ( data._scopes.top()._stat )
     {
     case codeg::ScopeStats::SCOPE_FUNCTION:
         //Ending a function
@@ -1347,20 +1344,20 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
         break;
     case codeg::ScopeStats::SCOPE_CONDITIONAL_FALSE:
         //Ending a conditional scope with the "else" keyword
-        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
+        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scopes.top()._id), 0, data._code.getCursor()}) )
         {
-            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top()._id)+"\" already exist)");
+            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scopes.top()._id)+"\" already exist)");
         }
         break;
     case codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE:
         //Ending a conditional scope without the "else" keyword
-        if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
+        if ( !data._jumps.addLabel({"%%F"+std::to_string(data._scopes.top()._id), 0, data._code.getCursor()}) )
         {
-            throw codeg::CompileError("end : label error (label \"%%F"+std::to_string(data._scope.top()._id)+"\" already exist)");
+            throw codeg::CompileError("end : label error (label \"%%F"+std::to_string(data._scopes.top()._id)+"\" already exist)");
         }
-        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scope.top()._id), 0, data._code.getCursor()}) )
+        if ( !data._jumps.addLabel({"%%E"+std::to_string(data._scopes.top()._id), 0, data._code.getCursor()}) )
         {
-            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scope.top()._id)+"\" already exist)");
+            throw codeg::CompileError("end : label error (label \"%%E"+std::to_string(data._scopes.top()._id)+"\" already exist)");
         }
         break;
     default:
@@ -1368,8 +1365,7 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
         break;
     }
 
-    data._scope.pop();
-    data._scopeStats.pop();
+    data._scopes.pop();
 }
 
 ///Instruction_call
@@ -1678,13 +1674,12 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
         throw codeg::CompileError("definition : bad definition (definition/function \""+argName._str+"\" already exist)");
     }
 
-    if ( data._scope.size() )
+    if ( data._scopes.size() )
     {
         throw codeg::CompileError("definition : definition error (can't create a definition in a scope)");
     }
 
-    data._scope.push({++data._scopeCount, data._reader.getlineCount(), data._reader.getPath()}); //New scope
-    data._scopeStats.push(codeg::ScopeStats::SCOPE_DEFINITION);
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_DEFINITION, data._reader.getlineCount(), data._reader.getPath()); //New scope
 
     data._actualFunctionName = argName._str;
     data._functions.push(argName._str, true);
@@ -1715,8 +1710,7 @@ void Instruction_enddef::compileDefinition(const codeg::StringDecomposer& input,
     data._writeLinesIntoDefinition = false;
     data._actualFunctionName.clear();
 
-    data._scope.pop();
-    data._scopeStats.pop();
+    data._scopes.pop();
 }
 
 }//end codeg
