@@ -94,7 +94,7 @@ struct CompilerData
 
     bool _writeLinesIntoDefinition=false;
     std::string _actualFunctionName;
-    std::list<codeg::Function> _functions;
+    codeg::FunctionList _functions;
 
     uint32_t _scopeCount=0;
     std::stack<codeg::Scope> _scope;

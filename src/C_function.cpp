@@ -19,18 +19,12 @@
 namespace codeg
 {
 
-Function::Function()
-{
+///Function
 
-}
 Function::Function(const std::string& name, bool definition)
 {
     this->g_name = name;
     this->g_isDefinition = definition;
-}
-Function::~Function()
-{
-
 }
 
 void Function::setName(const std::string& name)
@@ -65,13 +59,51 @@ bool Function::operator== (const std::string& l) const
     return this->g_name == l;
 }
 
-std::list<std::string>::const_iterator Function::getIteratorBegin() const
+codeg::Function::FunctionLinesType::const_iterator Function::getIteratorBegin() const
 {
     return this->g_definitionLines.cbegin();
 }
-std::list<std::string>::const_iterator Function::getIteratorEnd() const
+codeg::Function::FunctionLinesType::const_iterator Function::getIteratorEnd() const
 {
     return this->g_definitionLines.cend();
+}
+
+///FunctionList
+
+void FunctionList::clear()
+{
+    this->g_data.clear();
+}
+
+codeg::Function* FunctionList::push(const codeg::Function& newFunction)
+{
+    this->g_data.push_front(newFunction);
+    return &this->g_data.front();
+}
+codeg::Function* FunctionList::push(const std::string& name, bool definition)
+{
+    this->g_data.emplace_front(name, definition);
+    return &this->g_data.front();
+}
+
+codeg::Function* FunctionList::getLast()
+{
+    if ( this->g_data.empty() )
+    {
+        return nullptr;
+    }
+    return &this->g_data.front();
+}
+codeg::Function* FunctionList::get(const std::string& name)
+{
+    for (auto& value : this->g_data)
+    {
+        if (value.getName() == name)
+        {
+            return &value;
+        }
+    }
+    return nullptr;
 }
 
 }//end codeg

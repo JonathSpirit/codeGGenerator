@@ -17,9 +17,9 @@
 #ifndef C_FUNCTION_H_INCLUDED
 #define C_FUNCTION_H_INCLUDED
 
-#include "C_string.hpp"
 #include <string>
 #include <list>
+#include <forward_list>
 
 namespace codeg
 {
@@ -27,9 +27,11 @@ namespace codeg
 class Function
 {
 public:
-    Function();
+    using FunctionLinesType = std::list<std::string>;
+
+    Function() = default;
     Function(const std::string& name, bool definition=false);
-    ~Function();
+    ~Function() = default;
 
     void setName(const std::string& name);
     const std::string& getName() const;
@@ -42,14 +44,34 @@ public:
 
     bool operator== (const std::string& l) const;
 
-    std::list<std::string>::const_iterator getIteratorBegin() const;
-    std::list<std::string>::const_iterator getIteratorEnd() const;
+    codeg::Function::FunctionLinesType::const_iterator getIteratorBegin() const;
+    codeg::Function::FunctionLinesType::const_iterator getIteratorEnd() const;
 
 private:
     std::string g_name;
 
     bool g_isDefinition=false;
-    std::list<std::string> g_definitionLines;
+    codeg::Function::FunctionLinesType g_definitionLines;
+};
+
+class FunctionList
+{
+public:
+    using FunctionListType = std::forward_list<codeg::Function>;
+
+    FunctionList() = default;
+    ~FunctionList() = default;
+
+    void clear();
+
+    codeg::Function* push(const codeg::Function& newFunction);
+    codeg::Function* push(const std::string& name, bool definition=false);
+
+    codeg::Function* getLast();
+    codeg::Function* get(const std::string& name);
+
+private:
+    codeg::FunctionList::FunctionListType g_data;
 };
 
 }//end codeg

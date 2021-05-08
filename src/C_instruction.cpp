@@ -21,7 +21,6 @@
 #include "C_keyword.hpp"
 #include "C_bus.hpp"
 #include "C_error.hpp"
-#include <algorithm>
 
 namespace codeg
 {
@@ -69,7 +68,7 @@ const char* ReadableStringBinaryOpcodes[]=
 
 void Instruction::compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    data._functions.back().addLine(input._cleaned);
+    data._functions.getLast()->addLine(input._cleaned);
 }
 
 ///InstructionList
@@ -1106,7 +1105,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
         throw codeg::CompileError("function : bad argument (argument 1 [name] bad name)");
     }
 
-    if ( std::find(data._functions.begin(), data._functions.end(), argName._str) != data._functions.end() )
+    if ( data._functions.get(argName._str) != nullptr )
     {
         throw codeg::CompileError("function : bad function (function \""+argName._str+"\" already exist)");
     }
@@ -1124,7 +1123,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     data._scopeStats.push(codeg::ScopeStats::SCOPE_FUNCTION);
 
     data._actualFunctionName = argName._str;
-    data._functions.push_back(argName._str);
+    data._functions.push(argName._str);
 
     data._jumps._jumpPoints.push_back({"%%E"+argName._str, data._code.getCursor()}); //Jump to the end of the function
     data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
@@ -1391,12 +1390,12 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         {
             throw codeg::CompileError("call : bad argument (argument 1 \""+argName._str+"\" is not a name)");
         }
-        std::list<codeg::Function>::iterator it = std::find(data._functions.begin(), data._functions.end(), argName._str);
-        if ( it == data._functions.end() )
+        codeg::Function* func = data._functions.get(argName._str);
+        if ( func == nullptr )
         {
             throw codeg::CompileError("call : bad function (unknown function \""+argName._str+"\")");
         }
-        if ( it->isDefinition() )
+        if ( func->isDefinition() )
         {
             throw codeg::CompileError("call : bad function (can't call a definition with return address)");
         }
@@ -1467,17 +1466,17 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         {
             throw codeg::CompileError("call : bad argument (argument 1 \""+argName._str+"\" is not a name)");
         }
-        std::list<codeg::Function>::iterator it = std::find(data._functions.begin(), data._functions.end(), argName._str);
-        if ( it == data._functions.end() )
+        codeg::Function* func = data._functions.get(argName._str);
+        if ( func == nullptr )
         {
             throw codeg::CompileError("call : bad definition (unknown definition \""+argName._str+"\")");
         }
-        if ( !it->isDefinition() )
+        if ( !func->isDefinition() )
         {
             throw codeg::CompileError("call : bad definition (\""+argName._str+"\" is not a definition)");
         }
 
-        data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_definition( &(*it) )) );
+        data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_definition(func)) );
     }
     else
     {
@@ -1674,7 +1673,7 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
         throw codeg::CompileError("definition : bad argument (argument 1 [name] bad name)");
     }
 
-    if ( std::find(data._functions.begin(), data._functions.end(), argName._str) != data._functions.end() )
+    if ( data._functions.get(argName._str) != nullptr )
     {
         throw codeg::CompileError("definition : bad definition (definition/function \""+argName._str+"\" already exist)");
     }
@@ -1688,7 +1687,7 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
     data._scopeStats.push(codeg::ScopeStats::SCOPE_DEFINITION);
 
     data._actualFunctionName = argName._str;
-    data._functions.emplace_back(argName._str, true);
+    data._functions.push(argName._str, true);
 
     data._writeLinesIntoDefinition = true;
 }
