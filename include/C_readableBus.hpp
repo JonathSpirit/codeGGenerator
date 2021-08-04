@@ -32,7 +32,9 @@ enum ReadableBusses : uint8_t
     READABLE_SPI = 0xA0,
 
     READABLE_EXT1 = 0xC0,
-    READABLE_EXT2 = 0xE0
+    READABLE_EXT2 = 0xE0,
+
+    READABLE_DEFAULT = READABLE_BREAD1
 };
 
 extern const char* ReadableStringBusses[];

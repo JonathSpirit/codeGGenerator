@@ -81,6 +81,18 @@ void CodeData::push(uint8_t d)
 
     this->g_data[this->g_cursor++] = d;
 }
+void CodeData::pushDummy()
+{
+    if (this->g_writeDummy)
+    {
+        if (this->g_capacity == this->g_cursor)
+        {
+            throw codeg::FatalError("Code overflow, max is "+std::to_string(this->g_capacity));
+        }
+
+        this->g_data[this->g_cursor++] = 0;
+    }
+}
 void CodeData::resize(uint32_t n)
 {
     this->g_cursor = 0;
@@ -139,6 +151,15 @@ uint8_t* CodeData::getData()
 std::shared_ptr<uint8_t[]>& CodeData::getSharedData()
 {
     return this->g_data;
+}
+
+void CodeData::setWriteDummy(bool value)
+{
+    this->g_writeDummy = value;
+}
+bool CodeData::getWriteDummy() const
+{
+    return this->g_writeDummy;
 }
 
 }//end codeg

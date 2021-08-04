@@ -367,7 +367,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
             data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
             data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_RAM);
-            data._code.push(0x00);
+            data._code.pushDummy();
         }
         else
         {
@@ -396,7 +396,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
             data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
             data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_RAM);
-            data._code.push(0x00);
+            data._code.pushDummy();
         }
         else
         {
@@ -425,7 +425,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
             data._code.push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
             data._code.push(0x00);
             data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_RAM);
-            data._code.push(0x00);
+            data._code.pushDummy();
         }
         else
         {
@@ -499,7 +499,14 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                     data._code.push(0x00);
 
                     data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                    data._code.push(argValue._value);
+                    if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+                    {
+                        data._code.push(argValue._value);
+                    }
+                    else
+                    {
+                        data._code.pushDummy();
+                    }
                 }
                 else
                 {//A variable
@@ -534,7 +541,14 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                     data._code.push(argVar._value&0x00FF);
 
                     data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                    data._code.push(argValue._value);
+                    if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+                    {
+                        data._code.push(argValue._value);
+                    }
+                    else
+                    {
+                        data._code.pushDummy();
+                    }
                 }
                 else
                 {//A variable
@@ -599,7 +613,14 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                         data._code.push(0x00);
 
                         data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                        data._code.push(argValue._value);
+                        if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+                        {
+                            data._code.push(argValue._value);
+                        }
+                        else
+                        {
+                            data._code.pushDummy();
+                        }
                     }
                     else if ( argValue._valueIsVariable )
                     {
@@ -771,20 +792,26 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
 
         case codeg::BUS_WRITEABLE_1:
             data._code.push(codeg::OPCODE_BWRITE1_CLK | argValue._valueBus);
-            data._code.push(argValue._value);
             break;
         case codeg::BUS_WRITEABLE_2:
             data._code.push(codeg::OPCODE_BWRITE2_CLK | argValue._valueBus);
-            data._code.push(argValue._value);
             break;
         case codeg::BUS_SPICFG:
             data._code.push(codeg::OPCODE_BCFG_SPI_CLK | argValue._valueBus);
-            data._code.push(argValue._value);
             break;
 
         default:
             throw codeg::CompileError("write : bad bus (unknown bus)");
             break;
+        }
+
+        if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+        {
+            data._code.push(argValue._value);
+        }
+        else
+        {
+            data._code.pushDummy();
         }
     }
     else
@@ -841,16 +868,23 @@ void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::Co
         {
         case codeg::TargetType::TARGET_OPERATION:
             data._code.push(codeg::OPCODE_OPCHOOSE_CLK | argValue._valueBus);
-            data._code.push(argValue._value);
             break;
         case codeg::TargetType::TARGET_PERIPHERAL:
             data._code.push(codeg::OPCODE_BPCS_CLK | argValue._valueBus);
-            data._code.push(argValue._value);
             break;
 
         default:
             throw codeg::CompileError("choose : bad target (unknown target)");
             break;
+        }
+
+        if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+        {
+            data._code.push(argValue._value);
+        }
+        else
+        {
+            data._code.pushDummy();
         }
     }
     else
@@ -901,7 +935,14 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
         }
     }
     data._code.push(codeg::OPCODE_OPLEFT_CLK | argValueLeft._valueBus);
-    data._code.push(argValueLeft._value);
+    if (argValueLeft._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+    {
+        data._code.push(argValueLeft._value);
+    }
+    else
+    {
+        data._code.pushDummy();
+    }
 
     ///OPERATION
     codeg::Keyword argValueOp;
@@ -929,7 +970,14 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
         }
     }
     data._code.push(codeg::OPCODE_OPCHOOSE_CLK | argValueOp._valueBus);
-    data._code.push(argValueOp._value);
+    if (argValueOp._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+    {
+        data._code.push(argValueOp._value);
+    }
+    else
+    {
+        data._code.pushDummy();
+    }
 
     ///RIGHT
     codeg::Keyword argValueRight;
@@ -957,7 +1005,14 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
         }
     }
     data._code.push(codeg::OPCODE_OPRIGHT_CLK | argValueRight._valueBus);
-    data._code.push(argValueRight._value);
+    if (argValueRight._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+    {
+        data._code.push(argValueRight._value);
+    }
+    else
+    {
+        data._code.pushDummy();
+    }
 }
 
 ///Instruction_tick
@@ -993,14 +1048,14 @@ void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::Comp
                 }
                 for (uint32_t i=0; i<argValue._value; ++i)
                 {
-                    data._code.push(codeg::OPCODE_STICK);
-                    data._code.push(0x00);
+                    data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
+                    data._code.pushDummy();
                 }
             }
             else
             {
-                data._code.push(codeg::OPCODE_STICK);
-                data._code.push(0x00);
+                data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
+                data._code.pushDummy();
             }
         }
         else if (argStr._str == "long")
@@ -1017,14 +1072,14 @@ void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::Comp
                 }
                 for (uint32_t i=0; i<argValue._value; ++i)
                 {
-                    data._code.push(codeg::OPCODE_LTICK);
-                    data._code.push(0x00);
+                    data._code.push(codeg::OPCODE_LTICK | codeg::READABLE_DEFAULT);
+                    data._code.pushDummy();
                 }
             }
             else
             {
-                data._code.push(codeg::OPCODE_LTICK);
-                data._code.push(0x00);
+                data._code.push(codeg::OPCODE_LTICK | codeg::READABLE_DEFAULT);
+                data._code.pushDummy();
             }
         }
         else
@@ -1198,7 +1253,14 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
 
 
     data._code.push(codeg::OPCODE_IF | argValue._valueBus);
-    data._code.push(argValue._value);
+    if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+    {
+        data._code.push(argValue._value);
+    }
+    else
+    {
+        data._code.pushDummy();
+    }
 
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 }
@@ -1305,7 +1367,14 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
 
 
     data._code.push(codeg::OPCODE_IFNOT | argValue._valueBus);
-    data._code.push(argValue._value);
+    if (argValue._valueBus == codeg::ReadableBusses::READABLE_SOURCE)
+    {
+        data._code.push(argValue._value);
+    }
+    else
+    {
+        data._code.pushDummy();
+    }
 
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 }
@@ -1523,8 +1592,8 @@ void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::Com
         {//A value
             for (uint32_t i=0; i<argValue._value; ++i)
             {
-                data._code.push(targetOpcode);
-                data._code.push(0x00);
+                data._code.push(targetOpcode | codeg::READABLE_DEFAULT);
+                data._code.pushDummy();
             }
         }
         else
@@ -1534,8 +1603,8 @@ void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::Com
     }
     else
     {
-        data._code.push(targetOpcode);
-        data._code.push(0x00);
+        data._code.push(targetOpcode | codeg::READABLE_DEFAULT);
+        data._code.pushDummy();
     }
 }
 

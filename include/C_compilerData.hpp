@@ -84,6 +84,7 @@ public:
     void clear();
 
     void push(uint8_t d);
+    void pushDummy();
     void resize(uint32_t n);
 
     uint32_t getCapacity() const;
@@ -98,9 +99,14 @@ public:
     uint8_t* getData();
     std::shared_ptr<uint8_t[]>& getSharedData();
 
+    void setWriteDummy(bool value);
+    bool getWriteDummy() const;
+
 private:
     uint32_t g_cursor = 0;
     uint32_t g_capacity = 0;
+
+    bool g_writeDummy = false;
 
     std::shared_ptr<uint8_t[]> g_data;
 };
