@@ -106,8 +106,8 @@ class Instruction_set : public Instruction
     set             set [string] [string]       Define a new macro with a name [string] by the content of the argument [string].
     **/
 public:
-    Instruction_set();
-    virtual ~Instruction_set();
+    Instruction_set() = default;
+    virtual ~Instruction_set() = default;
 
     virtual std::string getName() const;
 
@@ -121,8 +121,8 @@ class Instruction_unset : public Instruction
     unset           unset [string]              Undefine an existing macro with a name [string].
     **/
 public:
-    Instruction_unset();
-    virtual ~Instruction_unset();
+    Instruction_unset() = default;
+    virtual ~Instruction_unset() = default;
 
     virtual std::string getName() const;
 
@@ -136,8 +136,8 @@ class Instruction_var : public Instruction
     var             var [name] ([name])         Define a new [variable] with a [name].
     **/
 public:
-    Instruction_var();
-    virtual ~Instruction_var();
+    Instruction_var() = default;
+    virtual ~Instruction_var() = default;
 
     virtual std::string getName() const;
 
@@ -151,8 +151,8 @@ class Instruction_label : public Instruction
     label           label [name] ([value])      Define a new jump label to a position in the code.
     **/
 public:
-    Instruction_label();
-    virtual ~Instruction_label();
+    Instruction_label() = default;
+    virtual ~Instruction_label() = default;
 
     virtual std::string getName() const;
 
@@ -166,8 +166,8 @@ class Instruction_jump : public Instruction
     jump            jump [name] / [value] / [value] [value] [value]         Jump to a certain label or on a fixed/dynamic address with variables.
     **/
 public:
-    Instruction_jump();
-    virtual ~Instruction_jump();
+    Instruction_jump() = default;
+    virtual ~Instruction_jump() = default;
 
     virtual std::string getName() const;
 
@@ -181,8 +181,8 @@ class Instruction_restart : public Instruction
     restart         restart                     Jump to the address 0.
     **/
 public:
-    Instruction_restart();
-    virtual ~Instruction_restart();
+    Instruction_restart() = default;
+    virtual ~Instruction_restart() = default;
 
     virtual std::string getName() const;
 
@@ -198,8 +198,8 @@ class Instruction_affect : public Instruction
                     [name] [constant] [value] ([value]...)      Assigns in a fixed size pool [name] with an fixed address offset [constant] a certain [value].
     **/
 public:
-    Instruction_affect();
-    virtual ~Instruction_affect();
+    Instruction_affect() = default;
+    virtual ~Instruction_affect() = default;
 
     virtual std::string getName() const;
 
@@ -216,8 +216,8 @@ class Instruction_get : public Instruction
     You can use the result with keyword "_ram".
     **/
 public:
-    Instruction_get();
-    virtual ~Instruction_get();
+    Instruction_get() = default;
+    virtual ~Instruction_get() = default;
 
     virtual std::string getName() const;
 
@@ -232,8 +232,8 @@ class Instruction_write : public Instruction
     write           write [bus] [value]         Assigns a [bus] to a certain [value].
     **/
 public:
-    Instruction_write();
-    virtual ~Instruction_write();
+    Instruction_write() = default;
+    virtual ~Instruction_write() = default;
 
     virtual std::string getName() const;
 
@@ -247,8 +247,8 @@ class Instruction_select : public Instruction
     select          select [target] [value]     Select a [target] with an identity [value].
     **/
 public:
-    Instruction_select();
-    virtual ~Instruction_select();
+    Instruction_select() = default;
+    virtual ~Instruction_select() = default;
 
     virtual std::string getName() const;
 
@@ -262,8 +262,8 @@ class Instruction_do : public Instruction
     do              do [value] [value] [value]  Do a calcul : opleft operation opright.
     **/
 public:
-    Instruction_do();
-    virtual ~Instruction_do();
+    Instruction_do() = default;
+    virtual ~Instruction_do() = default;
 
     virtual std::string getName() const;
 
@@ -277,8 +277,8 @@ class Instruction_tick : public Instruction
     tick            tick [string] ([value])     No effect instruction (delay).
     **/
 public:
-    Instruction_tick();
-    virtual ~Instruction_tick();
+    Instruction_tick() = default;
+    virtual ~Instruction_tick() = default;
 
     virtual std::string getName() const;
 
@@ -292,8 +292,8 @@ class Instruction_brut : public Instruction
     brut            brut [value], ...           Insert instruction in binary, hexadecimal or decimal form.
     **/
 public:
-    Instruction_brut();
-    virtual ~Instruction_brut();
+    Instruction_brut() = default;
+    virtual ~Instruction_brut() = default;
 
     virtual std::string getName() const;
 
@@ -307,8 +307,8 @@ class Instruction_function : public Instruction
     function        function [name]             Creates a function with a certain [name].
     **/
 public:
-    Instruction_function();
-    virtual ~Instruction_function();
+    Instruction_function() = default;
+    virtual ~Instruction_function() = default;
 
     virtual std::string getName() const;
 
@@ -322,8 +322,8 @@ class Instruction_if : public Instruction
     if              if [value]                  Condition statement.
     **/
 public:
-    Instruction_if();
-    virtual ~Instruction_if();
+    Instruction_if() = default;
+    virtual ~Instruction_if() = default;
 
     virtual std::string getName() const;
 
@@ -337,8 +337,8 @@ class Instruction_else : public Instruction
     else            else                        The “else” tag is used to specify a code to execute when the condition is false.
     **/
 public:
-    Instruction_else();
-    virtual ~Instruction_else();
+    Instruction_else() = default;
+    virtual ~Instruction_else() = default;
 
     virtual std::string getName() const;
 
@@ -352,8 +352,8 @@ class Instruction_ifnot : public Instruction
     if_not          if_not [value]              Inverted condition statement.
     **/
 public:
-    Instruction_ifnot();
-    virtual ~Instruction_ifnot();
+    Instruction_ifnot() = default;
+    virtual ~Instruction_ifnot() = default;
 
     virtual std::string getName() const;
 
@@ -367,8 +367,8 @@ class Instruction_end : public Instruction
     end             end                         End of statement.
     **/
 public:
-    Instruction_end();
-    virtual ~Instruction_end();
+    Instruction_end() = default;
+    virtual ~Instruction_end() = default;
 
     virtual std::string getName() const;
 
@@ -382,8 +382,8 @@ class Instruction_call : public Instruction
     call            call [name] ([variable] [variable] [variable])      Call a function or definition.
     **/
 public:
-    Instruction_call();
-    virtual ~Instruction_call();
+    Instruction_call() = default;
+    virtual ~Instruction_call() = default;
 
     virtual std::string getName() const;
 
@@ -397,8 +397,8 @@ class Instruction_clock : public Instruction
     clock           clock [target] ([value])    Sends a specified number of pulses to the [target].
     **/
 public:
-    Instruction_clock();
-    virtual ~Instruction_clock();
+    Instruction_clock() = default;
+    virtual ~Instruction_clock() = default;
 
     virtual std::string getName() const;
 
@@ -412,8 +412,8 @@ class Instruction_pool : public Instruction
     pool            pool [name] [value] ([value])   Create or modify a pool.
     **/
 public:
-    Instruction_pool();
-    virtual ~Instruction_pool();
+    Instruction_pool() = default;
+    virtual ~Instruction_pool() = default;
 
     virtual std::string getName() const;
 
@@ -427,8 +427,8 @@ class Instruction_import : public Instruction
     import          import [string]             import a another codeG file into the current 'import' call
     **/
 public:
-    Instruction_import();
-    virtual ~Instruction_import();
+    Instruction_import() = default;
+    virtual ~Instruction_import() = default;
 
     virtual std::string getName() const;
 
@@ -442,8 +442,8 @@ class Instruction_definition : public Instruction
     definition      definition [name]           Creates a definition with a certain [name].
     **/
 public:
-    Instruction_definition();
-    virtual ~Instruction_definition();
+    Instruction_definition() = default;
+    virtual ~Instruction_definition() = default;
 
     virtual std::string getName() const;
 
@@ -456,8 +456,8 @@ class Instruction_enddef : public Instruction
     end_def         end_def                     end a definition.
     **/
 public:
-    Instruction_enddef();
-    virtual ~Instruction_enddef();
+    Instruction_enddef() = default;
+    virtual ~Instruction_enddef() = default;
 
     virtual std::string getName() const;
 

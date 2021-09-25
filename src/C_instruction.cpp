@@ -95,9 +95,6 @@ codeg::Instruction* InstructionList::get(const std::string& name) const
 }
 
 ///Instruction_set
-Instruction_set::Instruction_set(){}
-Instruction_set::~Instruction_set(){}
-
 std::string Instruction_set::getName() const
 {
     return "set";
@@ -134,9 +131,6 @@ void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::Compi
 }
 
 ///Instruction_unset
-Instruction_unset::Instruction_unset(){}
-Instruction_unset::~Instruction_unset(){}
-
 std::string Instruction_unset::getName() const
 {
     return "unset";
@@ -159,9 +153,6 @@ void Instruction_unset::compile(const codeg::StringDecomposer& input, codeg::Com
 }
 
 ///Instruction_var
-Instruction_var::Instruction_var(){}
-Instruction_var::~Instruction_var(){}
-
 std::string Instruction_var::getName() const
 {
     return "var";
@@ -225,9 +216,6 @@ void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::Compi
 }
 
 ///Instruction_label
-Instruction_label::Instruction_label(){}
-Instruction_label::~Instruction_label(){}
-
 std::string Instruction_label::getName() const
 {
     return "label";
@@ -287,9 +275,6 @@ void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::Com
 }
 
 ///Instruction_jump
-Instruction_jump::Instruction_jump(){}
-Instruction_jump::~Instruction_jump(){}
-
 std::string Instruction_jump::getName() const
 {
     return "jump";
@@ -441,9 +426,6 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
 }
 
 ///Instruction_restart
-Instruction_restart::Instruction_restart(){}
-Instruction_restart::~Instruction_restart(){}
-
 std::string Instruction_restart::getName() const
 {
     return "restart";
@@ -466,9 +448,6 @@ void Instruction_restart::compile(const codeg::StringDecomposer& input, codeg::C
 }
 
 ///Instruction_affect
-Instruction_affect::Instruction_affect(){}
-Instruction_affect::~Instruction_affect(){}
-
 std::string Instruction_affect::getName() const
 {
     return "affect";
@@ -649,9 +628,6 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
 }
 
 ///Instruction_get
-Instruction_get::Instruction_get(){}
-Instruction_get::~Instruction_get(){}
-
 std::string Instruction_get::getName() const
 {
     return "get";
@@ -741,9 +717,6 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
 }
 
 ///Instruction_write
-Instruction_write::Instruction_write(){}
-Instruction_write::~Instruction_write(){}
-
 std::string Instruction_write::getName() const
 {
     return "write";
@@ -821,9 +794,6 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
 }
 
 ///Instruction_select
-Instruction_select::Instruction_select(){}
-Instruction_select::~Instruction_select(){}
-
 std::string Instruction_select::getName() const
 {
     return "select";
@@ -894,9 +864,6 @@ void Instruction_select::compile(const codeg::StringDecomposer& input, codeg::Co
 }
 
 ///Instruction_do
-Instruction_do::Instruction_do(){}
-Instruction_do::~Instruction_do(){}
-
 std::string Instruction_do::getName() const
 {
     return "do";
@@ -1016,9 +983,6 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
 }
 
 ///Instruction_tick
-Instruction_tick::Instruction_tick(){}
-Instruction_tick::~Instruction_tick(){}
-
 std::string Instruction_tick::getName() const
 {
     return "tick";
@@ -1094,9 +1058,6 @@ void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::Comp
 }
 
 ///Instruction_brut
-Instruction_brut::Instruction_brut(){}
-Instruction_brut::~Instruction_brut(){}
-
 std::string Instruction_brut::getName() const
 {
     return "brut";
@@ -1139,9 +1100,6 @@ void Instruction_brut::compile(const codeg::StringDecomposer& input, codeg::Comp
 }
 
 ///Instruction_function
-Instruction_function::Instruction_function(){}
-Instruction_function::~Instruction_function(){}
-
 std::string Instruction_function::getName() const
 {
     return "function";
@@ -1195,9 +1153,6 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
 }
 
 ///Instruction_if
-Instruction_if::Instruction_if(){}
-Instruction_if::~Instruction_if(){}
-
 std::string Instruction_if::getName() const
 {
     return "if";
@@ -1266,9 +1221,6 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
 }
 
 ///Instruction_else
-Instruction_else::Instruction_else(){}
-Instruction_else::~Instruction_else(){}
-
 std::string Instruction_else::getName() const
 {
     return "else";
@@ -1309,9 +1261,6 @@ void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::Comp
 }
 
 ///Instruction_ifnot
-Instruction_ifnot::Instruction_ifnot(){}
-Instruction_ifnot::~Instruction_ifnot(){}
-
 std::string Instruction_ifnot::getName() const
 {
     return "if_not";
@@ -1380,9 +1329,6 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
 }
 
 ///Instruction_end
-Instruction_end::Instruction_end(){}
-Instruction_end::~Instruction_end(){}
-
 std::string Instruction_end::getName() const
 {
     return "end";
@@ -1438,9 +1384,6 @@ void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::Compi
 }
 
 ///Instruction_call
-Instruction_call::Instruction_call(){}
-Instruction_call::~Instruction_call(){}
-
 std::string Instruction_call::getName() const
 {
     return "call";
@@ -1550,9 +1493,6 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
 }
 
 ///Instruction_clock
-Instruction_clock::Instruction_clock(){}
-Instruction_clock::~Instruction_clock(){}
-
 std::string Instruction_clock::getName() const
 {
     return "clock";
@@ -1609,9 +1549,6 @@ void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::Com
 }
 
 ///Instruction_pool
-Instruction_pool::Instruction_pool(){}
-Instruction_pool::~Instruction_pool(){}
-
 std::string Instruction_pool::getName() const
 {
     return "pool";
@@ -1693,9 +1630,6 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
 }
 
 ///Instruction_import
-Instruction_import::Instruction_import(){}
-Instruction_import::~Instruction_import(){}
-
 std::string Instruction_import::getName() const
 {
     return "import";
@@ -1717,9 +1651,6 @@ void Instruction_import::compile(const codeg::StringDecomposer& input, codeg::Co
 }
 
 ///Instruction_definition
-Instruction_definition::Instruction_definition(){}
-Instruction_definition::~Instruction_definition(){}
-
 std::string Instruction_definition::getName() const
 {
     return "definition";
@@ -1755,10 +1686,8 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
 
     data._writeLinesIntoDefinition = true;
 }
-///Instruction_enddef
-Instruction_enddef::Instruction_enddef(){}
-Instruction_enddef::~Instruction_enddef(){}
 
+///Instruction_enddef
 std::string Instruction_enddef::getName() const
 {
     return "end_def";
