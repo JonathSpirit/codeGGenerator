@@ -240,15 +240,15 @@ public:
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
-class Instruction_choose : public Instruction
+class Instruction_select : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    choose          choose [target] [value]     Choose a [target] with an identity [value].
+    select          select [target] [value]     Select a [target] with an identity [value].
     **/
 public:
-    Instruction_choose();
-    virtual ~Instruction_choose();
+    Instruction_select();
+    virtual ~Instruction_select();
 
     virtual std::string getName() const;
 

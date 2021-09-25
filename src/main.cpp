@@ -178,7 +178,7 @@ int main(int argc, char **argv)
     data._reservedKeywords.push("if_not");
     data._reservedKeywords.push("else");
     data._reservedKeywords.push("end");
-    data._reservedKeywords.push("choose");
+    data._reservedKeywords.push("select");
     data._reservedKeywords.push("OP");
     data._reservedKeywords.push("P");
     data._reservedKeywords.push("write");
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
     data._instructions.push(new codeg::Instruction_affect());
     data._instructions.push(new codeg::Instruction_get());
     data._instructions.push(new codeg::Instruction_write());
-    data._instructions.push(new codeg::Instruction_choose());
+    data._instructions.push(new codeg::Instruction_select());
     data._instructions.push(new codeg::Instruction_do());
     data._instructions.push(new codeg::Instruction_tick());
     data._instructions.push(new codeg::Instruction_brut());

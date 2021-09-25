@@ -820,20 +820,20 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
     }
 }
 
-///Instruction_choose
-Instruction_choose::Instruction_choose(){}
-Instruction_choose::~Instruction_choose(){}
+///Instruction_select
+Instruction_select::Instruction_select(){}
+Instruction_select::~Instruction_select(){}
 
-std::string Instruction_choose::getName() const
+std::string Instruction_select::getName() const
 {
-    return "choose";
+    return "select";
 }
 
-void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+void Instruction_select::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
     if ( input._keywords.size() != 3 )
     {//Check size
-        throw codeg::CompileError("choose : bad arguments size (wanted 3 got "+std::to_string(input._keywords.size())+")");
+        throw codeg::CompileError("select : bad arguments size (wanted 3 got "+std::to_string(input._keywords.size())+")");
     }
 
     codeg::Keyword argTarget;
@@ -844,7 +844,7 @@ void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::Co
         {//A value
             if (argValue._valueSize != 1)
             {
-                throw codeg::CompileError("choose : bad value (require size is 1 byte got \""+std::to_string(argValue._valueSize)+"\")");
+                throw codeg::CompileError("select : bad value (require size is 1 byte got \""+std::to_string(argValue._valueSize)+"\")");
             }
         }
         else
@@ -860,7 +860,7 @@ void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::Co
             }
             else
             {
-                throw codeg::CompileError("choose : bad argument (argument 2 \""+argValue._str+"\" is not a value)");
+                throw codeg::CompileError("select : bad argument (argument 2 \""+argValue._str+"\" is not a value)");
             }
         }
 
@@ -874,7 +874,7 @@ void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::Co
             break;
 
         default:
-            throw codeg::CompileError("choose : bad target (unknown target)");
+            throw codeg::CompileError("select : bad target (unknown target)");
             break;
         }
 
@@ -889,7 +889,7 @@ void Instruction_choose::compile(const codeg::StringDecomposer& input, codeg::Co
     }
     else
     {
-        throw codeg::CompileError("choose : bad argument (argument 1 \""+argTarget._str+"\" is not a target)");
+        throw codeg::CompileError("select : bad argument (argument 1 \""+argTarget._str+"\" is not a target)");
     }
 }
 
