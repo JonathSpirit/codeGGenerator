@@ -28,9 +28,11 @@ enum BusTypes : uint8_t
 
     BUS_WRITEABLE_1 = 1,
     BUS_WRITEABLE_2 = 2,
-    BUS_SPICFG = 3,
 
-    BUS_UNKNOWN
+    BUS_SPICFG = 3,
+    BUS_SPI    = 4,
+
+    BUS_UNKNOWN = 0xFF
 };
 
 }//end codeg

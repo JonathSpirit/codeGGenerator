@@ -74,12 +74,6 @@ bool Keyword::process(const std::string& str, const codeg::KeywordTypes& wantedT
         this->_target = codeg::TargetType::TARGET_OPERATION;
         return this->_type == wantedType;
     }
-    else if ( this->_str == "SPI" )
-    {
-        this->_type = codeg::KeywordTypes::KEYWORD_TARGET;
-        this->_target = codeg::TargetType::TARGET_SPI;
-        return this->_type == wantedType;
-    }
 
     ///Value (constant)
     this->_valueSize = GetIntegerFromString(this->_str, this->_value);

@@ -772,6 +772,9 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
         case codeg::BUS_SPICFG:
             data._code.push(codeg::OPCODE_BCFG_SPI_CLK | argValue._valueBus);
             break;
+        case codeg::BUS_SPI:
+            data._code.push(codeg::OPCODE_SPI_CLK | argValue._valueBus);
+            break;
 
         default:
             throw codeg::CompileError("write : bad bus (unknown bus)");
@@ -1516,9 +1519,6 @@ void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::Com
     {
     case codeg::TARGET_PERIPHERAL:
         targetOpcode = codeg::OPCODE_PERIPHERAL_CLK;
-        break;
-    case codeg::TARGET_SPI:
-        targetOpcode = codeg::OPCODE_SPI_CLK;
         break;
     default:
         throw codeg::CompileError("clock : bad argument (argument 1 [target] is not a valid target)");

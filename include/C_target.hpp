@@ -17,18 +17,17 @@
 #ifndef C_TARGET_H_INCLUDED
 #define C_TARGET_H_INCLUDED
 
-#include <string>
+#include <cstdint>
 
 namespace codeg
 {
 
-enum TargetType
+enum TargetType : uint8_t
 {
     TARGET_NULL = 0,
 
     TARGET_PERIPHERAL,
-    TARGET_OPERATION,
-    TARGET_SPI
+    TARGET_OPERATION
 };
 
 }//end codeg
