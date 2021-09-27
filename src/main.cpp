@@ -192,7 +192,6 @@ int main(int argc, char **argv)
     data._reservedKeywords.push("tick");
     data._reservedKeywords.push("simple");
     data._reservedKeywords.push("long");
-    data._reservedKeywords.push("repeat");
     data._reservedKeywords.push("_src");
     data._reservedKeywords.push("_bread1");
     data._reservedKeywords.push("_bread2");

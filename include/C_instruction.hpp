@@ -474,15 +474,6 @@ public:
     virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
 
-/*
-KEYWORD         ARGUMENTS                   DESCRIPTION
-repeat          repeat [variable] [value]   Repeat the code.
-
-Repeats the following code according to the argument [value] and a [variable].
-
-The "end" tag has to be at the end.
-*/
-
 }//end codeg
 
 #endif // C_INSTRUCTION_H_INCLUDED
