@@ -1,4 +1,4 @@
-name: CMake_linux_gcc8_32bit
+name: CMake_linux_gcc_32bit
 
 on: [push, pull_request]
 
