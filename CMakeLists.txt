@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 
 #Project
-project(codeGGenerator)
-
-#Enabling CTest
-enable_testing()
+project(codeGGenerator VERSION 0.2)
 
 #Policy
 cmake_policy(SET CMP0076 NEW) #target_sources
+
+#Enabling CTest
+enable_testing()
 
 #Variables
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
@@ -17,14 +17,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
 file(COPY "example/" DESTINATION "example/")
 
 #Set cache entry
-set(TARGET_ARCH "" CACHE STRING "Set architecture type (32 or 64)")
+set(TARGET_ARCH "" CACHE STRING "Set architecture type (32 or 64 or nothing (auto))")
 
 #Not defined = default to empty
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH "")
 endif()
 
-#Set compiler 32/64 flag
+#Set compiler 32/64/(auto) flag
 set(TARGET_ARCH_FLAG "")
 
 if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -36,9 +36,6 @@ if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         set(TARGET_ARCH_FLAG "")
     endif()
 endif()
-
-#Project name
-project(codeGGenerator VERSION 0.1)
 
 #Configure header file
 configure_file(CMakeConfig.hpp.in CMakeConfig.hpp)
