@@ -25,7 +25,9 @@
 namespace codeg
 {
 
-const char* ReadableStringBinaryOpcodes[]=
+namespace
+{
+const char* __stringBinaryOpcodes[]=
 {
     "BWRITE1_CLK",
     "BWRITE2_CLK",
@@ -63,6 +65,17 @@ const char* ReadableStringBinaryOpcodes[]=
 
     "LTICK"
 };
+}//end
+
+const char* OpcodeToString(uint8_t opcode)
+{
+    opcode = (opcode&CODEG_BINARYOPCODES_MASK);
+    if ( (opcode&CODEG_BINARYOPCODES_MASK) > 0x17 )
+    {
+        return __stringBinaryOpcodes[0x13];
+    }
+    return __stringBinaryOpcodes[opcode&CODEG_BINARYOPCODES_MASK];
+}
 
 ///Instruction
 

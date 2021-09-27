@@ -14,13 +14,14 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include <cstdint>
 #include "C_readableBus.hpp"
 
 namespace codeg
 {
 
-const char* ReadableStringBusses[]=
+namespace
+{
+const char* __stringReadableBusses[]=
 {
     "SOURCE",
 
@@ -34,5 +35,12 @@ const char* ReadableStringBusses[]=
     "EXT1",
     "EXT2"
 };
+}//end
+
+const char* ReadableBusToString(uint8_t opcode)
+{
+    opcode = (opcode&CODEG_READABLEBUSSES_MASK)>>5;
+    return __stringReadableBusses[opcode];
+}
 
 }//end codeg

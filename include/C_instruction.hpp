@@ -21,6 +21,8 @@
 #include <forward_list>
 #include <memory>
 
+#define CODEG_BINARYOPCODES_MASK 0x1F
+
 namespace codeg
 {
 
@@ -62,9 +64,8 @@ enum BinaryOpcodes : uint8_t
     */
     OPCODE_LTICK          = 0x17
 };
-extern const char* ReadableStringBinaryOpcodes[];
 
-#define ToReadableOpcode(x) codeg::ReadableStringBinaryOpcodes[ (x&0x1F)>0x17 ? 0x13 : (x&0x1F) ]
+const char* OpcodeToString(uint8_t opcode);
 
 struct CompilerData;
 

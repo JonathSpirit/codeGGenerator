@@ -309,11 +309,12 @@ int main(int argc, char **argv)
 
             if ( tmpFlagOpcode )
             {
-                if ((dataPtr[i]&0x1F) != codeg::OPCODE_JMPSRC_CLK)
+                if ( ((dataPtr[i]&CODEG_BINARYOPCODES_MASK) != codeg::OPCODE_JMPSRC_CLK) &&
+                     ((dataPtr[i]&CODEG_READABLEBUSSES_MASK) == codeg::READABLE_SOURCE) )
                 {//The jump instruction does not have an argument
                     tmpFlagOpcode = false;
                 }
-                fileOutReadable << " " << ToReadableOpcode(dataPtr[i]) << " <" << ToReadableBus(dataPtr[i]) << ">";
+                fileOutReadable << " " << codeg::OpcodeToString(dataPtr[i]) << " <" << codeg::ReadableBusToString(dataPtr[i]) << ">";
             }
             else
             {

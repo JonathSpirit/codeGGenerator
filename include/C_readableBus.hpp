@@ -17,6 +17,10 @@
 #ifndef C_READABLEBUS_H_INCLUDED
 #define C_READABLEBUS_H_INCLUDED
 
+#include <cstdint>
+
+#define CODEG_READABLEBUSSES_MASK 0xE0
+
 namespace codeg
 {
 
@@ -37,9 +41,7 @@ enum ReadableBusses : uint8_t
     READABLE_DEFAULT = READABLE_BREAD1
 };
 
-extern const char* ReadableStringBusses[];
-
-#define ToReadableBus(x) codeg::ReadableStringBusses[(x&0xE0)>>5]
+const char* ReadableBusToString(uint8_t opcode);
 
 }//end codeg
 
