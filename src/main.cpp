@@ -37,26 +37,26 @@ using namespace std;
 
 void printHelp()
 {
-    std::cout << "codeGGcompiler usage :" << std::endl << std::endl;
+    std::cout << "codeGGenerator usage :" << std::endl << std::endl;
 
     std::cout << "Set the input file to be compiled" << std::endl;
-    std::cout << "\tcodeGGcompiler --in=<path>" << std::endl << std::endl;
+    std::cout << "\tcodeGGenerator --in=<path>" << std::endl << std::endl;
 
     std::cout << "Set the output file (default is the input path+.cg)" << std::endl;
-    std::cout << "\tcodeGGcompiler --out=<path>" << std::endl << std::endl;
+    std::cout << "\tcodeGGenerator --out=<path>" << std::endl << std::endl;
 
     std::cout << "Print the version (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGGcompiler --version" << std::endl << std::endl;
+    std::cout << "\tcodeGGenerator --version" << std::endl << std::endl;
 
     std::cout << "Print the help page (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGGcompiler --help" << std::endl << std::endl;
+    std::cout << "\tcodeGGenerator --help" << std::endl << std::endl;
 
     std::cout << "Ask the user how he want to compile his file (interactive compiling)" << std::endl;
-    std::cout << "\tcodeGGcompiler --ask" << std::endl << std::endl;
+    std::cout << "\tcodeGGenerator --ask" << std::endl << std::endl;
 }
 void printVersion()
 {
-    std::cout << "codeGGcompiler created by Guillaume Guillet, version " << CGG_VERSION_MAJOR << "." << CGG_VERSION_MINOR << std::endl;
+    std::cout << "codeGGenerator created by Guillaume Guillet, version " << CGG_VERSION_MAJOR << "." << CGG_VERSION_MINOR << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    for (unsigned int i=1; i<commands.size(); ++i)
+    for (std::size_t i=1; i<commands.size(); ++i)
     {
         //Commands
         if ( commands[i] == "--help")
