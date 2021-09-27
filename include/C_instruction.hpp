@@ -18,7 +18,7 @@
 #define C_INSTRUCTION_H_INCLUDED
 
 #include "C_stringDecomposer.hpp"
-#include <forward_list>
+#include <vector>
 #include <memory>
 
 #define CODEG_BINARYOPCODES_MASK 0x1F
@@ -84,14 +84,14 @@ public:
 class InstructionList
 {
 public:
-    using InstructionListType = std::forward_list<std::unique_ptr<codeg::Instruction> >;
+    using InstructionListType = std::vector<std::unique_ptr<codeg::Instruction> >;
 
-    InstructionList() = default;
+    InstructionList();
     ~InstructionList() = default;
 
     void clear();
 
-    void push(codeg::Instruction* newInstruction);
+    void push(std::unique_ptr<codeg::Instruction>&& newInstruction);
     codeg::Instruction* get(const std::string& name) const;
 
 private:

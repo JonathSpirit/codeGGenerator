@@ -22,6 +22,8 @@
 #include "C_bus.hpp"
 #include "C_error.hpp"
 
+#define CODEG_INSTRUCTIONLIST_RESERVE_SIZE (0xFF&CODEG_BINARYOPCODES_MASK)
+
 namespace codeg
 {
 
@@ -86,14 +88,19 @@ void Instruction::compileDefinition(const codeg::StringDecomposer& input, codeg:
 
 ///InstructionList
 
+InstructionList::InstructionList()
+{
+    this->g_data.reserve(CODEG_INSTRUCTIONLIST_RESERVE_SIZE);
+}
+
 void InstructionList::clear()
 {
     this->g_data.clear();
 }
 
-void InstructionList::push(codeg::Instruction* newInstruction)
+void InstructionList::push(std::unique_ptr<codeg::Instruction>&& newInstruction)
 {
-    this->g_data.push_front( std::unique_ptr<codeg::Instruction>(newInstruction) );
+    this->g_data.push_back( std::move(newInstruction) );
 }
 codeg::Instruction* InstructionList::get(const std::string& name) const
 {

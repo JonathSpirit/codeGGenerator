@@ -210,30 +210,30 @@ int main(int argc, char **argv)
     data._reservedKeywords.push("end_def");
 
     ///Instructions
-    data._instructions.push(new codeg::Instruction_set());
-    data._instructions.push(new codeg::Instruction_unset());
-    data._instructions.push(new codeg::Instruction_var());
-    data._instructions.push(new codeg::Instruction_label());
-    data._instructions.push(new codeg::Instruction_jump());
-    data._instructions.push(new codeg::Instruction_restart());
-    data._instructions.push(new codeg::Instruction_affect());
-    data._instructions.push(new codeg::Instruction_get());
-    data._instructions.push(new codeg::Instruction_write());
-    data._instructions.push(new codeg::Instruction_select());
-    data._instructions.push(new codeg::Instruction_do());
-    data._instructions.push(new codeg::Instruction_tick());
-    data._instructions.push(new codeg::Instruction_brut());
-    data._instructions.push(new codeg::Instruction_function());
-    data._instructions.push(new codeg::Instruction_if());
-    data._instructions.push(new codeg::Instruction_else());
-    data._instructions.push(new codeg::Instruction_ifnot());
-    data._instructions.push(new codeg::Instruction_end());
-    data._instructions.push(new codeg::Instruction_call());
-    data._instructions.push(new codeg::Instruction_clock());
-    data._instructions.push(new codeg::Instruction_pool());
-    data._instructions.push(new codeg::Instruction_import());
-    data._instructions.push(new codeg::Instruction_definition());
-    data._instructions.push(new codeg::Instruction_enddef());
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_set()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_unset()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_var()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_label()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_jump()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_restart()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_affect()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_get()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_write()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_select()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_do()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_tick()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_brut()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_function()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_if()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_else()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_ifnot()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_end()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_call()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_clock()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_pool()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_import()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_definition()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_enddef()) );
 
     ///Code
     data._code.resize(65536);
