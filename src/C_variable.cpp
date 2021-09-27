@@ -108,14 +108,6 @@ codeg::MemorySize Pool::getTotalSize() const
 
 bool Pool::addVariable(const codeg::Variable& var)
 {
-    if (this->g_addressMaxSize != 0)
-    {
-        if (this->g_variables.size() >= this->g_addressMaxSize)
-        {
-            return false;
-        }
-    }
-
     for ( auto& value : this->g_variables )
     {
         if ( value._name == var._name )
@@ -125,6 +117,19 @@ bool Pool::addVariable(const codeg::Variable& var)
     }
 
     this->g_variables.push_back(var);
+    return true;
+}
+bool Pool::addVariable(const std::string& name)
+{
+    for ( auto& value : this->g_variables )
+    {
+        if ( value._name == name )
+        {
+            return false;
+        }
+    }
+
+    this->g_variables.push_back({name, std::list<codeg::Address>()});
     return true;
 }
 codeg::Variable* Pool::getVariable(const std::string& name)
@@ -153,6 +158,14 @@ bool Pool::delVariable(const std::string& name)
 
 codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::MemoryAddress& startAddress)
 {
+    if (this->g_addressMaxSize != 0)
+    {
+        if (this->g_variables.size() >= this->g_addressMaxSize)
+        {
+            throw codeg::FatalError("Pool \""+this->g_name+"\" overflow, max size of "+std::to_string(this->g_addressMaxSize)+" for "+std::to_string(this->g_variables.size())+" variables");
+        }
+    }
+
     codeg::MemoryAddress offset = 0;
     for ( codeg::Variable& valVar : this->g_variables )
     {

@@ -63,6 +63,7 @@ public:
     codeg::MemorySize getTotalSize() const;
 
     bool addVariable(const codeg::Variable& var);
+    bool addVariable(const std::string& name);
     codeg::Variable* getVariable(const std::string& name);
     bool delVariable(const std::string& name);
 

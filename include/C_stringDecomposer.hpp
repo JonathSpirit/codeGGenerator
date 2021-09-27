@@ -40,7 +40,9 @@ struct StringDecomposer
     uint8_t _flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     std::string _brut;
     std::string _cleaned;
-    std::vector<std::string> _keywords;
+
+    std::string _instruction;
+    std::vector<std::string> _arguments;
 };
 
 }//end codeg

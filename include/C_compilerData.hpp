@@ -25,6 +25,7 @@
 #include "C_variable.hpp"
 #include "C_address.hpp"
 #include "C_instruction.hpp"
+#include "C_readableBus.hpp"
 #include <memory>
 #include <stack>
 
@@ -83,7 +84,13 @@ public:
 
     void clear();
 
+    void pushFixedJump(uint32_t address);
+    void pushEmptyJump();
+    void pushEmptyJumpAddress();
+    void pushFixedVarAccess(uint16_t address);
+    void pushEmptyVarAccess();
     void push(uint8_t d);
+    void pushCheckDummy(uint8_t d, codeg::ReadableBusses rbus);
     void pushDummy();
     void resize(uint32_t n);
 

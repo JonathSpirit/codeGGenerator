@@ -250,9 +250,9 @@ int main(int argc, char **argv)
         {
             data._decomposer.decompose(readedLine, data._decomposer._flags);
 
-            if (data._decomposer._keywords.size() > 0)
+            if ( !data._decomposer._instruction.empty() )
             {
-                codeg::Instruction* instruction = data._instructions.get( data._decomposer._keywords[0] );
+                codeg::Instruction* instruction = data._instructions.get( data._decomposer._instruction );
 
                 if (instruction != nullptr)
                 {//Instruction founded
@@ -267,7 +267,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {//Bad instruction
-                    throw codeg::FatalError("unknown instruction \""+data._decomposer._keywords[0]+"\"");
+                    throw codeg::FatalError("unknown instruction \""+data._decomposer._instruction+"\"");
                 }
             }
         }

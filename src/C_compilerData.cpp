@@ -72,6 +72,49 @@ void CodeData::clear()
     this->g_cursor = 0;
 }
 
+void CodeData::pushFixedJump(uint32_t address)
+{
+    this->push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+    this->push( (address&0x00FF0000)>>16 );
+    this->push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+    this->push( (address&0x0000FF00)>>8 );
+    this->push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+    this->push( address&0x000000FF );
+    this->push(codeg::OPCODE_JMPSRC_CLK);
+}
+void CodeData::pushEmptyJump()
+{
+    this->push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+    this->push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+    this->push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+    this->push(codeg::OPCODE_JMPSRC_CLK);
+}
+void CodeData::pushEmptyJumpAddress()
+{
+    this->push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+    this->push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+    this->push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+}
+void CodeData::pushFixedVarAccess(uint16_t address)
+{
+    this->push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+    this->push((address&0xFF00)>>8);
+    this->push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+    this->push(address&0x00FF);
+}
+void CodeData::pushEmptyVarAccess()
+{
+    this->push(codeg::OPCODE_BRAMADD2_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+    this->push(codeg::OPCODE_BRAMADD1_CLK | codeg::READABLE_SOURCE);
+    this->push(0x00);
+}
 void CodeData::push(uint8_t d)
 {
     if (this->g_capacity == this->g_cursor)
@@ -80,6 +123,20 @@ void CodeData::push(uint8_t d)
     }
 
     this->g_data[this->g_cursor++] = d;
+}
+void CodeData::pushCheckDummy(uint8_t d, codeg::ReadableBusses rbus)
+{
+    if (this->g_writeDummy)
+    {
+        this->push(d);
+    }
+    else
+    {
+        if (rbus == codeg::ReadableBusses::READABLE_SOURCE)
+        {
+            this->push(d);
+        }
+    }
 }
 void CodeData::pushDummy()
 {

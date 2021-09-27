@@ -101,6 +101,7 @@ bool JumpList::addLabel(const codeg::Label& d)
 }
 bool JumpList::addJumpPoint(const codeg::JumpPoint& d)
 {
+    ///TODO : add he jump point without checking label name
     //Jump to a label
     for (auto&& value : this->_labels)
     {

@@ -25,7 +25,8 @@ void StringDecomposer::clear()
     this->_flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     this->_brut.clear();
     this->_cleaned.clear();
-    this->_keywords.clear();
+    this->_instruction.clear();
+    this->_arguments.clear();
 }
 void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
 {
@@ -45,7 +46,8 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
     }
 
     this->_cleaned.clear();
-    this->_keywords.clear();
+    this->_arguments.clear();
+    this->_instruction.clear();
 
     this->_cleaned.reserve(str.size());
 
@@ -133,7 +135,12 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
     }
 
     this->_cleaned.shrink_to_fit();
-    codeg::SplitKeywords(this->_cleaned, this->_keywords);
+    codeg::SplitKeywords(this->_cleaned, this->_arguments);
+    if (this->_arguments.size())
+    {
+        this->_instruction = std::move(this->_arguments.front());
+        this->_arguments.erase( this->_arguments.cbegin() );
+    }
 }
 
 }//end codeg

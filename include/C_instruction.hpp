@@ -103,7 +103,7 @@ class Instruction_set : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    set             set [string] [string]       Define a new macro with a name [string] by the content of the argument [string].
+    set             set [string] [string]       Define a new macro [string] by the content of the argument [string].
     **/
 public:
     Instruction_set() = default;
@@ -118,7 +118,7 @@ class Instruction_unset : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    unset           unset [string]              Undefine an existing macro with a name [string].
+    unset           unset [string]              Remove an existing macro [string].
     **/
 public:
     Instruction_unset() = default;
@@ -133,7 +133,8 @@ class Instruction_var : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    var             var [name] ([name])         Define a new [variable] with a [name].
+    var             var [name]                  Declare a new variable with a [name] in the default pool.
+                    var [name] [name]           Declare a new variable with a [name] in a pool [name].
     **/
 public:
     Instruction_var() = default;
@@ -148,7 +149,8 @@ class Instruction_label : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    label           label [name] ([value])      Define a new jump label to a position in the code.
+    label           label [name]                Define a new jump label [name] to the actual position in the code.
+                    label [name] [constant]     Define a new jump label [name] to custom address position [constant].
     **/
 public:
     Instruction_label() = default;
@@ -162,8 +164,10 @@ public:
 class Instruction_jump : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                                               DESCRIPTION
-    jump            jump [name] / [value] / [value] [value] [value]         Jump to a certain label or on a fixed/dynamic address with variables.
+    KEYWORD         ARGUMENTS                            DESCRIPTION
+    jump            jump [name]                          Jump to a certain label [name].
+                    jump [constant]                      Jump to a custom address position [constant].
+                    jump [value] [value] [value]         Jump to a dynamic address position 3x[value] (MSB first) .
     **/
 public:
     Instruction_jump() = default;
@@ -195,7 +199,7 @@ class Instruction_affect : public Instruction
     KEYWORD         ARGUMENTS                                   DESCRIPTION
     affect          [constant] [value]                          Assigns a fixed specified address [constant] to a certain [value].
                     [variable] [value]                          Assigns a [variable] to a certain [value].
-                    [name] [constant] [value] ([value]...)      Assigns in a fixed size pool [name] with an fixed address offset [constant] a certain [value].
+                    [name] [constant] [value] ([value]...)      Assigns in a fixed size pool [name] with an fixed address offset [constant] a certain [value] (or multiple).
     **/
 public:
     Instruction_affect() = default;
@@ -258,8 +262,8 @@ public:
 class Instruction_do : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                   DESCRIPTION
-    do              do [value] [value] [value]  Do a calcul : opleft operation opright.
+    KEYWORD         ARGUMENTS                    DESCRIPTION
+    do              do [value] [value] [value]   Do a calcul : opleft operation opright.
     **/
 public:
     Instruction_do() = default;
@@ -273,8 +277,9 @@ public:
 class Instruction_tick : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                   DESCRIPTION
-    tick            tick [string] ([value])     No effect instruction (delay).
+    KEYWORD         ARGUMENTS                    DESCRIPTION
+    tick            tick [string]                No effect instruction "long"/"simple" tick delay [string].
+                    tick [string] [constant]     No effect instruction "long"/"simple" tick delay [string] copied [constant] times.
     **/
 public:
     Instruction_tick() = default;
@@ -289,7 +294,7 @@ class Instruction_brut : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    brut            brut [value], ...           Insert instruction in binary, hexadecimal or decimal form.
+    brut            brut [constant], ...        Insert instruction in binary, hexadecimal or decimal form.
     **/
 public:
     Instruction_brut() = default;
@@ -379,7 +384,8 @@ class Instruction_call : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                                           DESCRIPTION
-    call            call [name] ([variable] [variable] [variable])      Call a function or definition.
+    call            call [name]                                         Call a function or definition.
+                    call [name] [variable] [variable] [variable]        Call a function and store in 3 separate [variable] MSB first the return address.
     **/
 public:
     Instruction_call() = default;
@@ -394,7 +400,8 @@ class Instruction_clock : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    clock           clock [target] ([value])    Sends a specified number of pulses to the [target].
+    clock           clock [target]              Sends a clock pulse to the [target].
+                    clock [target] [constant]   Sends a specified number of pulses [constant] to the [target].
     **/
 public:
     Instruction_clock() = default;
@@ -408,8 +415,9 @@ public:
 class Instruction_pool : public Instruction
 {
     /**
-    KEYWORD         ARGUMENTS                   DESCRIPTION
-    pool            pool [name] [value] ([value])   Create or modify a pool.
+    KEYWORD         ARGUMENTS                             DESCRIPTION
+    pool            pool [name] [constant]                Create or modify a pool [name] with a certain size [constant] (0 for a dynamic size).
+                    pool [name] [constant] [constant]     Create or modify a pool [name] with a certain size [constant] (0 for a dynamic size) and a start address [constant].
     **/
 public:
     Instruction_pool() = default;
@@ -424,7 +432,7 @@ class Instruction_import : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    import          import [string]             import a another codeG file into the current 'import' call
+    import          import [string]             import another codeG file into the current line to be compiled.
     **/
 public:
     Instruction_import() = default;
