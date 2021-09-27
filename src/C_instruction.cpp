@@ -506,7 +506,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                                 throw codeg::ByteSizeError(i+3, "1");
                             }
 
-                            pool->_link.push_back({data._code.getCursor(), i+offset});
+                            pool->_link.push_back({data._code.getCursor(), static_cast<codeg::Address>(i)+offset});
 
                             data._code.pushEmptyVarAccess();
 
