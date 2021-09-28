@@ -17,6 +17,7 @@
 #include "C_address.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
+#include "C_error.hpp"
 
 namespace codeg
 {
@@ -25,8 +26,10 @@ uint16_t Label::s_indexCount = 1;
 
 void JumpList::resolve(codeg::CompilerData& data)
 {
+    bool first = true;
+
     //Name check
-    for (auto&& vLabel : this->_labels)
+    for (auto& vLabel : this->_labels)
     {
         if (vLabel._addressStatic >= data._code.getCursor())
         {//Address is out of code space
@@ -35,18 +38,34 @@ void JumpList::resolve(codeg::CompilerData& data)
 
         uint32_t jpCount = 0;
 
-        for (auto&& vJumpPoint : this->_jumpPoints)
+        for (auto& vJumpPoint : this->_jumpPoints)
         {
+            if (first)
+            {
+                first = false;
+                vJumpPoint._isApplied = false; //Clear applied flag
+            }
+
             if (vLabel._name == vJumpPoint._labelName)
             {
                 data._code[vJumpPoint._addressStatic+1] = (vLabel._addressStatic&0x00FF0000)>>16; //MSB
                 data._code[vJumpPoint._addressStatic+3] = (vLabel._addressStatic&0x0000FF00)>>8;
                 data._code[vJumpPoint._addressStatic+5] = (vLabel._addressStatic&0x000000FF); //LSB
+                vJumpPoint._isApplied = true;
                 ++jpCount;
             }
         }
 
         codeg::ConsoleInfoWrite("\tLabel \""+vLabel._name+"\" with "+std::to_string(jpCount)+" jump points");
+    }
+
+    //Check for non-applied jumpPoint
+    for (auto& vJumpPoint : this->_jumpPoints)
+    {
+        if (!vJumpPoint._isApplied)
+        {
+            codeg::FatalError("jumpPoint at address "+std::to_string(vJumpPoint._addressStatic)+" is linked to an unknown label \""+vJumpPoint._labelName+"\"");
+        }
     }
 }
 
@@ -101,18 +120,9 @@ bool JumpList::addLabel(const codeg::Label& d)
 }
 bool JumpList::addJumpPoint(const codeg::JumpPoint& d)
 {
-    ///TODO : add he jump point without checking label name
     //Jump to a label
-    for (auto&& value : this->_labels)
-    {
-        if (d._labelName == value._name)
-        {
-            this->_jumpPoints.push_back(d);
-            return true;
-        }
-    }
-
-    return false;
+    this->_jumpPoints.push_back(d);
+    return true;
 }
 
 std::list<codeg::Label>::iterator JumpList::getLabel(const std::string& name)

@@ -42,6 +42,8 @@ struct JumpPoint
 {
     std::string _labelName;
     codeg::Address _addressStatic;
+
+    bool _isApplied = false;
 };
 
 struct JumpList
