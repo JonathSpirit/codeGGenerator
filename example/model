@@ -1,0 +1,64 @@
+#ALUminium V1.1 operations
+#https://github.com/JonathSpirit/ALUminium
+
+set + 0x00 #Addition
+set - 0x01 #Substraction
+
+set & 0x02 #AND Bitwise
+set | 0x03 #OR Bitwise
+set ^ 0x04 #XOR Bitwise
+set ~ 0x05 #INV Bitwise
+
+set && 0x06 #AND Logical
+set || 0x07 #OR Logical
+set ^^ 0x08 #XOR Logical
+set !  0x09 #INV Logical
+
+set << 0x0A #Shift to the left
+set >> 0x0B #Shift to the right
+
+set >  0x0C #Strict bigger than
+set <  0x0D #Strict smaller than
+set >= 0x0E #Bigger than
+set <= 0x0F #Smaller than
+set == 0x10 #Equal
+
+set * 0x11  #Multiplication
+
+set C2 0x12  #2Complement
+set <>  0x13 #Rotate
+set <<> 0x14 #Rotate to the left
+set <>> 0x15 #Rotate to the right
+
+set A_OPL 0x16 #Write to the accumulator left/right and return operation left
+set A_OPR 0x17 #Write to the accumulator left/right and return operation right
+set OP_AL 0x18 #Write to the operation left/right and return accumulator left
+set OP_AR 0x19 #Write to the operation left/right and return accumulator right
+
+#GCM V5.x Peripherals
+#https://github.com/JonathSpirit/GCM
+
+set PSLOT_0 0x00
+set PSLOT_1 0x01
+set PSLOT_2 0x02
+set PSLOT_3 0x03
+
+set PMEM_CTRL 0x04
+set PSRC_CTRL 0x05
+
+set PCLK_CTRL 0x06
+set PPCLK_CTRL 0x07
+
+#GP8B V5.x writable bus
+#https://github.com/JonathSpirit/GP8B
+
+set BWRITE1 0x01
+set BWRITE2 0x02
+set BSPICFG 0x03
+set BSPI    0x04
+
+#------------------------------------------------
+
+label MAIN
+
+jump MAIN

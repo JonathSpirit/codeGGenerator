@@ -1,0 +1,192 @@
+#ALUminium V1.1 operations
+#https://github.com/JonathSpirit/ALUminium
+
+set + 0x00 #Addition
+set - 0x01 #Substraction
+
+set & 0x02 #AND Bitwise
+set | 0x03 #OR Bitwise
+set ^ 0x04 #XOR Bitwise
+set ~ 0x05 #INV Bitwise
+
+set && 0x06 #AND Logical
+set || 0x07 #OR Logical
+set ^^ 0x08 #XOR Logical
+set !  0x09 #INV Logical
+
+set << 0x0A #Shift to the left
+set >> 0x0B #Shift to the right
+
+set >  0x0C #Strict bigger than
+set <  0x0D #Strict smaller than
+set >= 0x0E #Bigger than
+set <= 0x0F #Smaller than
+set == 0x10 #Equal
+
+set * 0x11  #Multiplication
+
+set C2 0x12  #2Complement
+set <>  0x13 #Rotate
+set <<> 0x14 #Rotate to the left
+set <>> 0x15 #Rotate to the right
+
+set A_OPL 0x16 #Write to the accumulator left/right and return operation left
+set A_OPR 0x17 #Write to the accumulator left/right and return operation right
+set OP_AL 0x18 #Write to the operation left/right and return accumulator left
+set OP_AR 0x19 #Write to the operation left/right and return accumulator right
+
+#GCM V5.x Peripherals
+#https://github.com/JonathSpirit/GCM
+
+set PSLOT_0 0x00
+set PSLOT_1 0x01
+set PSLOT_2 0x02
+set PSLOT_3 0x03
+
+set PMEM_CTRL 0x04
+set PSRC_CTRL 0x05
+
+set PCLK_CTRL 0x06
+set PPCLK_CTRL 0x07
+
+#GP8B V5.x writable bus
+#https://github.com/JonathSpirit/GP8B
+
+set BWRITE1 0x01
+set BWRITE2 0x02
+set BSPICFG 0x03
+set BSPI    0x04
+
+#------------------------------------------------
+#Works with a UART_peripheral_card_A V1.1 on slot 0
+#https://github.com/JonathSpirit/UART_peripheral_card_A
+
+var buffer
+var counter
+var counterRead
+
+affect $counter 0
+
+#Select uart card
+select PERIPHERAL PSLOT_0
+#Clear all flags
+write BWRITE2 0x03
+clock P
+clock P
+
+#Enable the second memory slot
+select PERIPHERAL PMEM_CTRL
+write BWRITE2 0
+write BWRITE1 0b00111111 #CE=1 ~WE=1 ~OE=1
+                         #ADD0=1 ADD1=1 ADD2=1
+clock P
+write BWRITE1 0b00000111 #CE=1 ~WE=1 ~OE=1
+                         #ADD0=0 ADD1=0 ADD2=0
+clock P
+
+label MAIN
+select PERIPHERAL PSLOT_0
+
+#Receive flag check
+do _bread2 & 0x01
+if _result
+    #Clear all flags
+    write BWRITE2 0x03
+    clock P
+    
+    #Store the received char
+    affect $buffer _bread1
+    
+    do $buffer == 'g' #Space
+    if _result
+        #Print every stored char
+        affect $counterRead 0
+        
+        label SEND_LOOP
+        do $counterRead == $counter
+        if_not _result
+            #Select the second memory slot
+            select PERIPHERAL PMEM_CTRL
+            
+            #Write address and ~OE=0
+            write BWRITE2 $counterRead
+            write BWRITE1 0b00001011 #CE=1 ~WE=1 ~OE=0 #ADDRESS_CLK_0=1
+            clock P
+            write BWRITE1 0b00000011 #CE=1 ~WE=1 ~OE=0 #ADDRESS_CLK_0=0
+            clock P
+            
+            #Read data from second slot memory
+            affect $buffer _bread1
+            
+            select PERIPHERAL PSLOT_0
+            
+            #Prepare the data to be sent
+            write BWRITE1 $buffer
+            write BWRITE2 0x04
+            clock P
+            #Sent the data that we just received
+            write BWRITE2 0x08
+            clock P
+            #Wait the transmit flag
+            label WAIT_TRANSMIT_2
+            do _bread2 & 0x02
+            if_not _result
+                jump WAIT_TRANSMIT_2
+            end
+            
+            #Increment counterRead
+            do $counterRead + 1
+            affect $counterRead _result
+            
+            jump SEND_LOOP
+        end
+        
+        select PERIPHERAL PMEM_CTRL
+        write BWRITE1 0b00000111 #CE=1 ~WE=1 ~OE=1
+        clock P
+        affect $counter 0
+        
+        select PERIPHERAL PSLOT_0
+    else
+        #Select the second memory slot
+        select PERIPHERAL PMEM_CTRL
+        
+        #Set address to counter
+        write BWRITE2 $counter
+        write BWRITE1 0b00001111 #CE=1 ~WE=1 ~OE=1
+                                 #ADD0=1 ADD1=0 ADD2=0
+        clock P
+        write BWRITE1 0b00000111 #CE=1 ~WE=1 ~OE=1
+                                 #ADD0=0 ADD1=0 ADD2=0
+        clock P
+        
+        write BWRITE2 $buffer
+        #Write to the memory
+        write BWRITE1 0b00000101 #CE=1 ~WE=0 ~OE=1
+        clock P
+        write BWRITE1 0b00000111 #CE=1 ~WE=1 ~OE=1
+        clock P
+        
+        #Increment counter
+        do $counter + 1
+        affect $counter _result
+        
+        select PERIPHERAL PSLOT_0
+        
+        #Prepare the data to be sent
+        write BWRITE1 $buffer
+        write BWRITE2 0x04
+        clock P
+        #Sent the data that we just received
+        write BWRITE2 0x08
+        clock P
+        #Wait the transmit flag
+        label WAIT_TRANSMIT
+        do _bread2 & 0x02
+        if_not _result
+            jump WAIT_TRANSMIT
+        end
+    end
+end
+
+jump MAIN
