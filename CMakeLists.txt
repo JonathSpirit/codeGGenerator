@@ -96,3 +96,5 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_reserved.cpp")
 
 #Add test
 add_test(NAME "CompilingTestFile" COMMAND ${PROJECT_NAME} "--in=example/test")
+add_test(NAME "CompilingModelFile" COMMAND ${PROJECT_NAME} "--in=example/model")
+add_test(NAME "CompilingUartTestFile" COMMAND ${PROJECT_NAME} "--in=example/uart_test")
