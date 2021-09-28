@@ -64,7 +64,7 @@ void JumpList::resolve(codeg::CompilerData& data)
     {
         if (!vJumpPoint._isApplied)
         {
-            codeg::FatalError("jumpPoint at address "+std::to_string(vJumpPoint._addressStatic)+" is linked to an unknown label \""+vJumpPoint._labelName+"\"");
+            throw codeg::FatalError("jumpPoint at address "+std::to_string(vJumpPoint._addressStatic)+" is linked to an unknown label \""+vJumpPoint._labelName+"\"");
         }
     }
 }
