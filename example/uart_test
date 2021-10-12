@@ -61,9 +61,9 @@ set BSPI    0x04
 #Works with a UART_peripheral_card_A V1.1 on slot 0
 #https://github.com/JonathSpirit/UART_peripheral_card_A
 
-var buffer
-var counter
-var counterRead
+var $buffer
+var $counter
+var $counterRead
 
 affect $counter 0
 

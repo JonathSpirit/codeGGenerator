@@ -300,7 +300,13 @@ int main(int argc, char **argv)
         ///Third step resolving pools
         codeg::ConsoleInfoWrite("Step 3 : Resolving pools ...");
 
-        data._pools.resolve(data);
+        codeg::MemoryBigSize totalSize = data._pools.resolve(data);
+
+        if (totalSize > std::numeric_limits<codeg::MemorySize>::max())
+        {
+            throw codeg::CompileError("data overflow, with "+std::to_string(totalSize)+" bytes");
+        }
+        codeg::ConsoleInfoWrite("Memory used size : "+std::to_string(totalSize)+" bytes\n");
 
         codeg::ConsoleInfoWrite("Step 3 : OK !\n");
 

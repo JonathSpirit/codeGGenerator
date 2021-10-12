@@ -32,6 +32,7 @@ typedef uint32_t MemoryBigSize;
 struct Variable
 {
     std::string _name;
+    codeg::MemorySize _size;
     std::list<codeg::Address> _link;
 };
 
@@ -46,10 +47,10 @@ public:
 
 public:
     Pool(const std::string& name);
-    ~Pool();
+    ~Pool() = default;
 
     void clear();
-    size_t getSize() const;
+    std::size_t getVariableSize() const;
 
     void setName(const std::string& name);
     const std::string& getName() const;
@@ -60,10 +61,11 @@ public:
     bool setAddress(const codeg::MemoryAddress& start, const codeg::MemorySize& maxSize);
     codeg::MemoryAddress getStartAddress() const;
     codeg::MemorySize getMaxSize() const;
+    codeg::MemoryBigSize getMemorySize() const;
     codeg::MemorySize getTotalSize() const;
 
     bool addVariable(const codeg::Variable& var);
-    bool addVariable(const std::string& name);
+    bool addVariable(const std::string& name, codeg::MemorySize size);
     codeg::Variable* getVariable(const std::string& name);
     bool delVariable(const std::string& name);
 
@@ -89,8 +91,8 @@ private:
 class PoolList
 {
 public:
-    PoolList();
-    ~PoolList();
+    PoolList() = default;
+    ~PoolList() = default;
 
     void clear();
     size_t getSize() const;
@@ -102,7 +104,7 @@ public:
     codeg::Variable* getVariable(const std::string& varName, const std::string& poolName);
     codeg::Variable* getVariableWithString(const std::string& str, const std::string& defaultPoolName);
 
-    codeg::MemorySize resolve(codeg::CompilerData& data);
+    codeg::MemoryBigSize resolve(codeg::CompilerData& data);
 
 private:
     std::list<codeg::Pool> g_pools;

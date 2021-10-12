@@ -24,13 +24,9 @@ namespace codeg
 
 ///Pool
 
-Pool::Pool(const std::string& name)
+Pool::Pool(const std::string& name) :
+    g_name(name)
 {
-    this->g_name = name;
-}
-Pool::~Pool()
-{
-
 }
 
 void Pool::clear()
@@ -40,7 +36,7 @@ void Pool::clear()
     this->g_startAddressType = codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC;
     this->g_variables.clear();
 }
-size_t Pool::getSize() const
+std::size_t Pool::getVariableSize() const
 {
     return this->g_variables.size();
 }
@@ -97,11 +93,20 @@ codeg::MemorySize Pool::getMaxSize() const
 {
     return this->g_addressMaxSize;
 }
+codeg::MemoryBigSize Pool::getMemorySize() const
+{
+    codeg::MemoryBigSize sizeCount = 0;
+    for ( auto& value : this->g_variables )
+    {
+        sizeCount += value._size;
+    }
+    return sizeCount;
+}
 codeg::MemorySize Pool::getTotalSize() const
 {
     if (this->g_addressMaxSize == 0)
     {
-        return this->g_variables.size();
+        return this->getMemorySize();
     }
     return this->g_addressMaxSize;
 }
@@ -119,7 +124,7 @@ bool Pool::addVariable(const codeg::Variable& var)
     this->g_variables.push_back(var);
     return true;
 }
-bool Pool::addVariable(const std::string& name)
+bool Pool::addVariable(const std::string& name, codeg::MemorySize size)
 {
     for ( auto& value : this->g_variables )
     {
@@ -129,7 +134,7 @@ bool Pool::addVariable(const std::string& name)
         }
     }
 
-    this->g_variables.push_back({name, std::list<codeg::Address>()});
+    this->g_variables.push_back({name, size, std::list<codeg::Address>()});
     return true;
 }
 codeg::Variable* Pool::getVariable(const std::string& name)
@@ -160,9 +165,9 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
 {
     if (this->g_addressMaxSize != 0)
     {
-        if (this->g_variables.size() >= this->g_addressMaxSize)
+        if (this->getMemorySize() >= this->g_addressMaxSize)
         {
-            throw codeg::FatalError("Pool \""+this->g_name+"\" overflow, max size of "+std::to_string(this->g_addressMaxSize)+" for "+std::to_string(this->g_variables.size())+" variables");
+            throw codeg::FatalError("Pool \""+this->g_name+"\" overflow, max size of "+std::to_string(this->g_addressMaxSize)+" for "+std::to_string(this->getMemorySize())+" variables");
         }
     }
 
@@ -175,7 +180,7 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
             data._code[valTarget + 1] = varAdd >> 8;//Address MSB
             data._code[valTarget + 3] = varAdd & 0x00FF;//Address LSB
         }
-        ++offset;
+        offset += valVar._size;
     }
 
     for ( codeg::Pool::PoolLink& link : this->_link )
@@ -185,19 +190,10 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
         data._code[link._address + 3] = varAdd & 0x00FF;//Address LSB
     }
 
-    return this->g_variables.size();
+    return this->getMemorySize();
 }
 
 ///PoolList
-
-PoolList::PoolList()
-{
-
-}
-PoolList::~PoolList()
-{
-
-}
 
 void PoolList::clear()
 {
@@ -274,9 +270,9 @@ codeg::Variable* PoolList::getVariableWithString(const std::string& str, const s
     return nullptr;
 }
 
-codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
+codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
 {
-    codeg::MemorySize totalSize = 0;
+    codeg::MemoryBigSize totalSize = 0;
     codeg::ConsoleInfoWrite( "Fixed start address only ..." );
     std::vector<std::list<codeg::Pool>::iterator> appliedPools;
     appliedPools.reserve(this->g_pools.size());
@@ -286,7 +282,8 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
         if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC )
         {
             codeg::ConsoleInfoWrite( "Working on pool \""+(*it).getName()+"\":" );
-            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getSize()) );
+            codeg::ConsoleInfoWrite( "\tvariable size: "+std::to_string((*it).getVariableSize()) );
+            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getMemorySize()) );
             codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
             codeg::ConsoleInfoWrite( "\tstart address: "+std::to_string((*it).getStartAddress()) );
             if ( (*it).getTotalSize() == 0 )
@@ -297,7 +294,7 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
 
             codeg::ConsoleInfoWrite( "\tCheck if the pool can be applied ..." );
             //Check if the pool can be applied
-            for ( unsigned int i=0; i<appliedPools.size(); ++i )
+            for ( std::size_t i=0; i<appliedPools.size(); ++i )
             {
                 if ( ((*it).getStartAddress() >= (*appliedPools[i]).getStartAddress()) && ((*it).getStartAddress() < (*appliedPools[i]).getStartAddress()+(*appliedPools[i]).getTotalSize()) )
                 {//Pool conflict
@@ -314,13 +311,13 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
     codeg::ConsoleInfoWrite( "OK" );
     codeg::ConsoleInfoWrite( "Memory mapping ..." );
 
-    std::vector<codeg::MemorySize> mapping;
-    mapping.resize(65536, 1);
-    for ( unsigned int i=0; i<appliedPools.size(); ++i )
+    std::vector<bool> mapping;
+    mapping.resize(std::numeric_limits<codeg::MemorySize>::max(), true);
+    for ( std::size_t i=0; i<appliedPools.size(); ++i )
     {
-        for ( unsigned int a=0; a<(*appliedPools[i]).getTotalSize(); ++a )
+        for ( codeg::MemorySize a=0; a<(*appliedPools[i]).getTotalSize(); ++a )
         {//Removing memory location already used
-            mapping[(*appliedPools[i]).getStartAddress() + a] = 0;
+            mapping[(*appliedPools[i]).getStartAddress() + a] = false;
         }
     }
 
@@ -333,7 +330,8 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
         {
             bool isApplied = false;
             codeg::ConsoleInfoWrite( "Working on pool \""+(*it).getName()+"\":" );
-            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getSize()) );
+            codeg::ConsoleInfoWrite( "\tvariable size: "+std::to_string((*it).getVariableSize()) );
+            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getMemorySize()) );
             codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
             if ( (*it).getTotalSize() == 0 )
             {//No variable and dynamic size
@@ -346,16 +344,16 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
 
             codeg::MemoryAddress memoryStart = 0;
             codeg::MemoryBigSize memorySize = 0;
-            for ( unsigned int i=0; i<mapping.size(); ++i )
+            for ( std::size_t i=0; i<mapping.size(); ++i )
             {//Finding a free memory location
-                if ( mapping[i] == 1 )
+                if ( mapping[i] == true )
                 {
-                    memoryStart = i;
+                    memoryStart = static_cast<codeg::MemoryAddress>(i);
                     memorySize = 0;
 
-                    for ( unsigned int a=i; a<mapping.size(); ++a )
+                    for ( std::size_t a=i; a<mapping.size(); ++a )
                     {//Getting the size
-                        if ( mapping[a] == 1 )
+                        if ( mapping[a] == true )
                         {
                             ++memorySize;
                         }
@@ -371,9 +369,9 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
                         totalSize += (*it).resolveLinks(data, memoryStart);
                         appliedPools.push_back(it);
                         codeg::ConsoleInfoWrite( "\tPool applied at address "+std::to_string(memoryStart)+" !" );
-                        for ( unsigned int a=0; a<(*it).getTotalSize(); ++a )
+                        for ( codeg::MemorySize a=0; a<(*it).getTotalSize(); ++a )
                         {//Removing memory location that will be used
-                            mapping[memoryStart + a] = 0;
+                            mapping[memoryStart + a] = false;
                         }
                         isApplied = true;
                         break;
@@ -382,7 +380,7 @@ codeg::MemorySize PoolList::resolve(codeg::CompilerData& data)
             }
             if (!isApplied)
             {
-                throw codeg::FatalError("\tDynamic pool doesn't have place in memory, "+(*it).getName()+" with size "+std::to_string((*it).getTotalSize())+" !");
+                throw codeg::FatalError("\tDynamic pool doesn't have place in memory, with size "+std::to_string((*it).getTotalSize())+" !");
             }
         }
     }

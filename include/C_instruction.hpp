@@ -134,8 +134,8 @@ class Instruction_var : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    var             var [name]                  Declare a new variable with a [name] in the default pool.
-                    var [name] [name]           Declare a new variable with a [name] in a pool [name].
+    var             var [variable]              Declare a new [variable] in the default/wanted pool.
+                    var [variable] [constant]   Declare a new [variable] in the default/wanted pool, with a wanted size [constant].
     **/
 public:
     Instruction_var() = default;

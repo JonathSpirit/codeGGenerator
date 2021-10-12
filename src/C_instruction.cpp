@@ -180,43 +180,57 @@ std::string Instruction_var::getName() const
 
 void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    std::string poolName;
-
-    if ( input._arguments.size() == 2)
+    if ( (input._arguments.size() != 1) && (input._arguments.size() != 2)  )
     {
-        codeg::Keyword argPoolName;
-        if ( !argPoolName.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_NAME, data) )
-        {//Check pool name
-            throw codeg::ArgumentError(2, "name");
+        throw codeg::ArgumentsSizeError("1,2", input._arguments.size());
+    }
+
+    std::string varName;
+    std::string varPool;
+    if ( !codeg::GetVariableString(input._arguments[0], data._defaultPool, varName, varPool) )
+    {//Check variable
+        throw codeg::ArgumentError(1, "variable");
+    }
+
+    codeg::MemorySize varSize = 1;
+    if (input._arguments.size() == 2)
+    {
+        codeg::Keyword argConstant;
+        if ( !argConstant.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
+        {//Check constant
+            throw codeg::ArgumentError(2, "constant");
         }
-
-        poolName = std::move(argPoolName._str);
-    }
-    else if ( input._arguments.size() == 1)
-    {
-        poolName = data._defaultPool;
-    }
-    else
-    {
-        throw codeg::ArgumentsSizeError("1-2", input._arguments.size());
-    }
-
-    codeg::Keyword argVarName;
-    if ( !argVarName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-    {//Check var name
-        throw codeg::ArgumentError(1, "name");
-    }
-
-    if ( codeg::Pool* tmpPool = data._pools.getPool(poolName) )
-    {//Check pool
-        if ( !tmpPool->addVariable(argVarName._str) )
+        if ( (argConstant._value == 0) || (argConstant._value > std::numeric_limits<codeg::MemorySize>::max()) )
         {
-            codeg::ConsoleWarningWrite("variable \""+argVarName._str+"\" already exist in pool \""+poolName+"\"");
+            throw codeg::CompileError("variable size cannot be 0 or >"+std::to_string(std::numeric_limits<codeg::MemorySize>::max()));
+        }
+        varSize = argConstant._value;
+    }
+
+    if ( codeg::Pool* tmpPool = data._pools.getPool(varPool) )
+    {//Check pool
+        if ( codeg::Variable* buffVar = tmpPool->getVariable(varName) )
+        {
+            if (buffVar->_size == varSize)
+            {
+                codeg::ConsoleWarningWrite("redeclaration of variable \""+varName+"\" in pool \""+varPool+"\" with size of "+std::to_string(varSize));
+            }
+            else
+            {
+                throw codeg::CompileError("redeclaration of variable \""+varName+"\" in pool \""+varPool+"\" but with different size (wanted "+std::to_string(varSize)+" instead of "+std::to_string(buffVar->_size)+")");
+            }
+        }
+        else
+        {
+            if ( !tmpPool->addVariable(varName, varSize) )
+            {
+                throw codeg::FatalError("Unknown error, variable should be ok but can't create it");
+            }
         }
     }
     else
     {
-        throw codeg::CompileError("bad pool (pool \""+poolName+"\" does not exist)");
+        throw codeg::CompileError("bad pool (pool \""+varPool+"\" does not exist)");
     }
 }
 
