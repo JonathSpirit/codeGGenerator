@@ -45,6 +45,9 @@ void printHelp()
     std::cout << "Set the output file (default is the input path+.cg)" << std::endl;
     std::cout << "\tcodeGGenerator --out=<path>" << std::endl << std::endl;
 
+    std::cout << "Write dummy arguments/values (useful for old compatibility), default no" << std::endl;
+    std::cout << "\tcodeGGenerator --writeDummy" << std::endl << std::endl;
+
     std::cout << "Print the version (and do nothing else)" << std::endl;
     std::cout << "\tcodeGGenerator --version" << std::endl << std::endl;
 
@@ -77,6 +80,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    bool writeDummy = false;
+
     for (std::size_t i=1; i<commands.size(); ++i)
     {
         //Commands
@@ -89,6 +94,11 @@ int main(int argc, char **argv)
         {
             printVersion();
             return 0;
+        }
+        if ( commands[i] == "--writeDummy")
+        {
+            writeDummy = true;
+            continue;
         }
         if ( commands[i] == "--ask")
         {
@@ -132,6 +142,7 @@ int main(int argc, char **argv)
 
     ///Compiler data
     codeg::CompilerData data;
+    data._code.setWriteDummy(writeDummy);
 
     ///Opening files
     if ( !data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_file(fileInPath)) ) )
