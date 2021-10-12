@@ -76,7 +76,7 @@ add_executable(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC "include/")
 target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_BINARY_DIR}")
 
-#Sources file
+#Source files
 target_sources(${PROJECT_NAME} PUBLIC "src/main.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_variable.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_value.cpp")
@@ -93,6 +93,26 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_readableBus.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_fileReader.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_function.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_reserved.cpp")
+
+#Header files
+target_sources(${PROJECT_NAME} PUBLIC "include/main.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_variable.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_value.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_target.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_stringDecomposer.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_string.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_macro.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_keyword.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_instruction.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_console.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_compilerData.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_address.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_readableBus.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_fileReader.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_function.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_reserved.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_error.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_bus.hpp")
 
 #Add test
 add_test(NAME "CompilingTestFile" COMMAND ${PROJECT_NAME} "--in=example/test")
