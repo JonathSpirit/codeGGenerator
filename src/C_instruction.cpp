@@ -430,7 +430,29 @@ std::string Instruction_affect::getName() const
 
 void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() == 2 )
+    if ( input._arguments.size() == 1 )
+    {
+        codeg::Keyword arg;
+        if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//A value
+            if (arg._valueIsVariable)
+            {
+                throw codeg::CompileError("can't copy a variable in another memory location");
+            }
+            if ( arg._valueSize > 1 )
+            {
+                throw codeg::ByteSizeError(1, "1");
+            }
+
+            data._code.push(codeg::OPCODE_RAMW | arg._valueBus);
+            data._code.pushCheckDummy(arg._value, arg._valueBus);
+        }
+        else
+        {
+            throw codeg::ArgumentError(1, "value");
+        }
+    }
+    else if ( input._arguments.size() == 2 )
     {//fixed specified address or variable
         codeg::Keyword arg;
         if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
@@ -570,7 +592,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
     }
     else
     {
-        throw codeg::ArgumentsSizeError("3, >= 4", input._arguments.size());
+        throw codeg::ArgumentsSizeError("1,2, >= 3", input._arguments.size());
     }
 }
 
