@@ -327,7 +327,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         {//A value
             if ( arg._valueIsVariable )
             {//A variable
-                arg._variable->_link.push_back(data._code.getCursor());
+                arg._variable->_link.push_back({data._code.getCursor()});
 
                 data._code.pushEmptyVarAccess();
                 data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_RAM);
@@ -352,7 +352,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         {//A value
             if ( arg._valueIsVariable )
             {//A variable
-                arg._variable->_link.push_back(data._code.getCursor());
+                arg._variable->_link.push_back({data._code.getCursor()});
 
                 data._code.pushEmptyVarAccess();
                 data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_RAM);
@@ -377,7 +377,7 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         {//A value
             if ( arg._valueIsVariable )
             {//A variable
-                arg._variable->_link.push_back(data._code.getCursor());
+                arg._variable->_link.push_back({data._code.getCursor()});
 
                 data._code.pushEmptyVarAccess();
                 data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_RAM);
@@ -445,7 +445,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                         throw codeg::ByteSizeError(2, "1");
                     }
 
-                    arg._variable->_link.push_back(data._code.getCursor());
+                    arg._variable->_link.push_back({data._code.getCursor()});
                     data._code.pushEmptyVarAccess();
 
                     data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
@@ -521,7 +521,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                     throw codeg::ByteSizeError(2, "<= 2");
                 }
 
-                codeg::Address offset = argOffset._value;
+                codeg::MemorySize offset = argOffset._value;
                 std::size_t numOfValue = input._arguments.size() - 2;
                 if ( (numOfValue+offset) > pool->getMaxSize())
                 {
@@ -540,7 +540,7 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
                                 throw codeg::ByteSizeError(i+3, "1");
                             }
 
-                            pool->_link.push_back({data._code.getCursor(), static_cast<codeg::Address>(i)+offset});
+                            pool->_link.push_back({data._code.getCursor(), static_cast<codeg::MemorySize>(i+offset)});
 
                             data._code.pushEmptyVarAccess();
 
@@ -587,7 +587,7 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
         codeg::Keyword arg;
         if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
         {//Variable
-            arg._variable->_link.push_back(data._code.getCursor());
+            arg._variable->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
         else if ( arg._type == codeg::KeywordTypes::KEYWORD_CONSTANT )
@@ -605,45 +605,59 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
         }
     }
     else if ( input._arguments.size() == 2 )
-    {//fixed size pool
-        codeg::Keyword argPoolName;
-        if ( argPoolName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
+    {//fixed size pool, or variable with offset
+        codeg::Keyword argOffset;
+        if ( argOffset.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
+        {//Offset
+            if (argOffset._valueSize > 2)
+            {
+                throw codeg::ByteSizeError(2, "<= 2");
+            }
+        }
+        else
+        {
+            throw codeg::ArgumentError(2, "constant");
+        }
+
+        codeg::Keyword arg1;
+        if ( arg1.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
         {//Pool name
-            codeg::Pool* pool = data._pools.getPool(argPoolName._str);
+            codeg::Pool* pool = data._pools.getPool(arg1._str);
             if (!pool)
             {
-                throw codeg::CompileError("bad argument (unknown pool : \""+argPoolName._str+"\")");
+                throw codeg::CompileError("bad argument (unknown pool : \""+arg1._str+"\")");
             }
             if ( pool->getMaxSize() == 0 )
             {
                 throw codeg::CompileError("bad argument (pool must have a fixed size)");
             }
 
-            codeg::Keyword argOffset;
-            if ( argOffset.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-            {//Offset
-                if (argOffset._valueSize > 2)
+            codeg::MemorySize offset = argOffset._value;
+            if (offset >= pool->getMaxSize())
+            {
+                throw codeg::CompileError("pool overflow (try to get value at offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
+            }
+
+            pool->_link.push_back({data._code.getCursor(), offset});
+            data._code.pushEmptyVarAccess();
+        }
+        else
+        {
+            if (arg1._type == codeg::KeywordTypes::KEYWORD_VARIABLE)
+            {//Variable
+                codeg::MemorySize offset = argOffset._value;
+                if (offset >= arg1._variable->_size)
                 {
-                    throw codeg::ByteSizeError(2, "<= 2");
+                    throw codeg::CompileError("variable overflow (try to get value at offset "+std::to_string(offset)+" but the variable size is "+std::to_string(arg1._variable->_size)+")");
                 }
 
-                codeg::Address offset = argOffset._value;
-                if (offset >= pool->getMaxSize())
-                {
-                    throw codeg::CompileError("pool overflow (try to get value at offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
-                }
-
-                pool->_link.push_back({data._code.getCursor(), offset});
+                arg1._variable->_link.push_back({data._code.getCursor(), offset});
                 data._code.pushEmptyVarAccess();
             }
             else
             {
-                throw codeg::ArgumentError(2, "constant");
+                throw codeg::ArgumentError(1, "name/variable");
             }
-        }
-        else
-        {
-            throw codeg::ArgumentError(1, "name");
         }
     }
     else
@@ -673,7 +687,7 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
         {//A value
             if (argValue._valueIsVariable)
             {//A variable
-                argValue._variable->_link.push_back(data._code.getCursor());
+                argValue._variable->_link.push_back({data._code.getCursor()});
                 data._code.pushEmptyVarAccess();
             }
             else if (argValue._valueSize != 1)
@@ -738,7 +752,7 @@ void Instruction_select::compile(const codeg::StringDecomposer& input, codeg::Co
         {//A value
             if (argValue._valueIsVariable)
             {//A variable
-                argValue._variable->_link.push_back(data._code.getCursor());
+                argValue._variable->_link.push_back({data._code.getCursor()});
                 data._code.pushEmptyVarAccess();
             }
             else if (argValue._valueSize != 1)
@@ -791,7 +805,7 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//A value
         if (argValueLeft._valueIsVariable)
         {
-            argValueLeft._variable->_link.push_back(data._code.getCursor());
+            argValueLeft._variable->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
         else if (argValueLeft._valueSize != 1)
@@ -812,7 +826,7 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//A value
         if (argValueOp._valueIsVariable)
         {
-            argValueOp._variable->_link.push_back(data._code.getCursor());
+            argValueOp._variable->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
         else if (argValueOp._valueSize != 1)
@@ -833,7 +847,7 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//A value
         if (argValueRight._valueIsVariable)
         {
-            argValueRight._variable->_link.push_back(data._code.getCursor());
+            argValueRight._variable->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
         else if (argValueRight._valueSize != 1)
@@ -1017,7 +1031,7 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     {//A value
         if (argValue._valueIsVariable)
         {//A variable
-            argValue._variable->_link.push_back(data._code.getCursor());
+            argValue._variable->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
         else if (argValue._valueSize != 1)
@@ -1098,7 +1112,7 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     {//A value
         if (argValue._valueIsVariable)
         {//A variable
-            argValue._variable->_link.push_back(data._code.getCursor());
+            argValue._variable->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
         else if (argValue._valueSize != 1)
@@ -1226,17 +1240,17 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         //Prepare return address
         uint32_t returnAddress = data._code.getCursor() + 25;
 
-        argVar1._variable->_link.push_back(data._code.getCursor()); //MSB
+        argVar1._variable->_link.push_back({data._code.getCursor()}); //MSB
         data._code.pushEmptyVarAccess();
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push((returnAddress&0x00FF0000)>>16);
 
-        argVar2._variable->_link.push_back(data._code.getCursor()); //MSB
+        argVar2._variable->_link.push_back({data._code.getCursor()}); //MSB
         data._code.pushEmptyVarAccess();
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push((returnAddress&0x0000FF00)>>8);
 
-        argVar3._variable->_link.push_back(data._code.getCursor()); //MSB
+        argVar3._variable->_link.push_back({data._code.getCursor()}); //MSB
         data._code.pushEmptyVarAccess();
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push(returnAddress&0x000000FF);

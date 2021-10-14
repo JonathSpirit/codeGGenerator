@@ -217,6 +217,7 @@ class Instruction_get : public Instruction
     KEYWORD         ARGUMENTS               DESCRIPTION
     get             [constant]              Get a fixed specified address [constant].
                     [variable]              Get a [variable].
+                    [variable] [constant]   Get a [variable] with an fixed address offset [constant].
                     [name] [constant]       Get in a fixed size pool [name] with an fixed address offset [constant].
     You can use the result with keyword "_ram".
     **/

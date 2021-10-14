@@ -29,11 +29,17 @@ typedef uint16_t MemoryAddress;
 typedef uint16_t MemorySize;
 typedef uint32_t MemoryBigSize;
 
+struct VariableLink
+{
+    codeg::Address _address;
+    codeg::MemorySize _offset = 0;
+};
+
 struct Variable
 {
     std::string _name;
     codeg::MemorySize _size;
-    std::list<codeg::Address> _link;
+    std::list<codeg::VariableLink> _link;
 };
 
 class Pool
@@ -74,7 +80,7 @@ public:
     struct PoolLink
     {
         codeg::Address _address;
-        codeg::Address _offset;
+        codeg::MemorySize _offset;
     };
     std::list<codeg::Pool::PoolLink> _link;
 

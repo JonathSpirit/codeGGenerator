@@ -134,7 +134,7 @@ bool Pool::addVariable(const std::string& name, codeg::MemorySize size)
         }
     }
 
-    this->g_variables.push_back({name, size, std::list<codeg::Address>()});
+    this->g_variables.push_back({name, size, std::list<codeg::VariableLink>()});
     return true;
 }
 codeg::Variable* Pool::getVariable(const std::string& name)
@@ -175,10 +175,10 @@ codeg::MemorySize Pool::resolveLinks(codeg::CompilerData& data, const codeg::Mem
     for ( codeg::Variable& valVar : this->g_variables )
     {
         codeg::MemoryAddress varAdd = startAddress + offset;
-        for ( codeg::Address& valTarget : valVar._link )
+        for ( codeg::VariableLink& valTarget : valVar._link )
         {
-            data._code[valTarget + 1] = varAdd >> 8;//Address MSB
-            data._code[valTarget + 3] = varAdd & 0x00FF;//Address LSB
+            data._code[valTarget._address + 1] = (valTarget._offset + varAdd) >> 8;//Address MSB
+            data._code[valTarget._address + 3] = (valTarget._offset + varAdd) & 0x00FF;//Address LSB
         }
         offset += valVar._size;
     }
