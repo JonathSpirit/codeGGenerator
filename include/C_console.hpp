@@ -24,6 +24,9 @@ namespace codeg
 
 int ConsoleInit();
 
+bool LogOpen(const std::string& path);
+void LogClose();
+
 void ConsoleWrite(const std::string& str);
 
 void ConsoleFatalWrite(const std::string& str);

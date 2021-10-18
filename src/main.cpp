@@ -45,6 +45,12 @@ void printHelp()
     std::cout << "Set the output file (default is the input path+.cg)" << std::endl;
     std::cout << "\tcodeGGenerator --out=<path>" << std::endl << std::endl;
 
+    std::cout << "Set the output log file (default is the input path+.log)" << std::endl;
+    std::cout << "\tcodeGGenerator --outLog=<path>" << std::endl << std::endl;
+
+    std::cout << "Don't write a log file (default a log file is writed)" << std::endl;
+    std::cout << "\tcodeGGenerator --noLog" << std::endl << std::endl;
+
     std::cout << "Write dummy arguments/values (useful for old compatibility), default no" << std::endl;
     std::cout << "\tcodeGGenerator --writeDummy" << std::endl << std::endl;
 
@@ -71,6 +77,7 @@ int main(int argc, char **argv)
 
     std::string fileInPath;
     std::string fileOutPath;
+    std::string fileLogOutPath;
 
     std::vector<std::string> commands(argv, argv + argc);
 
@@ -81,6 +88,7 @@ int main(int argc, char **argv)
     }
 
     bool writeDummy = false;
+    bool writeLogFile = true;
 
     for (std::size_t i=1; i<commands.size(); ++i)
     {
@@ -94,6 +102,11 @@ int main(int argc, char **argv)
         {
             printVersion();
             return 0;
+        }
+        if ( commands[i] == "--noLog")
+        {
+            writeLogFile = false;
+            continue;
         }
         if ( commands[i] == "--writeDummy")
         {
@@ -123,6 +136,11 @@ int main(int argc, char **argv)
                 fileOutPath = splitedCommand[1];
                 continue;
             }
+            if ( splitedCommand[0] == "--outLog")
+            {
+                fileLogOutPath = splitedCommand[1];
+                continue;
+            }
         }
 
         //Unknown command
@@ -138,6 +156,10 @@ int main(int argc, char **argv)
     if ( fileOutPath.empty() )
     {
         fileOutPath = fileInPath+".cg";
+    }
+    if ( fileLogOutPath.empty() && writeLogFile )
+    {
+        fileLogOutPath = fileInPath+".log";
     }
 
     ///Compiler data
@@ -155,18 +177,32 @@ int main(int argc, char **argv)
     std::ofstream fileOutBinary( fileOutPath, std::ios::binary | std::ios::trunc );
     if ( !fileOutBinary )
     {
-        std::cout << "Can't write the file \""<< fileOutPath <<".cg\"" << std::endl;
+        std::cout << "Can't write the file \""<< fileOutPath <<"\"" << std::endl;
         return -1;
     }
     std::ofstream fileOutReadable( fileInPath+".rcg", std::ios::trunc );
     if ( !fileOutReadable )
     {
-        std::cout << "Can't write the file \""<< fileInPath <<".rcg\"" << std::endl;
+        std::cout << "Can't write the file \""<< fileInPath <<"\"" << std::endl;
         return -1;
+    }
+
+    if (writeLogFile)
+    {
+        if ( !codeg::LogOpen(fileLogOutPath) )
+        {
+            std::cout << "Can't write the file \""<< fileLogOutPath <<"\"" << std::endl;
+            return -1;
+        }
     }
 
     std::cout << "Input file : \""<< fileInPath <<"\"" << std::endl;
     std::cout << "Output file : \""<< fileOutPath <<"\"" << std::endl;
+    if (writeLogFile)
+    {
+        std::cout << "Output log file : \""<< fileLogOutPath <<"\"" << std::endl;
+    }
+    std::cout << std::endl;
 
     ///Creating default pool
     codeg::Pool defaultPool("global");
@@ -415,6 +451,8 @@ int main(int argc, char **argv)
         }
         return -1;
     }
+
+    codeg::LogClose();
 
     return 0;
 }

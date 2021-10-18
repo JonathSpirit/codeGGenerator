@@ -18,6 +18,7 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
+#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -29,6 +30,12 @@
 
 namespace codeg
 {
+namespace
+{
+
+std::ofstream __logFile;
+
+}//end
 
 int ConsoleInit()
 {
@@ -58,9 +65,33 @@ int ConsoleInit()
     return 0;
 }
 
+bool LogOpen(const std::string& path)
+{
+    if ( __logFile.is_open() )
+    {
+        return false;
+    }
+    __logFile.open(path, std::ofstream::ate);
+
+    if ( __logFile.good() )
+    {
+        return true;
+    }
+    __logFile.close();
+    return false;
+}
+void LogClose()
+{
+    __logFile.close();
+}
+
 void ConsoleWrite(const std::string& str)
 {
     std::cout << str << std::endl;
+    if ( __logFile.is_open() )
+    {
+        __logFile << str << std::endl;
+    }
 }
 
 void ConsoleFatalWrite(const std::string& str)
@@ -69,6 +100,10 @@ void ConsoleFatalWrite(const std::string& str)
     std::cout << "\x1b[31m";
     std::cout << "[fatal](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
     std::cout << "\x1b[0m";
+    if ( __logFile.is_open() )
+    {
+        __logFile << "[fatal](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    }
 }
 
 void ConsoleErrorWrite(const std::string& str)
@@ -77,6 +112,10 @@ void ConsoleErrorWrite(const std::string& str)
     std::cout << "\x1b[31m";
     std::cout << "[error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
     std::cout << "\x1b[0m";
+    if ( __logFile.is_open() )
+    {
+        __logFile << "[error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    }
 }
 
 void ConsoleWarningWrite(const std::string& str)
@@ -85,12 +124,20 @@ void ConsoleWarningWrite(const std::string& str)
     std::cout << "\x1b[36m";
     std::cout << "[warning](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
     std::cout << "\x1b[0m";
+    if ( __logFile.is_open() )
+    {
+        __logFile << "[warning](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    }
 }
 
 void ConsoleInfoWrite(const std::string& str)
 {
     std::time_t t = std::time(nullptr);
     std::cout << "[info](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    if ( __logFile.is_open() )
+    {
+        __logFile << "[info](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    }
 }
 
 void ConsoleSyntaxWrite(const std::string& str)
@@ -99,6 +146,10 @@ void ConsoleSyntaxWrite(const std::string& str)
     std::cout << "\x1b[33m";
     std::cout << "[syntax error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
     std::cout << "\x1b[0m";
+    if ( __logFile.is_open() )
+    {
+        __logFile << "[syntax error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    }
 }
 
 }//end codeg
