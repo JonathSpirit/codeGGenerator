@@ -18,7 +18,7 @@
 #define C_ADDRESS_H_INCLUDED
 
 #include <string>
-#include <list>
+#include <vector>
 
 #define CODEG_NULL_UINDEX 0
 
@@ -48,15 +48,18 @@ struct JumpPoint
 
 struct JumpList
 {
+    using LabelListType = std::vector<codeg::Label>;
+    using JumpPointListType = std::vector<codeg::JumpPoint>;
+
     void resolve(codeg::CompilerData& data);
 
     bool addLabel(const codeg::Label& d);
     bool addJumpPoint(const codeg::JumpPoint& d);
 
-    std::list<codeg::Label>::iterator getLabel(const std::string& name);
+    codeg::JumpList::LabelListType::iterator getLabel(const std::string& name);
 
-    std::list<codeg::Label> _labels;
-    std::list<codeg::JumpPoint> _jumpPoints;
+    codeg::JumpList::LabelListType _labels;
+    codeg::JumpList::JumpPointListType _jumpPoints;
 };
 
 }//end codeg

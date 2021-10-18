@@ -19,6 +19,7 @@
 
 #include "main.hpp"
 #include "C_address.hpp"
+#include <list>
 
 namespace codeg
 {

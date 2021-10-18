@@ -72,7 +72,7 @@ void JumpList::resolve(codeg::CompilerData& data)
 bool JumpList::addLabel(const codeg::Label& d)
 {
     //Name check
-    for (auto&& value : this->_labels)
+    for (auto& value : this->_labels)
     {
         if (d._name == value._name)
         {
@@ -92,7 +92,7 @@ bool JumpList::addLabel(const codeg::Label& d)
             }
 
             valid = true;
-            for (auto&& value : this->_labels)
+            for (auto& value : this->_labels)
             {
                 if (codeg::Label::s_indexCount == value._uniqueIndex)
                 {
@@ -106,7 +106,7 @@ bool JumpList::addLabel(const codeg::Label& d)
     }
     else
     {
-        for (auto&& value : this->_labels)
+        for (auto& value : this->_labels)
         {
             if (d._uniqueIndex == value._uniqueIndex)
             {
@@ -125,9 +125,9 @@ bool JumpList::addJumpPoint(const codeg::JumpPoint& d)
     return true;
 }
 
-std::list<codeg::Label>::iterator JumpList::getLabel(const std::string& name)
+codeg::JumpList::LabelListType::iterator JumpList::getLabel(const std::string& name)
 {
-    for (std::list<codeg::Label>::iterator it=this->_labels.begin(); it!=this->_labels.end(); ++it)
+    for (auto it=this->_labels.begin(); it!=this->_labels.end(); ++it)
     {
         if (name == (*it)._name)
         {
