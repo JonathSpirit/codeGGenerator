@@ -1300,7 +1300,7 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         {
             throw codeg::CompileError("bad definition/function (unknown definition/function \""+argName._str+"\")");
         }
-        if ( !func->isDefinition() )
+        if ( func->isDefinition() )
         {//definition
             data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_definition(func)) );
         }
