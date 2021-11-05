@@ -21,6 +21,7 @@
 #include "C_keyword.hpp"
 #include "C_bus.hpp"
 #include "C_error.hpp"
+#include <limits>
 
 #define CODEG_INSTRUCTIONLIST_RESERVE_SIZE (0xFF&CODEG_BINARYOPCODES_MASK)
 

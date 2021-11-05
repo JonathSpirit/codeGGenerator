@@ -22,6 +22,7 @@
 #include <stack>
 #include <vector>
 #include <string>
+#include <limits>
 
 #include "C_target.hpp"
 #include "C_value.hpp"

@@ -18,6 +18,7 @@
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
 #include "C_error.hpp"
+#include <limits>
 
 namespace codeg
 {
