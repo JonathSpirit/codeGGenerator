@@ -32,6 +32,9 @@ enum BusTypes : uint8_t
     BUS_SPICFG = 3,
     BUS_SPI    = 4,
 
+    BUS_OPLEFT = 5,
+    BUS_OPRIGHT = 6,
+
     BUS_UNKNOWN = 0xFF
 };
 

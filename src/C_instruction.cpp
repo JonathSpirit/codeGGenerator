@@ -742,6 +742,13 @@ void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::Com
             data._code.push(codeg::OPCODE_SPI_CLK | argValue._valueBus);
             break;
 
+        case codeg::BUS_OPLEFT:
+            data._code.push(codeg::OPCODE_OPLEFT_CLK | argValue._valueBus);
+            break;
+        case codeg::BUS_OPRIGHT:
+            data._code.push(codeg::OPCODE_OPRIGHT_CLK | argValue._valueBus);
+            break;
+
         default:
             throw codeg::CompileError("bad bus (unknown bus)");
             break;
