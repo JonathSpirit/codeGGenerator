@@ -266,7 +266,8 @@ class Instruction_do : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                    DESCRIPTION
-    do              do [value] [value] [value]   Do a calcul : opleft operation opright.
+    do              do [value] [value] [value]   Do a calculation : opleft [value] operation [value] opright [value].
+    do              do [value] [value]           Do a calculation (without selecting operation): opleft [value] opright [value].
     **/
 public:
     Instruction_do() = default;

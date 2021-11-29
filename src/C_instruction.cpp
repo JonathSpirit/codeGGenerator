@@ -824,9 +824,40 @@ std::string Instruction_do::getName() const
 
 void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 3 )
+    if ( input._arguments.size() != 3 && input._arguments.size() != 2 )
     {//Check size
-        throw codeg::ArgumentsSizeError("3", input._arguments.size());
+        throw codeg::ArgumentsSizeError("2,3", input._arguments.size());
+    }
+
+    ///OPERATION
+    std::size_t oprightArgIndex;
+    if (input._arguments.size() == 3)
+    {
+        oprightArgIndex = 2;
+
+        codeg::Keyword argValueOp;
+        if ( argValueOp.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+        {//A value
+            if (argValueOp._valueIsVariable)
+            {
+                argValueOp._variable->_link.push_back({data._code.getCursor()});
+                data._code.pushEmptyVarAccess();
+            }
+            else if (argValueOp._valueSize != 1)
+            {
+                throw codeg::ByteSizeError(2, "1");
+            }
+        }
+        else
+        {
+            throw codeg::ArgumentError(2, "value");
+        }
+        data._code.push(codeg::OPCODE_OPCHOOSE_CLK | argValueOp._valueBus);
+        data._code.pushCheckDummy(argValueOp._value, argValueOp._valueBus);
+    }
+    else
+    {
+        oprightArgIndex = 1;
     }
 
     ///LEFT
@@ -850,30 +881,9 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
     data._code.push(codeg::OPCODE_OPLEFT_CLK | argValueLeft._valueBus);
     data._code.pushCheckDummy(argValueLeft._value, argValueLeft._valueBus);
 
-    ///OPERATION
-    codeg::Keyword argValueOp;
-    if ( argValueOp.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if (argValueOp._valueIsVariable)
-        {
-            argValueOp._variable->_link.push_back({data._code.getCursor()});
-            data._code.pushEmptyVarAccess();
-        }
-        else if (argValueOp._valueSize != 1)
-        {
-            throw codeg::ByteSizeError(2, "1");
-        }
-    }
-    else
-    {
-        throw codeg::ArgumentError(2, "value");
-    }
-    data._code.push(codeg::OPCODE_OPCHOOSE_CLK | argValueOp._valueBus);
-    data._code.pushCheckDummy(argValueOp._value, argValueOp._valueBus);
-
     ///RIGHT
     codeg::Keyword argValueRight;
-    if ( argValueRight.process(input._arguments[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+    if ( argValueRight.process(input._arguments[oprightArgIndex], codeg::KeywordTypes::KEYWORD_VALUE, data) )
     {//A value
         if (argValueRight._valueIsVariable)
         {
@@ -882,12 +892,12 @@ void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::Compil
         }
         else if (argValueRight._valueSize != 1)
         {
-            throw codeg::ByteSizeError(3, "1");
+            throw codeg::ByteSizeError(oprightArgIndex+1, "1");
         }
     }
     else
     {
-        throw codeg::ArgumentError(3, "value");
+        throw codeg::ArgumentError(oprightArgIndex+1, "value");
     }
     data._code.push(codeg::OPCODE_OPRIGHT_CLK | argValueRight._valueBus);
     data._code.pushCheckDummy(argValueRight._value, argValueRight._valueBus);
