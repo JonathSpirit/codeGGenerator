@@ -199,7 +199,7 @@ class Instruction_affect : public Instruction
     /**
     KEYWORD         ARGUMENTS                                   DESCRIPTION
     affect          [constant] [value]                          Assigns a fixed specified address [constant] to a certain [value].
-                    [variable] [value]                          Assigns a [variable] to a certain [value].
+                    [variable] [value] ([constant])             Assigns a [variable] to a certain [value] with an fixed address offset [constant].
                     [name] [constant] [value] ([value]...)      Assigns in a fixed size pool [name] with an fixed address offset [constant] a certain [value] (or multiple).
                     [value]                                     Assigns without setting the address a certain [value].
     **/

@@ -588,7 +588,62 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
         }
         else
         {
-            throw codeg::ArgumentError(1, "name");
+            if (input._arguments.size() == 3)
+            {
+                codeg::Keyword arg;
+                if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+                {//A variable
+                    codeg::MemorySize offset;
+                    codeg::Keyword argOffset;
+                    if ( argOffset.process(input._arguments[2], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
+                    {//Offset
+                        if (argOffset._valueSize > 2)
+                        {
+                            throw codeg::ByteSizeError(3, "<= 2");
+                        }
+
+                        offset = argOffset._value;
+                    }
+                    else
+                    {
+                        throw codeg::ArgumentError(3, "constant");
+                    }
+
+                    codeg::Keyword argValue;
+                    if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
+                    {//Check value
+                        if ( !argValue._valueIsVariable )
+                        {
+                            if (argValue._valueSize != 1)
+                            {
+                                throw codeg::ByteSizeError(2, "1");
+                            }
+
+                            arg._variable->_link.push_back({data._code.getCursor(), offset});
+                            data._code.pushEmptyVarAccess();
+
+                            data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
+                            data._code.pushCheckDummy(argValue._value, argValue._valueBus);
+                        }
+                        else
+                        {
+                            throw codeg::CompileError("can't copy a variable in another variable");
+                        }
+                    }
+                    else
+                    {
+                        throw codeg::ArgumentError(2, "value");
+                    }
+                }
+                else
+                {
+                    throw codeg::ArgumentError(1, "name/variable");
+                }
+            }
+            else
+            {
+                throw codeg::ArgumentError(1, "name");
+            }
         }
     }
     else
