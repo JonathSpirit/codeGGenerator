@@ -274,7 +274,7 @@ codeg::Variable* PoolList::getVariableWithString(const std::string& str, const s
 codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
 {
     codeg::MemoryBigSize totalSize = 0;
-    codeg::ConsoleInfoWrite( "Fixed start address only ..." );
+    ConsoleInfo << "Fixed start address only ..." << std::endl;
     std::vector<std::list<codeg::Pool>::iterator> appliedPools;
     appliedPools.reserve(this->g_pools.size());
 
@@ -282,18 +282,18 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
     {
         if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC )
         {
-            codeg::ConsoleInfoWrite( "Working on pool \""+(*it).getName()+"\":" );
-            codeg::ConsoleInfoWrite( "\tvariable size: "+std::to_string((*it).getVariableSize()) );
-            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getMemorySize()) );
-            codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
-            codeg::ConsoleInfoWrite( "\tstart address: "+std::to_string((*it).getStartAddress()) );
+            ConsoleInfo << "Working on pool \"" << (*it).getName() << "\":" << std::endl;
+            ConsoleInfo << "\tvariable size: " << (*it).getVariableSize() << std::endl;
+            ConsoleInfo << "\tused size: " << (*it).getMemorySize() << std::endl;
+            ConsoleInfo << "\ttotal size: " << (*it).getTotalSize() << std::endl;
+            ConsoleInfo << "\tstart address: " << (*it).getStartAddress() << std::endl;
             if ( (*it).getTotalSize() == 0 )
             {//No variable and dynamic size
-                codeg::ConsoleWarningWrite("\tThe pool have a dynamic size with no variable, it will be ignored !");
+                ConsoleWarning << "\tThe pool have a dynamic size with no variable, it will be ignored !" << std::endl;
                 continue;
             }
 
-            codeg::ConsoleInfoWrite( "\tCheck if the pool can be applied ..." );
+            ConsoleInfo << "\tCheck if the pool can be applied ..." << std::endl;
             //Check if the pool can be applied
             for ( std::size_t i=0; i<appliedPools.size(); ++i )
             {
@@ -305,12 +305,12 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
 
             totalSize += (*it).resolveLinks(data, (*it).getStartAddress());
             appliedPools.push_back(it);
-            codeg::ConsoleInfoWrite( "\tPool applied !" );
+            ConsoleInfo << "\tPool applied !" << std::endl;
         }
     }
 
-    codeg::ConsoleInfoWrite( "OK" );
-    codeg::ConsoleInfoWrite( "Memory mapping ..." );
+    ConsoleInfo << "OK" << std::endl;
+    ConsoleInfo << "Memory mapping ..." << std::endl;
 
     std::vector<bool> mapping;
     mapping.resize(std::numeric_limits<codeg::MemorySize>::max(), true);
@@ -322,25 +322,25 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
         }
     }
 
-    codeg::ConsoleInfoWrite( "OK" );
-    codeg::ConsoleInfoWrite( "Dynamic start address only ..." );
+    ConsoleInfo << "OK" << std::endl;
+    ConsoleInfo << "Dynamic start address only ..." << std::endl;
 
     for ( std::list<codeg::Pool>::iterator it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
     {
         if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC )
         {
             bool isApplied = false;
-            codeg::ConsoleInfoWrite( "Working on pool \""+(*it).getName()+"\":" );
-            codeg::ConsoleInfoWrite( "\tvariable size: "+std::to_string((*it).getVariableSize()) );
-            codeg::ConsoleInfoWrite( "\tused size: "+std::to_string((*it).getMemorySize()) );
-            codeg::ConsoleInfoWrite( "\ttotal size: "+std::to_string((*it).getTotalSize()) );
+            ConsoleInfo << "Working on pool \"" << (*it).getName() << "\":" << std::endl;
+            ConsoleInfo << "\tvariable size: " << (*it).getVariableSize() << std::endl;
+            ConsoleInfo << "\tused size: " << (*it).getMemorySize() << std::endl;
+            ConsoleInfo << "\ttotal size: " << (*it).getTotalSize() << std::endl;
             if ( (*it).getTotalSize() == 0 )
             {//No variable and dynamic size
-                codeg::ConsoleWarningWrite("\tThe pool have a dynamic size with no variable, it will be ignored !");
+                ConsoleWarning << "\tThe pool have a dynamic size with no variable, it will be ignored !" << std::endl;
                 continue;
             }
 
-            codeg::ConsoleInfoWrite( "\tCheck if the pool can be applied ..." );
+            ConsoleInfo << "\tCheck if the pool can be applied ..." << std::endl;
             //Check if the pool can be applied
 
             codeg::MemoryAddress memoryStart = 0;
@@ -369,7 +369,7 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
                     {//size is ok !
                         totalSize += (*it).resolveLinks(data, memoryStart);
                         appliedPools.push_back(it);
-                        codeg::ConsoleInfoWrite( "\tPool applied at address "+std::to_string(memoryStart)+" !" );
+                        ConsoleInfo << "\tPool applied at address " << memoryStart << " !" << std::endl;
                         for ( codeg::MemorySize a=0; a<(*it).getTotalSize(); ++a )
                         {//Removing memory location that will be used
                             mapping[memoryStart + a] = false;
@@ -386,7 +386,7 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
         }
     }
 
-    codeg::ConsoleInfoWrite( "OK" );
+    ConsoleInfo << "OK" << std::endl;
 
     return totalSize;
 }

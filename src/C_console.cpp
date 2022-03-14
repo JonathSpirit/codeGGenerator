@@ -37,6 +37,29 @@ std::ofstream __logFile;
 
 }//end
 
+bool Console::logOpen(const std::filesystem::path& path)
+{
+    if ( this->g_log.is_open() )
+    {
+        return false;
+    }
+    this->g_log.rdbuf()->pubsetbuf(nullptr,0);
+    this->g_log.open(path, std::ofstream::ate);
+
+    if (this->g_log)
+    {
+        return true;
+    }
+    this->g_log.close();
+    return false;
+}
+void Console::logClose()
+{
+    this->g_log.close();
+}
+
+codeg::Console* varConsole{nullptr};
+
 int ConsoleInit()
 {
     #ifdef _WIN32

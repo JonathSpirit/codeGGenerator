@@ -76,6 +76,15 @@ int main(int argc, char **argv)
         std::cout << "Warning, bad console init, the console can be ugly now ! (error: "<<err<<")" << std::endl;
     }
 
+    codeg::varConsole = new codeg::Console();
+    codeg::varConsole->logOpen("test.txt");
+
+    ConsoleError << "bonjour " << "ceci est un test " << 12589 << std::endl;
+    ConsoleSyntax << "test\n test" << std::endl;
+    ConsoleNone << " patate";
+
+    return 0;
+
     std::string fileInPath;
     std::string fileOutPath;
     std::string fileLogOutPath;
@@ -188,9 +197,10 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    codeg::varConsole = new codeg::Console();
     if (writeLogFile)
     {
-        if ( !codeg::LogOpen(fileLogOutPath) )
+        if ( !codeg::varConsole->logOpen(fileLogOutPath) )
         {
             std::cout << "Can't write the file \""<< fileLogOutPath <<"\"" << std::endl;
             return -1;
@@ -291,7 +301,7 @@ int main(int argc, char **argv)
     try
     {
         ///First step reading and compiling
-        codeg::ConsoleInfoWrite("Step 1 : Reading and compiling ...");
+        ConsoleInfo << "Step 1 : Reading and compiling ..." << std::endl;
 
         while( data._reader.getline(readedLine) )
         {
@@ -319,23 +329,23 @@ int main(int argc, char **argv)
             }
         }
 
-        if ( data._scopes.size() > 0 )
+        if ( !data._scopes.empty() )
         {//A scope is not terminated by 'end'
             throw codeg::CompileError("scope without an 'end' (maybe at line: "+std::to_string(data._scopes.top()._startLine)+" and file: "+data._scopes.top()._startFile+")");
         }
 
-        codeg::ConsoleInfoWrite("Step 1 : OK !\n");
-        codeg::ConsoleInfoWrite("Compiled size : "+std::to_string(data._code.getCursor())+" bytes\n");
+        ConsoleInfo << "Step 1 : OK !\n" << std::endl;
+        ConsoleInfo << "Compiled size : " << data._code.getCursor() << " bytes\n" << std::endl;
 
         ///Second step resolving jumplist
-        codeg::ConsoleInfoWrite("Step 2 : Resolving jumpList ...");
+        ConsoleInfo << ("Step 2 : Resolving jumpList ...");
 
         data._jumps.resolve(data);
 
-        codeg::ConsoleInfoWrite("Step 2 : OK !\n");
+        ConsoleInfo << ("Step 2 : OK !\n");
 
         ///Third step resolving pools
-        codeg::ConsoleInfoWrite("Step 3 : Resolving pools ...");
+        ConsoleInfo << ("Step 3 : Resolving pools ...");
 
         codeg::MemoryBigSize totalSize = data._pools.resolve(data);
 
@@ -343,16 +353,16 @@ int main(int argc, char **argv)
         {
             throw codeg::CompileError("data overflow, with "+std::to_string(totalSize)+" bytes");
         }
-        codeg::ConsoleInfoWrite("Memory used size : "+std::to_string(totalSize)+" bytes\n");
+        ConsoleInfo << "Memory used size : " << totalSize << " bytes\n" << std::endl;
 
-        codeg::ConsoleInfoWrite("Step 3 : OK !\n");
+        ConsoleInfo << "Step 3 : OK !\n" << std::endl;
 
         ///Writing on the output file
-        codeg::ConsoleInfoWrite("Writing codeG file (binary size : "+std::to_string(data._code.getCursor())+" bytes) ...");
+        ConsoleInfo << ("Writing codeG file (binary size : "+std::to_string(data._code.getCursor())+" bytes) ...");
         fileOutBinary.write(reinterpret_cast<char*>(data._code.getData()), data._code.getCursor());
         fileOutBinary.close();
 
-        codeg::ConsoleInfoWrite("Writing readable codeG file ...");
+        ConsoleInfo << "Writing readable codeG file ..." << std::endl;
 
         bool tmpFlagOpcode = true;
         uint8_t* dataPtr = data._code.getData();
@@ -378,7 +388,7 @@ int main(int argc, char **argv)
         }
 
         fileOutReadable.close();
-        codeg::ConsoleInfoWrite("OK !\n");
+        ConsoleInfo << "OK !\n" << std::endl;
     }
     catch (const codeg::CompileError& e)
     {
@@ -386,15 +396,15 @@ int main(int argc, char **argv)
         unsigned int tmpLine = data._reader.getlineCount();
         if (!tmpPath.empty())
         {
-            codeg::ConsoleErrorWrite("at file "+data._reader.getPath());
+            ConsoleError << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            codeg::ConsoleErrorWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+            ConsoleError << "at line " << data._reader.getlineCount() << " : " << e.what() << std::endl;
         }
         else
         {
-            codeg::ConsoleErrorWrite(e.what());
+            ConsoleError << e.what() << std::endl;
         }
         return -1;
     }
@@ -404,15 +414,15 @@ int main(int argc, char **argv)
         unsigned int tmpLine = data._reader.getlineCount();
         if (!tmpPath.empty())
         {
-            codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
+            ConsoleFatal << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+            ConsoleFatal << "at line " << data._reader.getlineCount() << " : " << e.what() << std::endl;
         }
         else
         {
-            codeg::ConsoleFatalWrite(e.what());
+            ConsoleFatal << e.what() << std::endl;
         }
         return -1;
     }
@@ -422,15 +432,15 @@ int main(int argc, char **argv)
         unsigned int tmpLine = data._reader.getlineCount();
         if (!tmpPath.empty())
         {
-            codeg::ConsoleSyntaxWrite("at file "+data._reader.getPath());
+            ConsoleSyntax << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            codeg::ConsoleSyntaxWrite("at line "+std::to_string(data._reader.getlineCount())+" : "+e.what());
+            ConsoleSyntax << "at line " << data._reader.getlineCount() << " : " << e.what() << std::endl;
         }
         else
         {
-            codeg::ConsoleSyntaxWrite(e.what());
+            ConsoleSyntax << e.what() << std::endl;
         }
         return -1;
     }
@@ -440,20 +450,21 @@ int main(int argc, char **argv)
         unsigned int tmpLine = data._reader.getlineCount();
         if (!tmpPath.empty())
         {
-            codeg::ConsoleFatalWrite("at file "+data._reader.getPath());
+            ConsoleFatal << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            codeg::ConsoleFatalWrite("at line "+std::to_string(data._reader.getlineCount())+" : unknown exception : "+std::string(e.what()) );
+            ConsoleFatal << "at line " << data._reader.getlineCount() << " : unknown exception : " << e.what() << std::endl;
         }
         else
         {
-            codeg::ConsoleFatalWrite("unknown exception : "+std::string(e.what()));
+            ConsoleFatal << "unknown exception : " << e.what() << std::endl;
         }
         return -1;
     }
 
-    codeg::LogClose();
+    codeg::varConsole->logClose();
+    delete codeg::varConsole;
 
     return 0;
 }

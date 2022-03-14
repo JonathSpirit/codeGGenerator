@@ -33,7 +33,7 @@ void JumpList::resolve(codeg::CompilerData& data)
     {
         if (vLabel._addressStatic >= data._code.getCursor())
         {//Address is out of code space
-            codeg::ConsoleWarningWrite("Label \""+vLabel._name+"\" is out of code space with address : "+std::to_string(vLabel._addressStatic));
+            ConsoleWarning << "Label \"" << vLabel._name << "\" is out of code space with address : " << vLabel._addressStatic << std::endl;
         }
 
         uint32_t jpCount = 0;
@@ -56,7 +56,7 @@ void JumpList::resolve(codeg::CompilerData& data)
             }
         }
 
-        codeg::ConsoleInfoWrite("\tLabel \""+vLabel._name+"\" with "+std::to_string(jpCount)+" jump points");
+        ConsoleWarning << "\tLabel \"" << vLabel._name << "\" with " << jpCount << " jump points" << std::endl;
     }
 
     //Check for non-applied jumpPoint

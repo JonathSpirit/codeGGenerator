@@ -143,7 +143,7 @@ void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::Compi
     if ( data._macros.check(argStringName._str) )
     {//Check if already set
         data._macros.set(argStringName._str, argStringData._str);
-        codeg::ConsoleWarningWrite("macro \""+ argStringName._str +"\" already exist and will be replaced");
+        ConsoleWarning << "macro \"" << argStringName._str << "\" already exist and will be replaced" << std::endl;
     }
     else
     {
