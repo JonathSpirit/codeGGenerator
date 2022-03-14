@@ -59,7 +59,7 @@ public:
 
     codeg::Console& operator <<( std::basic_ostream<CharT,Traits>& (*func)(std::basic_ostream<CharT,Traits>&) )
     {
-        if (func == std::endl<CharT,Traits> )
+        if (func == &std::endl<CharT,Traits> )
         {
             std::cout << "\x1b[0m\n";
             if (this->g_log)
