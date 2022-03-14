@@ -145,18 +145,4 @@ std::string ValueToHex(uint32_t val, unsigned int hexSize, bool removeExtraZero,
     return out;
 }
 
-std::string GetRelativePath(const std::string& filePath)
-{
-    std::string result = filePath;
-
-    size_t pos = filePath.find_last_of('/');
-    if (pos == std::string::npos)
-    {
-        return "";
-    }
-    result.erase(pos+1, std::string::npos);
-
-    return result;
-}
-
 }//end codeg

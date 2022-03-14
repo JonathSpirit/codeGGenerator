@@ -28,8 +28,6 @@ size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff);
 
 std::string ValueToHex(uint32_t val, unsigned int hexSize=8, bool removeExtraZero=false, bool removePrefix=false);
 
-std::string GetRelativePath(const std::string& filePath);
-
 }//end codeg
 
 #endif // C_STRING_H_INCLUDED

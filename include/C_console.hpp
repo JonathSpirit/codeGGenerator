@@ -20,6 +20,8 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <ctime>
+#include <iomanip>
 
 #define ConsoleNone *codeg::varConsole
 
@@ -140,17 +142,6 @@ private:
 extern codeg::Console* varConsole;
 
 int ConsoleInit();
-/*
-bool LogOpen(const std::string& path);
-void LogClose();
-
-void ConsoleWrite(const std::string& str);
-
-void ConsoleFatalWrite(const std::string& str);
-void ConsoleErrorWrite(const std::string& str);
-void ConsoleWarningWrite(const std::string& str);
-void ConsoleInfoWrite(const std::string& str);
-void ConsoleSyntaxWrite(const std::string& str);*/
 
 }//end codeg
 

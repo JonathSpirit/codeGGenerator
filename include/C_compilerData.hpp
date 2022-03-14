@@ -28,6 +28,7 @@
 #include "C_readableBus.hpp"
 #include <memory>
 #include <stack>
+#include <filesystem>
 
 namespace codeg
 {
@@ -139,7 +140,7 @@ struct CompilerData
     codeg::ScopeList _scopes;
 
     codeg::FileReader _reader;
-    std::string _relativePath;
+    std::filesystem::path _relativePath;
 
     codeg::CodeData _code;
 };

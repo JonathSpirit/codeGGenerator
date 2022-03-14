@@ -51,11 +51,11 @@ ReaderData_file::ReaderData_file() : ReaderData()
 {
 
 }
-ReaderData_file::ReaderData_file(const std::string& filePath)
+ReaderData_file::ReaderData_file(const std::filesystem::path& filePath)
 {
     this->g_file.open(filePath);
     this->_g_lineCount = 0;
-    this->_g_path = filePath;
+    this->_g_path = filePath.string();
 }
 ReaderData_file::~ReaderData_file()
 {

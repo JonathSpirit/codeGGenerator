@@ -214,7 +214,7 @@ void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::Compi
         {
             if (buffVar->_size == varSize)
             {
-                codeg::ConsoleWarningWrite("redeclaration of variable \""+varName+"\" in pool \""+varPool+"\" with size of "+std::to_string(varSize));
+                ConsoleWarning << "redeclaration of variable \""<<varName<<"\" in pool \""<<varPool<<"\" with size of " << varSize << std::endl;
             }
             else
             {
@@ -1432,7 +1432,7 @@ void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::Com
         {//A value
             if (argConstant._value == 0)
             {
-                codeg::ConsoleWarningWrite("you want 0 clock pulses, this instruction will be ignored");
+                ConsoleWarning << "you want 0 clock pulses, this instruction will be ignored" << std::endl;
             }
 
             for (uint32_t i=0; i<argConstant._value; ++i)
@@ -1493,7 +1493,7 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
 
     if ( codeg::Pool* tmpPool = data._pools.getPool(argName._str) )
     {//Pool already exist
-        codeg::ConsoleWarningWrite("pool \""+argName._str+"\" already exist and will be replaced !");
+        ConsoleWarning << "pool \"" << argName._str << "\" already exist and will be replaced !" << std::endl;
 
         tmpPool->setStartAddressType(isDynamic ? codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC : codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC);
         tmpPool->setAddress(startAddress, argSize._value);
@@ -1525,11 +1525,12 @@ void Instruction_import::compile(const codeg::StringDecomposer& input, codeg::Co
         throw codeg::ArgumentsSizeError("1", input._arguments.size());
     }
 
-    std::string path = data._relativePath + input._arguments[0];
+    std::filesystem::path path = data._relativePath;
+    path /= input._arguments[0];
 
     if ( !data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_file(path)) ) )
     {
-        throw codeg::FatalError("can't open the file : \""+path+"\"");
+        throw codeg::FatalError("can't open the file : \""+path.string()+"\"");
     }
 }
 
@@ -1557,7 +1558,7 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
         throw codeg::CompileError("bad definition (definition/function \""+argName._str+"\" already exist)");
     }
 
-    if ( data._scopes.size() )
+    if ( !data._scopes.empty() )
     {
         throw codeg::CompileError("definition error (can't create a definition in a scope)");
     }

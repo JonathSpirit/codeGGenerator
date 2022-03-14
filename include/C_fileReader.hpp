@@ -22,6 +22,7 @@
 #include <stack>
 #include <string>
 #include <memory>
+#include <filesystem>
 
 namespace codeg
 {
@@ -51,7 +52,7 @@ class ReaderData_file : public ReaderData
 {
 public:
     ReaderData_file();
-    ReaderData_file(const std::string& filePath);
+    ReaderData_file(const std::filesystem::path& filePath);
     ~ReaderData_file();
 
     bool getline(std::string& buffLine);

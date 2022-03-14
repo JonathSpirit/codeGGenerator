@@ -17,24 +17,18 @@
 #include "main.hpp"
 
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <stack>
+#include <filesystem>
 #include <vector>
 #include <string>
 #include <limits>
 
 #include "C_target.hpp"
-#include "C_value.hpp"
 #include "C_variable.hpp"
-#include "C_keyword.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
 #include "C_error.hpp"
 
 #include "CMakeConfig.hpp"
-
-using namespace std;
 
 void printHelp()
 {
@@ -49,7 +43,7 @@ void printHelp()
     std::cout << "Set the output log file (default is the input path+.log)" << std::endl;
     std::cout << "\tcodeGGenerator --outLog=<path>" << std::endl << std::endl;
 
-    std::cout << "Don't write a log file (default a log file is writed)" << std::endl;
+    std::cout << "Don't write a log file (default a log file is written)" << std::endl;
     std::cout << "\tcodeGGenerator --noLog" << std::endl << std::endl;
 
     std::cout << "Write dummy arguments/values (useful for old compatibility), default no" << std::endl;
@@ -76,18 +70,10 @@ int main(int argc, char **argv)
         std::cout << "Warning, bad console init, the console can be ugly now ! (error: "<<err<<")" << std::endl;
     }
 
-    codeg::varConsole = new codeg::Console();
-    codeg::varConsole->logOpen("test.txt");
-
-    ConsoleError << "bonjour " << "ceci est un test " << 12589 << std::endl;
-    ConsoleSyntax << "test\n test" << std::endl;
-    ConsoleNone << " patate";
-
-    return 0;
-
-    std::string fileInPath;
-    std::string fileOutPath;
-    std::string fileLogOutPath;
+    std::filesystem::path fileInPath;
+    std::filesystem::path fileOutPath;
+    std::filesystem::path fileReadableOutPath;
+    std::filesystem::path fileLogOutPath;
 
     std::vector<std::string> commands(argv, argv + argc);
 
@@ -126,29 +112,31 @@ int main(int argc, char **argv)
         if ( commands[i] == "--ask")
         {
             std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
-            std::getline(std::cin, fileInPath);
+            std::string path;
+            std::getline(std::cin, path);
+            fileInPath = path;
             continue;
         }
 
         //Commands with an argument
-        std::vector<std::string> splitedCommand;
-        codeg::Split(commands[i], splitedCommand, '=');
+        std::vector<std::string> splitCommand;
+        codeg::Split(commands[i], splitCommand, '=');
 
-        if (splitedCommand.size() == 2)
+        if (splitCommand.size() == 2)
         {
-            if ( splitedCommand[0] == "--in")
+            if (splitCommand[0] == "--in")
             {
-                fileInPath = splitedCommand[1];
+                fileInPath = splitCommand[1];
                 continue;
             }
-            if ( splitedCommand[0] == "--out")
+            if (splitCommand[0] == "--out")
             {
-                fileOutPath = splitedCommand[1];
+                fileOutPath = splitCommand[1];
                 continue;
             }
-            if ( splitedCommand[0] == "--outLog")
+            if (splitCommand[0] == "--outLog")
             {
-                fileLogOutPath = splitedCommand[1];
+                fileLogOutPath = splitCommand[1];
                 continue;
             }
         }
@@ -165,11 +153,15 @@ int main(int argc, char **argv)
     }
     if ( fileOutPath.empty() )
     {
-        fileOutPath = fileInPath+".cg";
+        fileOutPath = fileInPath;
+        fileOutPath += ".cg";
     }
+    fileReadableOutPath = fileInPath;
+    fileReadableOutPath += ".rcg";
     if ( fileLogOutPath.empty() && writeLogFile )
     {
-        fileLogOutPath = fileInPath+".log";
+        fileLogOutPath = fileInPath;
+        fileLogOutPath += ".log";
     }
 
     ///Compiler data
@@ -179,21 +171,21 @@ int main(int argc, char **argv)
     ///Opening files
     if ( !data._reader.open( std::shared_ptr<codeg::ReaderData>(new codeg::ReaderData_file(fileInPath)) ) )
     {
-        std::cout << "Can't read the file \""<< fileInPath <<"\"" << std::endl;
+        std::cout << "Can't read the file "<< fileInPath << std::endl;
         return -1;
     }
-    data._relativePath = codeg::GetRelativePath(fileInPath);
+    data._relativePath = fileInPath.relative_path().parent_path();
 
     std::ofstream fileOutBinary( fileOutPath, std::ios::binary | std::ios::trunc );
     if ( !fileOutBinary )
     {
-        std::cout << "Can't write the file \""<< fileOutPath <<"\"" << std::endl;
+        std::cout << "Can't write the file "<< fileOutPath << std::endl;
         return -1;
     }
-    std::ofstream fileOutReadable( fileInPath+".rcg", std::ios::trunc );
+    std::ofstream fileOutReadable( fileReadableOutPath, std::ios::trunc );
     if ( !fileOutReadable )
     {
-        std::cout << "Can't write the file \""<< fileInPath <<"\"" << std::endl;
+        std::cout << "Can't write the file "<< fileInPath << std::endl;
         return -1;
     }
 
@@ -202,16 +194,16 @@ int main(int argc, char **argv)
     {
         if ( !codeg::varConsole->logOpen(fileLogOutPath) )
         {
-            std::cout << "Can't write the file \""<< fileLogOutPath <<"\"" << std::endl;
+            std::cout << "Can't write the file "<< fileLogOutPath << std::endl;
             return -1;
         }
     }
 
-    std::cout << "Input file : \""<< fileInPath <<"\"" << std::endl;
-    std::cout << "Output file : \""<< fileOutPath <<"\"" << std::endl;
+    std::cout << "Input file : "<< fileInPath << std::endl;
+    std::cout << "Output file : "<< fileOutPath << std::endl;
     if (writeLogFile)
     {
-        std::cout << "Output log file : \""<< fileLogOutPath <<"\"" << std::endl;
+        std::cout << "Output log file : "<< fileLogOutPath << std::endl;
     }
     std::cout << std::endl;
 
@@ -296,16 +288,16 @@ int main(int argc, char **argv)
     ///Code
     data._code.resize(65536);
 
-    std::string readedLine;
+    std::string readLine;
 
     try
     {
         ///First step reading and compiling
         ConsoleInfo << "Step 1 : Reading and compiling ..." << std::endl;
 
-        while( data._reader.getline(readedLine) )
+        while( data._reader.getline(readLine) )
         {
-            data._decomposer.decompose(readedLine, data._decomposer._flags);
+            data._decomposer.decompose(readLine, data._decomposer._flags);
 
             if ( !data._decomposer._instruction.empty() )
             {
@@ -338,14 +330,14 @@ int main(int argc, char **argv)
         ConsoleInfo << "Compiled size : " << data._code.getCursor() << " bytes\n" << std::endl;
 
         ///Second step resolving jumplist
-        ConsoleInfo << ("Step 2 : Resolving jumpList ...");
+        ConsoleInfo << "Step 2 : Resolving jumpList ..." << std::endl;
 
         data._jumps.resolve(data);
 
-        ConsoleInfo << ("Step 2 : OK !\n");
+        ConsoleInfo << "Step 2 : OK !\n" << std::endl;
 
         ///Third step resolving pools
-        ConsoleInfo << ("Step 3 : Resolving pools ...");
+        ConsoleInfo << "Step 3 : Resolving pools ..." << std::endl;
 
         codeg::MemoryBigSize totalSize = data._pools.resolve(data);
 
@@ -358,7 +350,7 @@ int main(int argc, char **argv)
         ConsoleInfo << "Step 3 : OK !\n" << std::endl;
 
         ///Writing on the output file
-        ConsoleInfo << ("Writing codeG file (binary size : "+std::to_string(data._code.getCursor())+" bytes) ...");
+        ConsoleInfo << "Writing codeG file (binary size : " << data._code.getCursor() << " bytes) ..." << std::endl;
         fileOutBinary.write(reinterpret_cast<char*>(data._code.getData()), data._code.getCursor());
         fileOutBinary.close();
 
