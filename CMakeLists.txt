@@ -55,7 +55,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG}")
     
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS_RELEASE "-static -O3")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
     set(CMAKE_CXX_FLAGS "/EHsc")
@@ -66,7 +66,7 @@ else()
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG}")
     
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
+    set(CMAKE_CXX_FLAGS_RELEASE "-static -O3 -s")
 endif()
 
 #Executable
