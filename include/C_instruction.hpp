@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Guillaume Guillet                                            //
+// Copyright 2022 Guillaume Guillet                                            //
 //                                                                             //
 // Licensed under the Apache License, Version 2.0 (the "License");             //
 // you may not use this file except in compliance with the License.            //
@@ -266,8 +266,8 @@ class Instruction_do : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                    DESCRIPTION
-    do              do [value] [value] [value]   Do a calculation : opleft [value] operation [value] opright [value].
-    do              do [value] [value]           Do a calculation (without selecting operation): opleft [value] opright [value].
+    do              do [value] [value] [value]   Do a calculation: opleft [value] operation [value] opright [value].
+    do              do [value] [value]           Do a calculation (without selecting operation): opleft [value] opright [value].
     **/
 public:
     Instruction_do() = default;
@@ -343,7 +343,7 @@ class Instruction_else : public Instruction
 {
     /**
     KEYWORD         ARGUMENTS                   DESCRIPTION
-    else            else                        The “else” tag is used to specify a code to execute when the condition is false.
+    else            else                        The ï¿½elseï¿½ tag is used to specify a code to execute when the condition is false.
     **/
 public:
     Instruction_else() = default;
