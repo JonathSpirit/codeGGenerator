@@ -1094,7 +1094,7 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
         throw codeg::CompileError("function error (can't create a function in a scope)");
     }
 
-    data._scopes.newScope(codeg::ScopeStats::SCOPE_FUNCTION, data._reader.getlineCount(), data._reader.getPath()); //New scope
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_FUNCTION, data._reader.getLineCount(), data._reader.getPath()); //New scope
 
     data._actualFunctionName = argName._str;
     data._functions.push(argName._str);
@@ -1145,7 +1145,7 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     if there is no "else" keyword, the label %%Fn will be the end of the condition
     */
 
-    data._scopes.newScope(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE, data._reader.getlineCount(), data._reader.getPath()); //New scope
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE, data._reader.getLineCount(), data._reader.getPath()); //New scope
 
     data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopes.getScopeCount()), data._code.getCursor()});
     data._code.pushEmptyJumpAddress();
@@ -1226,7 +1226,7 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     if there is no "else" keyword, the label %%Fn will be the end of the condition
     */
 
-    data._scopes.newScope(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE, data._reader.getlineCount(), data._reader.getPath()); //New scope
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_CONDITIONAL_TRUE, data._reader.getLineCount(), data._reader.getPath()); //New scope
 
     data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopes.getScopeCount()), data._code.getCursor()});
     data._code.pushEmptyJumpAddress();
@@ -1563,7 +1563,7 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
         throw codeg::CompileError("definition error (can't create a definition in a scope)");
     }
 
-    data._scopes.newScope(codeg::ScopeStats::SCOPE_DEFINITION, data._reader.getlineCount(), data._reader.getPath()); //New scope
+    data._scopes.newScope(codeg::ScopeStats::SCOPE_DEFINITION, data._reader.getLineCount(), data._reader.getPath()); //New scope
 
     data._actualFunctionName = argName._str;
     data._functions.push(argName._str, true);

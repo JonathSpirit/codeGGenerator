@@ -20,24 +20,21 @@ namespace codeg
 {
 
 ///ReaderData
-ReaderData::ReaderData()
+ReaderData::ReaderData(std::string path) :
+        _g_path(std::move(path))
 {
 }
-ReaderData::~ReaderData()
-{
 
-}
-
-void ReaderData::setlineCount(unsigned int n)
+void ReaderData::setLineCount(std::size_t n)
 {
     this->_g_lineCount = n;
 }
-void ReaderData::addlineCount(unsigned int n)
+void ReaderData::addLineCount(std::size_t n)
 {
     this->_g_lineCount += n;
 }
 
-unsigned int ReaderData::getlineCount() const
+std::size_t ReaderData::getLineCount() const
 {
     return this->_g_lineCount;
 }
@@ -47,58 +44,39 @@ const std::string& ReaderData::getPath() const
 }
 
 ///ReaderData_file
-ReaderData_file::ReaderData_file() : ReaderData()
+ReaderData_file::ReaderData_file(const std::filesystem::path& filePath) :
+        codeg::ReaderData(filePath.string()),
+        g_file(filePath.string())
 {
-
-}
-ReaderData_file::ReaderData_file(const std::filesystem::path& filePath)
-{
-    this->g_file.open(filePath);
-    this->_g_lineCount = 0;
-    this->_g_path = filePath.string();
-}
-ReaderData_file::~ReaderData_file()
-{
-
 }
 
-bool ReaderData_file::getline(std::string& buffLine)
+bool ReaderData_file::getLine(std::string& buffLine)
 {
     return static_cast<bool>(std::getline(this->g_file, buffLine));
 }
 bool ReaderData_file::isValid() const
 {
-    return this->g_file.good();
+    return static_cast<bool>(this->g_file);
 }
 void ReaderData_file::close()
 {
     this->g_file.close();
 }
 
-std::ifstream& ReaderData_file::getstream()
+std::ifstream& ReaderData_file::getStream()
 {
     return this->g_file;
 }
 
 ///ReaderData_definition
-ReaderData_definition::ReaderData_definition()
+ReaderData_definition::ReaderData_definition(const codeg::Function* func) :
+        codeg::ReaderData("\"definition call: "+func->getName()+"\""),
+        g_func(func),
+        g_it(func->getIteratorBegin())
 {
-
-}
-ReaderData_definition::ReaderData_definition(const codeg::Function* func)
-{
-    this->g_func = func;
-    this->g_it = this->g_func->getIteratorBegin();
-
-    this->_g_lineCount = 0;
-    this->_g_path = "\"definition call: "+func->getName()+"\"";
-}
-ReaderData_definition::~ReaderData_definition()
-{
-
 }
 
-bool ReaderData_definition::getline(std::string& buffLine)
+bool ReaderData_definition::getLine(std::string& buffLine)
 {
     if (this->g_it != this->g_func->getIteratorEnd())
     {
@@ -114,18 +92,14 @@ bool ReaderData_definition::isValid() const
 }
 void ReaderData_definition::close()
 {
-
 }
 
-const codeg::Function* ReaderData_definition::getfunction()
+const codeg::Function* ReaderData_definition::getFunction()
 {
     return this->g_func;
 }
 
 ///FileReader
-FileReader::FileReader()
-{
-}
 FileReader::~FileReader()
 {
     this->closeAll();
@@ -133,9 +107,9 @@ FileReader::~FileReader()
 
 void FileReader::closeAll()
 {
-    unsigned int stackSize = this->g_data.size();
+    std::size_t stackSize = this->g_data.size();
 
-    for (unsigned int i=0; i<stackSize; ++i)
+    for (std::size_t i=0; i<stackSize; ++i)
     {
         this->g_data.top()->close();
         this->g_data.pop();
@@ -144,54 +118,54 @@ void FileReader::closeAll()
 
 bool FileReader::open(std::shared_ptr<codeg::ReaderData> newData)
 {
-    if ( newData->isValid() )
+    if ( newData && newData->isValid() )
     {
-        this->g_data.push(newData);
+        this->g_data.push(std::move(newData) );
         return true;
     }
     return false;
 }
-bool FileReader::getline(std::string& buffLine)
+bool FileReader::getLine(std::string& buffLine)
 {
-    if (!this->g_data.size())
+    if (this->g_data.empty())
     {
         return false;
     }
 
-    if ( this->g_data.top()->getline(buffLine) )
+    if (this->g_data.top()->getLine(buffLine) )
     {
-        this->g_data.top()->addlineCount();
+        this->g_data.top()->addLineCount();
         return true;
     }
     this->g_data.top()->close();
     this->g_data.pop();
 
-    if ( this->g_data.size() > 0 )
+    if ( !this->g_data.empty() )
     {
         buffLine.clear();
         return true;
     }
     return false;
 }
-unsigned int FileReader::getlineCount() const
+std::size_t FileReader::getLineCount() const
 {
-    if ( this->g_data.size() )
+    if (!this->g_data.empty())
     {
-        return this->g_data.top()->getlineCount();
+        return this->g_data.top()->getLineCount();
     }
     return 0;
 }
-unsigned int FileReader::getSize() const
+std::size_t FileReader::getSize() const
 {
     return this->g_data.size();
 }
 std::string FileReader::getPath() const
 {
-    if ( this->g_data.size() )
+    if ( !this->g_data.empty() )
     {
         return this->g_data.top()->getPath();
     }
-    return "";
+    return {};
 }
 
 }//end codeg

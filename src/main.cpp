@@ -295,7 +295,7 @@ int main(int argc, char **argv)
         ///First step reading and compiling
         ConsoleInfo << "Step 1 : Reading and compiling ..." << std::endl;
 
-        while( data._reader.getline(readLine) )
+        while(data._reader.getLine(readLine) )
         {
             data._decomposer.decompose(readLine, data._decomposer._flags);
 
@@ -385,14 +385,14 @@ int main(int argc, char **argv)
     catch (const codeg::CompileError& e)
     {
         std::string tmpPath = data._reader.getPath();
-        unsigned int tmpLine = data._reader.getlineCount();
+        unsigned int tmpLine = data._reader.getLineCount();
         if (!tmpPath.empty())
         {
             ConsoleError << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            ConsoleError << "at line " << data._reader.getlineCount() << " : " << e.what() << std::endl;
+            ConsoleError << "at line " << data._reader.getLineCount() << " : " << e.what() << std::endl;
         }
         else
         {
@@ -403,14 +403,14 @@ int main(int argc, char **argv)
     catch (const codeg::FatalError& e)
     {
         std::string tmpPath = data._reader.getPath();
-        unsigned int tmpLine = data._reader.getlineCount();
+        unsigned int tmpLine = data._reader.getLineCount();
         if (!tmpPath.empty())
         {
             ConsoleFatal << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            ConsoleFatal << "at line " << data._reader.getlineCount() << " : " << e.what() << std::endl;
+            ConsoleFatal << "at line " << data._reader.getLineCount() << " : " << e.what() << std::endl;
         }
         else
         {
@@ -421,14 +421,14 @@ int main(int argc, char **argv)
     catch (const codeg::SyntaxError& e)
     {
         std::string tmpPath = data._reader.getPath();
-        unsigned int tmpLine = data._reader.getlineCount();
+        unsigned int tmpLine = data._reader.getLineCount();
         if (!tmpPath.empty())
         {
             ConsoleSyntax << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            ConsoleSyntax << "at line " << data._reader.getlineCount() << " : " << e.what() << std::endl;
+            ConsoleSyntax << "at line " << data._reader.getLineCount() << " : " << e.what() << std::endl;
         }
         else
         {
@@ -439,14 +439,14 @@ int main(int argc, char **argv)
     catch (const std::exception& e)
     {
         std::string tmpPath = data._reader.getPath();
-        unsigned int tmpLine = data._reader.getlineCount();
+        unsigned int tmpLine = data._reader.getLineCount();
         if (!tmpPath.empty())
         {
             ConsoleFatal << "at file " << data._reader.getPath() << std::endl;
         }
         if (tmpLine > 0)
         {
-            ConsoleFatal << "at line " << data._reader.getlineCount() << " : unknown exception : " << e.what() << std::endl;
+            ConsoleFatal << "at line " << data._reader.getLineCount() << " : unknown exception : " << e.what() << std::endl;
         }
         else
         {

@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_FILEREADER_H_INCLUDED
-#define C_FILEREADER_H_INCLUDED
+#ifndef C_FILEREADER_HPP_INCLUDED
+#define C_FILEREADER_HPP_INCLUDED
 
 #include "C_function.hpp"
 #include <fstream>
@@ -30,36 +30,37 @@ namespace codeg
 class ReaderData
 {
 public:
-    ReaderData();
-    virtual ~ReaderData() = 0;
+    ReaderData() = default;
+    explicit ReaderData(std::string path);
+    virtual ~ReaderData() = default;
 
-    virtual bool getline(std::string& buffLine) = 0;
-    virtual bool isValid() const = 0;
+    virtual bool getLine(std::string& buffLine) = 0;
+    [[nodiscard]] virtual bool isValid() const = 0;
     virtual void close() = 0;
 
-    void setlineCount(unsigned int n);
-    void addlineCount(unsigned int n = 1);
+    void setLineCount(std::size_t n);
+    void addLineCount(std::size_t n = 1);
 
-    unsigned int getlineCount() const;
-    const std::string& getPath() const;
+    [[nodiscard]] std::size_t getLineCount() const;
+    [[nodiscard]] const std::string& getPath() const;
 
 protected:
-    unsigned int _g_lineCount;
+    std::size_t _g_lineCount{0};
     std::string _g_path;
 };
 
 class ReaderData_file : public ReaderData
 {
 public:
-    ReaderData_file();
-    ReaderData_file(const std::filesystem::path& filePath);
-    ~ReaderData_file();
+    ReaderData_file() = default;
+    explicit ReaderData_file(const std::filesystem::path& filePath);
+    ~ReaderData_file() override = default;
 
-    bool getline(std::string& buffLine);
-    bool isValid() const;
-    void close();
+    bool getLine(std::string& buffLine) override;
+    [[nodiscard]] bool isValid() const override;
+    void close() override;
 
-    std::ifstream& getstream();
+    std::ifstream& getStream();
 
 private:
     std::ifstream g_file;
@@ -68,37 +69,36 @@ private:
 class ReaderData_definition : public ReaderData
 {
 public:
-    ReaderData_definition();
-    ReaderData_definition(const codeg::Function* func);
-    ~ReaderData_definition();
+    ReaderData_definition() = default;
+    explicit ReaderData_definition(const codeg::Function* func);
+    ~ReaderData_definition() override = default;
 
-    bool getline(std::string& buffLine);
-    bool isValid() const;
-    void close();
+    bool getLine(std::string& buffLine) override;
+    [[nodiscard]] bool isValid() const override;
+    void close() override;
 
-    const codeg::Function* getfunction();
+    const codeg::Function* getFunction();
 
 private:
-    const codeg::Function* g_func;
+    const codeg::Function* g_func{nullptr};
     std::list<std::string>::const_iterator g_it;
 };
-
 
 class FileReader
 {
 public:
-    FileReader();
+    FileReader() = default;
     ~FileReader();
 
     void closeAll();
 
     bool open(std::shared_ptr<codeg::ReaderData> newData);
 
-    bool getline(std::string& buffLine);
-    unsigned int getlineCount() const;
-    std::string getPath() const;
+    bool getLine(std::string& buffLine);
+    [[nodiscard]] std::size_t getLineCount() const;
+    [[nodiscard]] std::string getPath() const;
 
-    unsigned int getSize() const;
+    [[nodiscard]] std::size_t getSize() const;
 
 private:
     std::stack<std::shared_ptr<codeg::ReaderData> > g_data;
@@ -106,4 +106,4 @@ private:
 
 }//end codeg
 
-#endif // C_FILEREADER_H_INCLUDED
+#endif // C_FILEREADER_HPP_INCLUDED
