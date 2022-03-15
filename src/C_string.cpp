@@ -20,7 +20,7 @@
 namespace codeg
 {
 
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
+std::size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
 {
     std::string buffStr;
     std::istringstream strStream(str);
@@ -31,7 +31,7 @@ size_t Split(const std::string& str, std::vector<std::string>& buff, char delimi
     return buff.size();
 }
 
-size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff)
+std::size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff)
 {
     bool isString = false;
     bool isChar = false;

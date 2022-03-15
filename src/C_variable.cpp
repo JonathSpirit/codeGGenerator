@@ -25,8 +25,8 @@ namespace codeg
 
 ///Pool
 
-Pool::Pool(const std::string& name) :
-    g_name(name)
+Pool::Pool(std::string name) :
+    g_name(std::move(name))
 {
 }
 
@@ -151,7 +151,7 @@ codeg::Variable* Pool::getVariable(const std::string& name)
 }
 bool Pool::delVariable(const std::string& name)
 {
-    for ( std::list<codeg::Variable>::iterator it=this->g_variables.begin(); it!=this->g_variables.end(); ++it )
+    for ( auto it=this->g_variables.begin(); it!=this->g_variables.end(); ++it )
     {
         if ( (*it)._name == name )
         {
@@ -200,7 +200,7 @@ void PoolList::clear()
 {
     this->g_pools.clear();
 }
-size_t PoolList::getSize() const
+std::size_t PoolList::getSize() const
 {
     return this->g_pools.size();
 }
@@ -231,7 +231,7 @@ codeg::Pool* PoolList::getPool(const std::string& poolName)
 }
 bool PoolList::delPool(const std::string& poolName)
 {
-    for (std::list<codeg::Pool>::iterator it=this->g_pools.begin(); it!=this->g_pools.end(); ++it)
+    for (auto it=this->g_pools.begin(); it!=this->g_pools.end(); ++it)
     {
         if ((*it).getName() == poolName)
         {
@@ -278,7 +278,7 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
     std::vector<std::list<codeg::Pool>::iterator> appliedPools;
     appliedPools.reserve(this->g_pools.size());
 
-    for ( std::list<codeg::Pool>::iterator it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
+    for ( auto it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
     {
         if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC )
         {
@@ -325,7 +325,7 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
     ConsoleInfo << "OK" << std::endl;
     ConsoleInfo << "Dynamic start address only ..." << std::endl;
 
-    for ( std::list<codeg::Pool>::iterator it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
+    for ( auto it = this->g_pools.begin(); it!=this->g_pools.end(); ++it )
     {
         if ( (*it).getStartAddressType() == codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC )
         {
@@ -347,14 +347,14 @@ codeg::MemoryBigSize PoolList::resolve(codeg::CompilerData& data)
             codeg::MemoryBigSize memorySize = 0;
             for ( std::size_t i=0; i<mapping.size(); ++i )
             {//Finding a free memory location
-                if ( mapping[i] == true )
+                if (mapping[i])
                 {
                     memoryStart = static_cast<codeg::MemoryAddress>(i);
                     memorySize = 0;
 
                     for ( std::size_t a=i; a<mapping.size(); ++a )
                     {//Getting the size
-                        if ( mapping[a] == true )
+                        if (mapping[a])
                         {
                             ++memorySize;
                         }

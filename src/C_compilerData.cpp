@@ -54,7 +54,7 @@ bool ScopeList::empty() const
 {
     return this->g_data.empty();
 }
-size_t ScopeList::size() const
+std::size_t ScopeList::size() const
 {
     return this->g_data.size();
 }

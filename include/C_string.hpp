@@ -23,8 +23,8 @@
 namespace codeg
 {
 
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
-size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff);
+std::size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
+std::size_t SplitKeywords(const std::string& str, std::vector<std::string>& buff);
 
 std::string ValueToHex(uint32_t val, unsigned int hexSize=8, bool removeExtraZero=false, bool removePrefix=false);
 

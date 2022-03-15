@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_VARIABLE_H_INCLUDED
-#define C_VARIABLE_H_INCLUDED
+#ifndef C_VARIABLE_HPP_INCLUDED
+#define C_VARIABLE_HPP_INCLUDED
 
 #include "main.hpp"
 #include "C_address.hpp"
@@ -26,14 +26,14 @@ namespace codeg
 
 struct CompilerData;
 
-typedef uint16_t MemoryAddress;
-typedef uint16_t MemorySize;
-typedef uint32_t MemoryBigSize;
+using MemoryAddress = uint16_t;
+using MemorySize = uint16_t;
+using MemoryBigSize = uint32_t;
 
 struct VariableLink
 {
-    codeg::Address _address;
-    codeg::MemorySize _offset = 0;
+    codeg::Address _address{0};
+    codeg::MemorySize _offset{0};
 };
 
 struct Variable
@@ -53,23 +53,23 @@ public:
     };
 
 public:
-    Pool(const std::string& name);
+    explicit Pool(std::string name);
     ~Pool() = default;
 
     void clear();
-    std::size_t getVariableSize() const;
+    [[nodiscard]] std::size_t getVariableSize() const;
 
     void setName(const std::string& name);
-    const std::string& getName() const;
+    [[nodiscard]] const std::string& getName() const;
 
     void setStartAddressType(const codeg::Pool::StartAddressTypes& type);
-    const codeg::Pool::StartAddressTypes& getStartAddressType() const;
+    [[nodiscard]] const codeg::Pool::StartAddressTypes& getStartAddressType() const;
 
     bool setAddress(const codeg::MemoryAddress& start, const codeg::MemorySize& maxSize);
-    codeg::MemoryAddress getStartAddress() const;
-    codeg::MemorySize getMaxSize() const;
-    codeg::MemoryBigSize getMemorySize() const;
-    codeg::MemorySize getTotalSize() const;
+    [[nodiscard]] codeg::MemoryAddress getStartAddress() const;
+    [[nodiscard]] codeg::MemorySize getMaxSize() const;
+    [[nodiscard]] codeg::MemoryBigSize getMemorySize() const;
+    [[nodiscard]] codeg::MemorySize getTotalSize() const;
 
     bool addVariable(const codeg::Variable& var);
     bool addVariable(const std::string& name, codeg::MemorySize size);
@@ -88,9 +88,9 @@ public:
 private:
     std::string g_name;
 
-    codeg::Pool::StartAddressTypes g_startAddressType;
-    codeg::MemoryAddress g_startAddress;
-    codeg::MemorySize g_addressMaxSize;
+    codeg::Pool::StartAddressTypes g_startAddressType{codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC};
+    codeg::MemoryAddress g_startAddress{0};
+    codeg::MemorySize g_addressMaxSize{0};
 
     std::list<codeg::Variable> g_variables;
 };
@@ -102,7 +102,7 @@ public:
     ~PoolList() = default;
 
     void clear();
-    size_t getSize() const;
+    [[nodiscard]] std::size_t getSize() const;
 
     bool addPool(codeg::Pool& newPool);
     codeg::Pool* getPool(const std::string& poolName);
@@ -122,4 +122,4 @@ bool GetVariableString(const std::string& str, const std::string& defaultPoolNam
 
 }//end codeg
 
-#endif // C_VARIABLE_H_INCLUDED
+#endif // C_VARIABLE_HPP_INCLUDED

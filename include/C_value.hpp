@@ -22,7 +22,7 @@
 namespace codeg
 {
 
-size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff);
+std::size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff);
 
 }//end codeg
 

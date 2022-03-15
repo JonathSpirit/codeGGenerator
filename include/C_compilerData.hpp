@@ -69,7 +69,7 @@ public:
     void pop();
 
     bool empty() const;
-    size_t size() const;
+    std::size_t size() const;
     uint32_t getScopeCount() const;
 
 private:

@@ -27,7 +27,7 @@ namespace codeg
 
 struct CompilerData;
 
-typedef uint32_t Address;
+using Address = uint32_t;
 
 struct Label
 {

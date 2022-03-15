@@ -52,7 +52,7 @@ struct Keyword
     std::string _str;
 
     uint32_t _value;
-    size_t _valueSize;
+    std::size_t _valueSize;
 
     bool _valueIsVariable;
     bool _valueIsConst;
@@ -64,8 +64,8 @@ struct Keyword
     codeg::TargetType _target;
 };
 
-typedef std::vector<std::string> KeywordsList;
-typedef std::map<std::string, std::string> CustomKeywordsList;
+using KeywordsList = std::vector<std::string>;
+using CustomKeywordsList = std::map<std::string, std::string>;
 
 void ReplaceWithCustomKeywords(codeg::KeywordsList& keywords, codeg::CustomKeywordsList& customKeywords);
 
