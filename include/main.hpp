@@ -14,10 +14,10 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef MAIN_H_INCLUDED
-#define MAIN_H_INCLUDED
+#ifndef MAIN_HPP_INCLUDED
+#define MAIN_HPP_INCLUDED
 
 void printHelp();
 void printVersion();
 
-#endif // MAIN_H_INCLUDED
+#endif // MAIN_HPP_INCLUDED

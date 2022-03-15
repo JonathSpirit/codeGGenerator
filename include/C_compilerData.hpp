@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_COMPILERDATA_H_INCLUDED
-#define C_COMPILERDATA_H_INCLUDED
+#ifndef C_COMPILERDATA_HPP_INCLUDED
+#define C_COMPILERDATA_HPP_INCLUDED
 
 #include "C_reserved.hpp"
 #include "C_function.hpp"
@@ -63,14 +63,14 @@ public:
 
     void newScope(codeg::ScopeStats stat, unsigned int startLine, const std::string& startFile);
 
-    const codeg::Scope& top() const;
+    [[nodiscard]] const codeg::Scope& top() const;
     codeg::Scope& top();
 
     void pop();
 
-    bool empty() const;
-    std::size_t size() const;
-    uint32_t getScopeCount() const;
+    [[nodiscard]] bool empty() const;
+    [[nodiscard]] std::size_t size() const;
+    [[nodiscard]] uint32_t getScopeCount() const;
 
 private:
     codeg::ScopeList::ScopeListType g_data;
@@ -95,11 +95,11 @@ public:
     void pushDummy();
     void resize(uint32_t n);
 
-    uint32_t getCapacity() const;
-    uint32_t getCursor() const;
+    [[nodiscard]] uint32_t getCapacity() const;
+    [[nodiscard]] uint32_t getCursor() const;
 
     void set(uint32_t index, uint32_t value);
-    uint8_t get(uint32_t index) const;
+    [[nodiscard]] uint8_t get(uint32_t index) const;
 
     uint8_t& operator[](uint32_t index);
     const uint8_t& operator[](uint32_t index) const;
@@ -108,7 +108,7 @@ public:
     std::shared_ptr<uint8_t[]>& getSharedData();
 
     void setWriteDummy(bool value);
-    bool getWriteDummy() const;
+    [[nodiscard]] bool getWriteDummy() const;
 
 private:
     uint32_t g_cursor = 0;
@@ -147,4 +147,4 @@ struct CompilerData
 
 }//end codeg
 
-#endif // C_COMPILERDATA_H_INCLUDED
+#endif // C_COMPILERDATA_HPP_INCLUDED

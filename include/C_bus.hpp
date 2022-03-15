@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_BUS_H_INCLUDED
-#define C_BUS_H_INCLUDED
+#ifndef C_BUS_HPP_INCLUDED
+#define C_BUS_HPP_INCLUDED
 
 #include <cstdint>
 
@@ -40,4 +40,4 @@ enum BusTypes : uint8_t
 
 }//end codeg
 
-#endif // C_BUS_H_INCLUDED
+#endif // C_BUS_HPP_INCLUDED

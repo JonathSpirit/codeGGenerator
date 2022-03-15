@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_VALUE_H_INCLUDED
-#define C_VALUE_H_INCLUDED
+#ifndef C_VALUE_HPP_INCLUDED
+#define C_VALUE_HPP_INCLUDED
 
 #include <string>
 
@@ -26,4 +26,4 @@ std::size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff);
 
 }//end codeg
 
-#endif // C_VALUE_H_INCLUDED
+#endif // C_VALUE_HPP_INCLUDED

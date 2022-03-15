@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_FUNCTION_H_INCLUDED
-#define C_FUNCTION_H_INCLUDED
+#ifndef C_FUNCTION_HPP_INCLUDED
+#define C_FUNCTION_HPP_INCLUDED
 
 #include <string>
 #include <list>
@@ -30,22 +30,22 @@ public:
     using FunctionLinesType = std::list<std::string>;
 
     Function() = default;
-    Function(const std::string& name, bool definition=false);
+    explicit Function(const std::string& name, bool definition=false);
     ~Function() = default;
 
     void setName(const std::string& name);
-    const std::string& getName() const;
+    [[nodiscard]] const std::string& getName() const;
 
     void setDefinitionType(bool definition);
-    bool isDefinition() const;
+    [[nodiscard]] bool isDefinition() const;
 
     void clearLines();
     void addLine(const std::string& str);
 
     bool operator== (const std::string& l) const;
 
-    codeg::Function::FunctionLinesType::const_iterator getIteratorBegin() const;
-    codeg::Function::FunctionLinesType::const_iterator getIteratorEnd() const;
+    [[nodiscard]] codeg::Function::FunctionLinesType::const_iterator begin() const;
+    [[nodiscard]] codeg::Function::FunctionLinesType::const_iterator end() const;
 
 private:
     std::string g_name;
@@ -76,4 +76,4 @@ private:
 
 }//end codeg
 
-#endif // C_FUNCTION_H_INCLUDED
+#endif // C_FUNCTION_HPP_INCLUDED

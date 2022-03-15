@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_STRINGDECOMPOSER_H_INCLUDED
-#define C_STRINGDECOMPOSER_H_INCLUDED
+#ifndef C_STRINGDECOMPOSER_HPP_INCLUDED
+#define C_STRINGDECOMPOSER_HPP_INCLUDED
 
 #include "C_string.hpp"
 #include <string>
@@ -47,4 +47,4 @@ struct StringDecomposer
 
 }//end codeg
 
-#endif // C_STRINGDECOMPOSER_H_INCLUDED
+#endif // C_STRINGDECOMPOSER_HPP_INCLUDED

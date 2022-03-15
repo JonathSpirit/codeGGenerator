@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_RESERVED_H_INCLUDED
-#define C_RESERVED_H_INCLUDED
+#ifndef C_RESERVED_HPP_INCLUDED
+#define C_RESERVED_HPP_INCLUDED
 
 #include <forward_list>
 #include <string>
@@ -43,4 +43,4 @@ private:
 
 }//end codeg
 
-#endif // C_RESERVED_H_INCLUDED
+#endif // C_RESERVED_HPP_INCLUDED

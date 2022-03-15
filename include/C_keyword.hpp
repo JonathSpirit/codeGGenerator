@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_KEYWORD_H_INCLUDED
-#define C_KEYWORD_H_INCLUDED
+#ifndef C_KEYWORD_HPP_INCLUDED
+#define C_KEYWORD_HPP_INCLUDED
 
 #include <string>
 #include <map>
@@ -73,4 +73,4 @@ bool GetKeywordsFromString(std::string& str, codeg::KeywordsList& buffKeywords);
 
 }//end codeg
 
-#endif // C_KEYWORD_H_INCLUDED
+#endif // C_KEYWORD_HPP_INCLUDED

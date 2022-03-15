@@ -72,13 +72,13 @@ std::ifstream& ReaderData_file::getStream()
 ReaderData_definition::ReaderData_definition(const codeg::Function* func) :
         codeg::ReaderData("\"definition call: "+func->getName()+"\""),
         g_func(func),
-        g_it(func->getIteratorBegin())
+        g_it(func->begin())
 {
 }
 
 bool ReaderData_definition::getLine(std::string& buffLine)
 {
-    if (this->g_it != this->g_func->getIteratorEnd())
+    if (this->g_it != this->g_func->end())
     {
         buffLine = *this->g_it;
         ++this->g_it;

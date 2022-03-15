@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_TARGET_H_INCLUDED
-#define C_TARGET_H_INCLUDED
+#ifndef C_TARGET_HPP_INCLUDED
+#define C_TARGET_HPP_INCLUDED
 
 #include <cstdint>
 
@@ -32,4 +32,4 @@ enum TargetType : uint8_t
 
 }//end codeg
 
-#endif // C_TARGET_H_INCLUDED
+#endif // C_TARGET_HPP_INCLUDED

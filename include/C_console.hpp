@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_CONSOLE_H_INCLUDED
-#define C_CONSOLE_H_INCLUDED
+#ifndef C_CONSOLE_HPP_INCLUDED
+#define C_CONSOLE_HPP_INCLUDED
 
 #include <iostream>
 #include <fstream>
@@ -145,4 +145,4 @@ int ConsoleInit();
 
 }//end codeg
 
-#endif // C_CONSOLE_H_INCLUDED
+#endif // C_CONSOLE_HPP_INCLUDED

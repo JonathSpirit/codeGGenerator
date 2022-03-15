@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_MACRO_H_INCLUDED
-#define C_MACRO_H_INCLUDED
+#ifndef C_MACRO_HPP_INCLUDED
+#define C_MACRO_HPP_INCLUDED
 
 #include <string>
 #include <unordered_map>
@@ -46,4 +46,4 @@ private:
 
 }//end codeg
 
-#endif // C_MACRO_H_INCLUDED
+#endif // C_MACRO_HPP_INCLUDED

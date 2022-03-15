@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_ADDRESS_H_INCLUDED
-#define C_ADDRESS_H_INCLUDED
+#ifndef C_ADDRESS_HPP_INCLUDED
+#define C_ADDRESS_HPP_INCLUDED
 
 #include <string>
 #include <vector>
@@ -64,4 +64,4 @@ struct JumpList
 
 }//end codeg
 
-#endif // C_ADDRESS_H_INCLUDED
+#endif // C_ADDRESS_HPP_INCLUDED

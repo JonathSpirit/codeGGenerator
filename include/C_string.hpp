@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_STRING_H_INCLUDED
-#define C_STRING_H_INCLUDED
+#ifndef C_STRING_HPP_INCLUDED
+#define C_STRING_HPP_INCLUDED
 
 #include <string>
 #include <vector>
@@ -30,4 +30,4 @@ std::string ValueToHex(uint32_t val, unsigned int hexSize=8, bool removeExtraZer
 
 }//end codeg
 
-#endif // C_STRING_H_INCLUDED
+#endif // C_STRING_HPP_INCLUDED

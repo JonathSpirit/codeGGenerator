@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_READABLEBUS_H_INCLUDED
-#define C_READABLEBUS_H_INCLUDED
+#ifndef C_READABLEBUS_HPP_INCLUDED
+#define C_READABLEBUS_HPP_INCLUDED
 
 #include <cstdint>
 
@@ -45,4 +45,4 @@ const char* ReadableBusToString(uint8_t opcode);
 
 }//end codeg
 
-#endif // C_READABLEBUS_H_INCLUDED
+#endif // C_READABLEBUS_HPP_INCLUDED

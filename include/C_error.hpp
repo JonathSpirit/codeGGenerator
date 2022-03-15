@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_ERROR_H_INCLUDED
-#define C_ERROR_H_INCLUDED
+#ifndef C_ERROR_HPP_INCLUDED
+#define C_ERROR_HPP_INCLUDED
 
 #include <exception>
 
@@ -25,16 +25,16 @@ namespace codeg
 class CompileError : public std::exception
 {
 public:
-    CompileError(const char* err) :
+    explicit CompileError(const char* err) :
         g_str(err)
     {
     }
-    CompileError(const std::string& err) :
-        g_str(err)
+    explicit CompileError(std::string err) :
+        g_str(std::move(err))
     {
     }
 
-    virtual const char* what() const noexcept override
+    [[nodiscard]] const char* what() const noexcept override
     {
         return this->g_str.c_str();
     }
@@ -82,12 +82,16 @@ public:
 class FatalError : public std::exception
 {
 public:
-    FatalError(const std::string& err) :
+    explicit FatalError(const char* err) :
         g_str(err)
     {
     }
+    explicit FatalError(std::string err) :
+        g_str(std::move(err))
+    {
+    }
 
-    virtual const char* what() const noexcept
+    [[nodiscard]] const char* what() const noexcept override
     {
         return this->g_str.c_str();
     }
@@ -99,12 +103,16 @@ private:
 class SyntaxError : public std::exception
 {
 public:
-    SyntaxError(const std::string& err) :
+    explicit SyntaxError(const char* err) :
         g_str(err)
     {
     }
+    explicit SyntaxError(std::string err) :
+        g_str(std::move(err))
+    {
+    }
 
-    virtual const char* what() const noexcept
+    [[nodiscard]] const char* what() const noexcept override
     {
         return this->g_str.c_str();
     }
@@ -115,4 +123,4 @@ private:
 
 }//end codeg
 
-#endif // C_ERROR_H_INCLUDED
+#endif // C_ERROR_HPP_INCLUDED

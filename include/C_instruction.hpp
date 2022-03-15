@@ -14,8 +14,8 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_INSTRUCTION_H_INCLUDED
-#define C_INSTRUCTION_H_INCLUDED
+#ifndef C_INSTRUCTION_HPP_INCLUDED
+#define C_INSTRUCTION_HPP_INCLUDED
 
 #include "C_stringDecomposer.hpp"
 #include <vector>
@@ -75,7 +75,7 @@ public:
     Instruction() = default;
     virtual ~Instruction() = default;
 
-    virtual std::string getName() const = 0;
+    [[nodiscard]] virtual std::string getName() const = 0;
 
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) = 0;
     virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
@@ -92,7 +92,7 @@ public:
     void clear();
 
     void push(std::unique_ptr<codeg::Instruction>&& newInstruction);
-    codeg::Instruction* get(const std::string& name) const;
+    [[nodiscard]] codeg::Instruction* get(const std::string& name) const;
 
 private:
     codeg::InstructionList::InstructionListType g_data;
@@ -108,11 +108,11 @@ class Instruction_set : public Instruction
     **/
 public:
     Instruction_set() = default;
-    virtual ~Instruction_set() = default;
+    ~Instruction_set() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_unset : public Instruction
@@ -123,11 +123,11 @@ class Instruction_unset : public Instruction
     **/
 public:
     Instruction_unset() = default;
-    virtual ~Instruction_unset() = default;
+    ~Instruction_unset() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_var : public Instruction
@@ -139,11 +139,11 @@ class Instruction_var : public Instruction
     **/
 public:
     Instruction_var() = default;
-    virtual ~Instruction_var() = default;
+    ~Instruction_var() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_label : public Instruction
@@ -155,11 +155,11 @@ class Instruction_label : public Instruction
     **/
 public:
     Instruction_label() = default;
-    virtual ~Instruction_label() = default;
+    ~Instruction_label() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_jump : public Instruction
@@ -172,11 +172,11 @@ class Instruction_jump : public Instruction
     **/
 public:
     Instruction_jump() = default;
-    virtual ~Instruction_jump() = default;
+    ~Instruction_jump() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_restart : public Instruction
@@ -187,11 +187,11 @@ class Instruction_restart : public Instruction
     **/
 public:
     Instruction_restart() = default;
-    virtual ~Instruction_restart() = default;
+    ~Instruction_restart() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_affect : public Instruction
@@ -205,11 +205,11 @@ class Instruction_affect : public Instruction
     **/
 public:
     Instruction_affect() = default;
-    virtual ~Instruction_affect() = default;
+    ~Instruction_affect() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_get : public Instruction
@@ -224,11 +224,11 @@ class Instruction_get : public Instruction
     **/
 public:
     Instruction_get() = default;
-    virtual ~Instruction_get() = default;
+    ~Instruction_get() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 
@@ -240,11 +240,11 @@ class Instruction_write : public Instruction
     **/
 public:
     Instruction_write() = default;
-    virtual ~Instruction_write() = default;
+    ~Instruction_write() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_select : public Instruction
@@ -255,11 +255,11 @@ class Instruction_select : public Instruction
     **/
 public:
     Instruction_select() = default;
-    virtual ~Instruction_select() = default;
+    ~Instruction_select() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_do : public Instruction
@@ -271,11 +271,11 @@ class Instruction_do : public Instruction
     **/
 public:
     Instruction_do() = default;
-    virtual ~Instruction_do() = default;
+    ~Instruction_do() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_tick : public Instruction
@@ -287,11 +287,11 @@ class Instruction_tick : public Instruction
     **/
 public:
     Instruction_tick() = default;
-    virtual ~Instruction_tick() = default;
+    ~Instruction_tick() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_brut : public Instruction
@@ -302,11 +302,11 @@ class Instruction_brut : public Instruction
     **/
 public:
     Instruction_brut() = default;
-    virtual ~Instruction_brut() = default;
+    ~Instruction_brut() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_function : public Instruction
@@ -317,11 +317,11 @@ class Instruction_function : public Instruction
     **/
 public:
     Instruction_function() = default;
-    virtual ~Instruction_function() = default;
+    ~Instruction_function() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_if : public Instruction
@@ -332,11 +332,11 @@ class Instruction_if : public Instruction
     **/
 public:
     Instruction_if() = default;
-    virtual ~Instruction_if() = default;
+    ~Instruction_if() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_else : public Instruction
@@ -347,11 +347,11 @@ class Instruction_else : public Instruction
     **/
 public:
     Instruction_else() = default;
-    virtual ~Instruction_else() = default;
+    ~Instruction_else() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_ifnot : public Instruction
@@ -362,11 +362,11 @@ class Instruction_ifnot : public Instruction
     **/
 public:
     Instruction_ifnot() = default;
-    virtual ~Instruction_ifnot() = default;
+    ~Instruction_ifnot() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_end : public Instruction
@@ -377,11 +377,11 @@ class Instruction_end : public Instruction
     **/
 public:
     Instruction_end() = default;
-    virtual ~Instruction_end() = default;
+    ~Instruction_end() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_call : public Instruction
@@ -393,11 +393,11 @@ class Instruction_call : public Instruction
     **/
 public:
     Instruction_call() = default;
-    virtual ~Instruction_call() = default;
+    ~Instruction_call() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_clock : public Instruction
@@ -409,11 +409,11 @@ class Instruction_clock : public Instruction
     **/
 public:
     Instruction_clock() = default;
-    virtual ~Instruction_clock() = default;
+    ~Instruction_clock() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_pool : public Instruction
@@ -425,11 +425,11 @@ class Instruction_pool : public Instruction
     **/
 public:
     Instruction_pool() = default;
-    virtual ~Instruction_pool() = default;
+    ~Instruction_pool() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_import : public Instruction
@@ -440,11 +440,11 @@ class Instruction_import : public Instruction
     **/
 public:
     Instruction_import() = default;
-    virtual ~Instruction_import() = default;
+    ~Instruction_import() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 class Instruction_definition : public Instruction
@@ -455,11 +455,11 @@ class Instruction_definition : public Instruction
     **/
 public:
     Instruction_definition() = default;
-    virtual ~Instruction_definition() = default;
+    ~Instruction_definition() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 class Instruction_enddef : public Instruction
 {
@@ -469,14 +469,14 @@ class Instruction_enddef : public Instruction
     **/
 public:
     Instruction_enddef() = default;
-    virtual ~Instruction_enddef() = default;
+    ~Instruction_enddef() override = default;
 
-    virtual std::string getName() const;
+    [[nodiscard]] std::string getName() const override;
 
-    virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data);
-    virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
+    void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
 }//end codeg
 
-#endif // C_INSTRUCTION_H_INCLUDED
+#endif // C_INSTRUCTION_HPP_INCLUDED

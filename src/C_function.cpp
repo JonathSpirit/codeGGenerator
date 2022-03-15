@@ -59,11 +59,11 @@ bool Function::operator== (const std::string& l) const
     return this->g_name == l;
 }
 
-codeg::Function::FunctionLinesType::const_iterator Function::getIteratorBegin() const
+codeg::Function::FunctionLinesType::const_iterator Function::begin() const
 {
     return this->g_definitionLines.cbegin();
 }
-codeg::Function::FunctionLinesType::const_iterator Function::getIteratorEnd() const
+codeg::Function::FunctionLinesType::const_iterator Function::end() const
 {
     return this->g_definitionLines.cend();
 }
