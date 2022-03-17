@@ -22,12 +22,12 @@ namespace codeg
 
 std::size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
 {
-    std::string str = buffStr;
+    std::string str{buffStr};
     buff = 0;
 
     //Return the size in byte
 
-    if ( !str.size() )
+    if ( str.empty() )
     {
         return 0;
     }
@@ -104,7 +104,7 @@ std::size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
         {
             if ( str[2] == '\'' )
             {
-                buff = str[1];
+                buff = static_cast<uint32_t>(str[1]);
                 return 1;
             }
             else
@@ -112,9 +112,45 @@ std::size_t GetIntegerFromString(const std::string& buffStr, uint32_t& buff)
                 throw codeg::SyntaxError(std::string("missing second quote (\') in char value, got \'")+str[2]+"\'");
             }
         }
+        else if (str.size() == 4)
+        {//Escape sequences
+            if ( str[3] == '\'' )
+            {
+                if ( str[1] == '\\' )
+                {
+                    switch (str[2])
+                    {
+                    case 't':
+                        buff = '\t';
+                        break;
+                    case 'r':
+                        buff = '\r';
+                        break;
+                    case 'n':
+                        buff = '\n';
+                        break;
+                    case 'b':
+                        buff = '\b';
+                        break;
+                    default:
+                        throw codeg::SyntaxError("unknown escape sequence");
+                        break;
+                    }
+                    return 1;
+                }
+                else
+                {
+                    throw codeg::SyntaxError(std::string("missing backslash (\\) in char value, got \'")+str[1]+"\'");
+                }
+            }
+            else
+            {
+                throw codeg::SyntaxError(std::string("missing second quote (\') in char value, got \'")+str[3]+"\'");
+            }
+        }
         else
         {
-            throw codeg::SyntaxError("char value must be a length of 3 characters, got "+std::to_string(str.size()));
+            throw codeg::SyntaxError("char value must be a length of 3/4 characters, got "+std::to_string(str.size()));
         }
     }
 
