@@ -1106,6 +1106,8 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
     {//Label to the start of the function
         throw codeg::CompileError("label error (label \"%%"+argName._str+"\" already exist)");
     }
+
+    ConsoleInfo << "\tstart of the function \""<< argName._str <<"\" at address : " << data._code.getCursor() << std::endl;
 }
 
 ///Instruction_if
