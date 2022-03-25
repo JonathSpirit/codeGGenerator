@@ -64,13 +64,6 @@ struct Keyword
     codeg::TargetType _target;
 };
 
-using KeywordsList = std::vector<std::string>;
-using CustomKeywordsList = std::map<std::string, std::string>;
-
-void ReplaceWithCustomKeywords(codeg::KeywordsList& keywords, codeg::CustomKeywordsList& customKeywords);
-
-bool GetKeywordsFromString(std::string& str, codeg::KeywordsList& buffKeywords);
-
 }//end codeg
 
 #endif // C_KEYWORD_HPP_INCLUDED
