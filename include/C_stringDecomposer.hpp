@@ -35,7 +35,7 @@ enum StringDecomposerFlags : uint8_t
 struct StringDecomposer
 {
     void clear();
-    void decompose(const std::string& str, uint8_t lastFlags=codeg::StringDecomposerFlags::FLAGS_EMPTY);
+    void decompose(std::string str, uint8_t lastFlags=codeg::StringDecomposerFlags::FLAGS_EMPTY);
 
     uint8_t _flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     std::string _brut;

@@ -28,15 +28,13 @@ void StringDecomposer::clear()
     this->_instruction.clear();
     this->_arguments.clear();
 }
-void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
+void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
 {
     char lastChar = ' ';
     bool ignoringSpace = true;
     bool ignoring = false;
     bool isChar = false;
     bool isString = false;
-
-    this->_brut = str;
 
     this->_flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     if ( lastFlags & codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING )
@@ -51,7 +49,7 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
 
     this->_cleaned.reserve(str.size());
 
-    for (uint32_t i=0; i<str.size(); ++i)
+    for (std::size_t i=0; i<str.size(); ++i)
     {
         if (!isString && !isChar)
         {//Not ignoring comments
@@ -96,7 +94,7 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
                 ignoringSpace = true;
             }
         }
-        else if ( (str[i] == '\"') )
+        else if ( str[i] == '\"' )
         {
             this->_cleaned.push_back('\"');
 
@@ -106,7 +104,7 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
             }
             ignoringSpace = false;
         }
-        else if ( (str[i] == '\'') )
+        else if ( str[i] == '\'' )
         {
             this->_cleaned.push_back('\'');
 
@@ -129,6 +127,8 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
         }
     }
 
+    this->_brut = std::move(str);
+
     if (isChar || isString)
     {
         throw codeg::SyntaxError("char/string quotation mark without an end !");
@@ -136,7 +136,7 @@ void StringDecomposer::decompose(const std::string& str, uint8_t lastFlags)
 
     this->_cleaned.shrink_to_fit();
     codeg::SplitKeywords(this->_cleaned, this->_arguments);
-    if (this->_arguments.size())
+    if (!this->_arguments.empty())
     {
         this->_instruction = std::move(this->_arguments.front());
         this->_arguments.erase( this->_arguments.cbegin() );
