@@ -17,7 +17,6 @@
 #ifndef C_VARIABLE_HPP_INCLUDED
 #define C_VARIABLE_HPP_INCLUDED
 
-#include "main.hpp"
 #include "C_address.hpp"
 #include <list>
 

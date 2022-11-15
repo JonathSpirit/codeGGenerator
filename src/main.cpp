@@ -14,30 +14,21 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "main.hpp"
-
 #include <iostream>
 #include <filesystem>
-#include <vector>
 #include <string>
 #include <limits>
 
+#include "version.hpp"
 #include "C_target.hpp"
 #include "C_variable.hpp"
 #include "C_compilerData.hpp"
 #include "C_console.hpp"
 #include "C_error.hpp"
 
-#include "CMakeConfig.hpp"
-
 #include "CLI/App.hpp"
 #include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
-
-void printVersion()
-{
-    std::cout << "codeGGenerator created by Guillaume Guillet, version " << CGG_VERSION_MAJOR << "." << CGG_VERSION_MINOR << std::endl;
-}
 
 int main(int argc, char **argv)
 {

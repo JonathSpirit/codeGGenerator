@@ -89,6 +89,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_BINARY_DIR}")
 
 #Source files
 target_sources(${PROJECT_NAME} PUBLIC "src/main.cpp")
+target_sources(${PROJECT_NAME} PUBLIC "src/version.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_variable.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_value.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_target.cpp")
@@ -106,7 +107,7 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_function.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_reserved.cpp")
 
 #Header files
-target_sources(${PROJECT_NAME} PUBLIC "include/main.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/version.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_variable.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_value.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_target.hpp")
