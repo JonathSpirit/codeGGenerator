@@ -13,6 +13,17 @@ enable_testing()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
 
+#Dependencies
+include(FetchContent)
+FetchContent_Declare(
+        cli11
+        GIT_REPOSITORY https://github.com/CLIUtils/CLI11
+        GIT_TAG        v2.3.1
+)
+
+FetchContent_MakeAvailable(cli11)
+include_directories(${CLI11_SOURCE_DIR}/include)
+
 #Default build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -78,6 +89,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_BINARY_DIR}")
 
 #Source files
 target_sources(${PROJECT_NAME} PUBLIC "src/main.cpp")
+target_sources(${PROJECT_NAME} PUBLIC "src/version.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_variable.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_value.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_target.cpp")
@@ -95,7 +107,7 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_function.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_reserved.cpp")
 
 #Header files
-target_sources(${PROJECT_NAME} PUBLIC "include/main.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/version.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_variable.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_value.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_target.hpp")
