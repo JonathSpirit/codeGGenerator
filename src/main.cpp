@@ -30,34 +30,10 @@
 
 #include "CMakeConfig.hpp"
 
-void printHelp()
-{
-    std::cout << "codeGGenerator usage :" << std::endl << std::endl;
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
 
-    std::cout << "Set the input file to be compiled" << std::endl;
-    std::cout << "\tcodeGGenerator --in=<path>" << std::endl << std::endl;
-
-    std::cout << "Set the output file (default is the input path+.cg)" << std::endl;
-    std::cout << "\tcodeGGenerator --out=<path>" << std::endl << std::endl;
-
-    std::cout << "Set the output log file (default is the input path+.log)" << std::endl;
-    std::cout << "\tcodeGGenerator --outLog=<path>" << std::endl << std::endl;
-
-    std::cout << "Don't write a log file (default a log file is written)" << std::endl;
-    std::cout << "\tcodeGGenerator --noLog" << std::endl << std::endl;
-
-    std::cout << "Write dummy arguments/values (useful for old compatibility), default no" << std::endl;
-    std::cout << "\tcodeGGenerator --writeDummy" << std::endl << std::endl;
-
-    std::cout << "Print the version (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGGenerator --version" << std::endl << std::endl;
-
-    std::cout << "Print the help page (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGGenerator --help" << std::endl << std::endl;
-
-    std::cout << "Ask the user how he want to compile his file (interactive compiling)" << std::endl;
-    std::cout << "\tcodeGGenerator --ask" << std::endl << std::endl;
-}
 void printVersion()
 {
     std::cout << "codeGGenerator created by Guillaume Guillet, version " << CGG_VERSION_MAJOR << "." << CGG_VERSION_MINOR << std::endl;
@@ -75,75 +51,40 @@ int main(int argc, char **argv)
     std::filesystem::path fileReadableOutPath;
     std::filesystem::path fileLogOutPath;
 
-    std::vector<std::string> commands(argv, argv + argc);
-
-    if (commands.size() <= 1)
-    {
-        printHelp();
-        return -1;
-    }
-
     bool writeDummy = false;
     bool writeLogFile = true;
+    bool interactive = false;
 
-    for (std::size_t i=1; i<commands.size(); ++i)
+    CLI::App app{"A compiler specifically built for the homemade language codeG", "codeGGenerator"};
+
+    app.add_flag_callback("--version", [](){
+        printVersion();
+        throw CLI::Success{};
+    }, "Print the version (and do nothing else)");
+
+    app.add_flag("!--noLog", writeLogFile, "Don't write a log file (default a log file is written)");
+    app.add_flag("--writeDummy", writeDummy, "Write dummy arguments/values (useful for old compatibility), default no");
+
+    app.add_flag("--ask", interactive, "Ask the user how he want to compile his file (interactive compiling)");
+
+    app.add_option("--in", fileInPath, "Set the input file to be compiled")->required(true);
+    app.add_option("--outLog", fileLogOutPath, "Set the output log file (default is the input path+.log)");
+
+    try
     {
-        //Commands
-        if ( commands[i] == "--help")
-        {
-            printHelp();
-            return 0;
-        }
-        if ( commands[i] == "--version")
-        {
-            printVersion();
-            return 0;
-        }
-        if ( commands[i] == "--noLog")
-        {
-            writeLogFile = false;
-            continue;
-        }
-        if ( commands[i] == "--writeDummy")
-        {
-            writeDummy = true;
-            continue;
-        }
-        if ( commands[i] == "--ask")
-        {
-            std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
-            std::string path;
-            std::getline(std::cin, path);
-            fileInPath = path;
-            continue;
-        }
+        app.parse(argc, argv);
+    }
+    catch (const CLI::ParseError& e)
+    {
+        return app.exit(e);
+    }
 
-        //Commands with an argument
-        std::vector<std::string> splitCommand;
-        codeg::Split(commands[i], splitCommand, '=');
-
-        if (splitCommand.size() == 2)
-        {
-            if (splitCommand[0] == "--in")
-            {
-                fileInPath = splitCommand[1];
-                continue;
-            }
-            if (splitCommand[0] == "--out")
-            {
-                fileOutPath = splitCommand[1];
-                continue;
-            }
-            if (splitCommand[0] == "--outLog")
-            {
-                fileLogOutPath = splitCommand[1];
-                continue;
-            }
-        }
-
-        //Unknown command
-        std::cout << "Unknown command : \""<< commands[i] <<"\" !" << std::endl;
-        return -1;
+    if (interactive)
+    {
+        std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
+        std::string path;
+        std::getline(std::cin, path);
+        fileInPath = path;
     }
 
     if ( fileInPath.empty() )
