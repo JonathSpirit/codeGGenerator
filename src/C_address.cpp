@@ -56,7 +56,14 @@ void JumpList::resolve(codeg::CompilerData& data)
             }
         }
 
-        ConsoleWarning << "\tLabel \"" << vLabel._name << "\" with " << jpCount << " jump points" << std::endl;
+        if (jpCount == 0)
+        {
+            ConsoleWarning << "Label \"" << vLabel._name << "\" with " << jpCount << " jump points" << std::endl;
+        }
+        else
+        {
+            ConsoleInfo << "Label \"" << vLabel._name << "\" with " << jpCount << " jump points" << std::endl;
+        }
     }
 
     //Check for non-applied jumpPoint
