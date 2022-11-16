@@ -228,7 +228,7 @@ std::string Instruction_label::getName() const
 
 void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    uint32_t address;
+    uint32_t address = 0;
 
     if ( input._arguments.size() == 2)
     {//Custom address position
