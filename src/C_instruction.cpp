@@ -123,11 +123,6 @@ std::string Instruction_set::getName() const
 
 void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 2 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("2", input._arguments.size());
-    }
-
     codeg::Keyword argStringName;
     if ( !argStringName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_STRING, data) )
     {//Check string
@@ -159,11 +154,6 @@ std::string Instruction_unset::getName() const
 
 void Instruction_unset::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 1 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1", input._arguments.size());
-    }
-
     codeg::Keyword argStringName;
     if ( !argStringName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_STRING, data) )
     {//Check string
@@ -181,11 +171,6 @@ std::string Instruction_var::getName() const
 
 void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( (input._arguments.size() != 1) && (input._arguments.size() != 2)  )
-    {
-        throw codeg::ArgumentsSizeError("1,2", input._arguments.size());
-    }
-
     std::string varName;
     std::string varPool;
     if ( !codeg::GetVariableString(input._arguments[0], data._defaultPool, varName, varPool) )
@@ -258,10 +243,6 @@ void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::Com
     else if ( input._arguments.size() == 1)
     {
         address = data._code.getCursor();
-    }
-    else
-    {
-        throw codeg::ArgumentsSizeError("1-2", input._arguments.size());
     }
 
     codeg::Keyword argName;
@@ -401,10 +382,6 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
 
         data._code.push(codeg::OPCODE_JMPSRC_CLK);
     }
-    else
-    {
-        throw codeg::ArgumentsSizeError("1,3", input._arguments.size());
-    }
 }
 
 ///Instruction_restart
@@ -413,13 +390,8 @@ std::string Instruction_restart::getName() const
     return "restart";
 }
 
-void Instruction_restart::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+void Instruction_restart::compile([[maybe_unused]] const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 0 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("0", input._arguments.size());
-    }
-
     data._code.pushFixedJump(0);
 }
 
@@ -646,10 +618,6 @@ void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::Co
             }
         }
     }
-    else
-    {
-        throw codeg::ArgumentsSizeError("1,2, >= 3", input._arguments.size());
-    }
 }
 
 ///Instruction_get
@@ -738,10 +706,6 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
             }
         }
     }
-    else
-    {
-        throw codeg::ArgumentsSizeError("2,3", input._arguments.size());
-    }
 }
 
 ///Instruction_write
@@ -752,11 +716,6 @@ std::string Instruction_write::getName() const
 
 void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 2 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("2", input._arguments.size());
-    }
-
     codeg::Keyword argBus;
     if ( argBus.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_BUS, data) )
     {//A bus
@@ -824,11 +783,6 @@ std::string Instruction_select::getName() const
 
 void Instruction_select::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 2 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("2", input._arguments.size());
-    }
-
     codeg::Keyword argTarget;
     if ( argTarget.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_TARGET, data) )
     {//A target
@@ -879,11 +833,6 @@ std::string Instruction_do::getName() const
 
 void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 3 && input._arguments.size() != 2 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("2,3", input._arguments.size());
-    }
-
     ///OPERATION
     std::size_t oprightArgIndex;
     if (input._arguments.size() == 3)
@@ -966,11 +915,6 @@ std::string Instruction_tick::getName() const
 
 void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( (input._arguments.size() != 1) && (input._arguments.size() != 2) )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1-2", input._arguments.size());
-    }
-
     codeg::Keyword argStr;
     if ( argStr.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_STRING, data) )
     {//A string
@@ -1035,11 +979,6 @@ std::string Instruction_brut::getName() const
 
 void Instruction_brut::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() == 0 )
-    {//Check size
-        throw codeg::ArgumentsSizeError(">1", input._arguments.size());
-    }
-
     codeg::Keyword argConstant;
     for (std::size_t i=0; i<input._arguments.size(); ++i)
     {
@@ -1069,11 +1008,6 @@ std::string Instruction_function::getName() const
 
 void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 1 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1", input._arguments.size());
-    }
-
     codeg::Keyword argName;
     if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
     {
@@ -1118,11 +1052,6 @@ std::string Instruction_if::getName() const
 
 void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 1 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1", input._arguments.size());
-    }
-
     codeg::Keyword argValue;
     if ( argValue.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
     {//A value
@@ -1163,13 +1092,8 @@ std::string Instruction_else::getName() const
     return "else";
 }
 
-void Instruction_else::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+void Instruction_else::compile([[maybe_unused]] const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 0 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("0", input._arguments.size());
-    }
-
     if ( data._scopes.empty() )
     {
         throw codeg::CompileError("scope error (else must be placed in a valid conditional scope)");
@@ -1199,11 +1123,6 @@ std::string Instruction_ifnot::getName() const
 
 void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 1 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1", input._arguments.size());
-    }
-
     codeg::Keyword argValue;
     if ( argValue.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
     {//A value
@@ -1244,13 +1163,8 @@ std::string Instruction_end::getName() const
     return "end";
 }
 
-void Instruction_end::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+void Instruction_end::compile([[maybe_unused]] const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 0 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("0", input._arguments.size());
-    }
-
     if ( data._scopes.empty() )
     {
         throw codeg::CompileError("scope error ('end' must be placed to end a scope)");
@@ -1391,10 +1305,6 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
             data._code.pushEmptyJump();
         }
     }
-    else
-    {
-        throw codeg::ArgumentsSizeError("4,1", input._arguments.size());
-    }
 }
 
 ///Instruction_clock
@@ -1405,11 +1315,6 @@ std::string Instruction_clock::getName() const
 
 void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( (input._arguments.size() != 1) && (input._arguments.size() != 2) )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1,2", input._arguments.size());
-    }
-
     codeg::Keyword argTarget;
     if ( !argTarget.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_TARGET, data) )
     {
@@ -1463,11 +1368,6 @@ std::string Instruction_pool::getName() const
 
 void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( (input._arguments.size() != 2) && (input._arguments.size() != 3) )
-    {//Check size
-        throw codeg::ArgumentsSizeError("2-3", input._arguments.size());
-    }
-
     codeg::Keyword argName;
     if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
     {//A name
@@ -1522,11 +1422,6 @@ std::string Instruction_import::getName() const
 
 void Instruction_import::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 1 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1", input._arguments.size());
-    }
-
     std::filesystem::path path = data._relativePath;
     path /= input._arguments[0];
 
@@ -1544,11 +1439,6 @@ std::string Instruction_definition::getName() const
 
 void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 1 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("1", input._arguments.size());
-    }
-
     codeg::Keyword argName;
     if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
     {
@@ -1583,13 +1473,8 @@ void Instruction_enddef::compile( [[maybe_unused]] const codeg::StringDecomposer
 {
     throw codeg::CompileError("'end_def' can only be placed to end a definition scope");
 }
-void Instruction_enddef::compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+void Instruction_enddef::compileDefinition([[maybe_unused]] const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() != 0 )
-    {//Check size
-        throw codeg::ArgumentsSizeError("0", input._arguments.size());
-    }
-
     //Ending the definition
     data._writeLinesIntoDefinition = false;
     data._actualFunctionName.clear();

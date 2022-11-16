@@ -237,6 +237,13 @@ int main(int argc, char **argv)
 
                 if (instruction != nullptr)
                 {//Instruction founded
+                    //Checking arguments size
+                    auto argumentsSize = instruction->getArgumentsSize();
+                    if (!argumentsSize.check(data._decomposer._arguments.size()))
+                    {
+                        throw codeg::ArgumentsSizeError(argumentsSize.toString(), data._decomposer._arguments.size());
+                    }
+
                     if ( data._writeLinesIntoDefinition )
                     {//Compile in a definition (detect the end_def keyword)
                         instruction->compileDefinition(data._decomposer, data);

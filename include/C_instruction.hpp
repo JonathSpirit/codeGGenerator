@@ -26,6 +26,82 @@
 namespace codeg
 {
 
+struct ArgumentsRange
+{
+    ArgumentsRange(unsigned int min, signed int max) :
+            _min(min),
+            _max(max)
+    {}
+    ArgumentsRange(unsigned int minMax) :
+            _min(minMax),
+            _max(static_cast<signed int>(minMax))
+    {}
+
+    unsigned int _min;
+    signed int _max;
+
+    [[nodiscard]] inline bool check(std::size_t size) const
+    {
+        return size >= this->_min && ((this->_max < 0) || (size <= static_cast<std::size_t>(this->_max)));
+    }
+    [[nodiscard]] std::string toString() const
+    {
+        if (static_cast<signed int>(this->_min) == this->_max)
+        {
+            return std::to_string(this->_min);
+        }
+
+        if (this->_max < 0)
+        {
+            auto stringSize = std::snprintf(nullptr, 0, ">= %u", this->_min) + 1;
+
+            std::unique_ptr<char[]> data{new char[stringSize]};
+            std::snprintf(data.get(), stringSize, ">= %u", this->_min);
+
+            std::string output(data.get(), stringSize-1);
+            return output;
+        }
+
+        auto stringSize = std::snprintf(nullptr, 0, "%u to %d", this->_min, this->_max) + 1;
+
+        std::unique_ptr<char[]> data{new char[stringSize]};
+        std::snprintf(data.get(), stringSize, "%u to %d", this->_min, this->_max);
+
+        std::string output(data.get(), stringSize-1);
+        return output;
+    }
+};
+
+struct ArgumentsSize
+{
+    std::vector<codeg::ArgumentsRange> _ranges;
+
+    [[nodiscard]] inline bool check(std::size_t size) const
+    {
+        for (const auto& range : this->_ranges)
+        {
+            if (range.check(size))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    [[nodiscard]] std::string toString() const
+    {
+        std::string output;
+        for (std::size_t i=0; i<this->_ranges.size(); ++i)
+        {
+            output += this->_ranges[i].toString();
+            if (i != this->_ranges.size()-1)
+            {
+                output += " or ";
+            }
+        }
+        return output;
+    }
+};
+
 enum BinaryOpcodes : uint8_t
 {
     OPCODE_BWRITE1_CLK    = 0x00,
@@ -77,6 +153,8 @@ public:
 
     [[nodiscard]] virtual std::string getName() const = 0;
 
+    [[nodiscard]] virtual codeg::ArgumentsSize getArgumentsSize() const = 0;
+
     virtual void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) = 0;
     virtual void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data);
 };
@@ -112,6 +190,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2,2}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -126,6 +206,8 @@ public:
     ~Instruction_unset() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -143,6 +225,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1,2}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -158,6 +242,8 @@ public:
     ~Instruction_label() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1,2}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -176,6 +262,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}, {3}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -190,6 +278,8 @@ public:
     ~Instruction_restart() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{0}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -208,6 +298,8 @@ public:
     ~Instruction_affect() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2, -1}, {3, -1}, {1}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -228,6 +320,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1,2}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -244,6 +338,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -258,6 +354,8 @@ public:
     ~Instruction_select() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -275,6 +373,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2,3}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -291,6 +391,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1,2}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -305,6 +407,8 @@ public:
     ~Instruction_brut() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1, -1}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -321,6 +425,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -335,6 +441,8 @@ public:
     ~Instruction_if() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -351,6 +459,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{0}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -366,6 +476,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -380,6 +492,8 @@ public:
     ~Instruction_end() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{0}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -397,6 +511,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}, {4}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -412,6 +528,8 @@ public:
     ~Instruction_clock() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1,2}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -429,6 +547,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2,3}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
@@ -443,6 +563,8 @@ public:
     ~Instruction_import() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
@@ -459,6 +581,8 @@ public:
 
     [[nodiscard]] std::string getName() const override;
 
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{1}}};}
+
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 class Instruction_enddef : public Instruction
@@ -472,6 +596,8 @@ public:
     ~Instruction_enddef() override = default;
 
     [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{0}}};}
 
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
     void compileDefinition(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
