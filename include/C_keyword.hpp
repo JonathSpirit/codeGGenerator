@@ -18,11 +18,12 @@
 #define C_KEYWORD_HPP_INCLUDED
 
 #include <string>
-#include <map>
-#include <vector>
+#include <optional>
+#include <variant>
 #include "C_target.hpp"
 #include "C_compilerData.hpp"
 #include "C_readableBus.hpp"
+#include "C_bus.hpp"
 
 namespace codeg
 {
@@ -42,26 +43,160 @@ enum KeywordTypes : uint8_t
     KEYWORD_INSTRUCTION
 };
 
-struct Keyword
+class KeywordBase
 {
-    void clear();
-    bool process(const std::string& str, const codeg::KeywordTypes& wantedType, codeg::CompilerData& data);
+public:
+    KeywordBase() = default;
+    virtual ~KeywordBase() = default;
 
-    codeg::KeywordTypes _type;
+    [[nodiscard]] virtual codeg::KeywordTypes getType() const = 0;
 
-    std::string _str;
+    [[nodiscard]] virtual std::optional<codeg::ReadableBusses> getReadableBusType() const;
+    [[nodiscard]] virtual std::optional<std::pair<uint32_t, std::size_t>> getValue() const;
 
-    uint32_t _value;
-    std::size_t _valueSize;
+    [[nodiscard]] const std::string& getString() const;
+    void setString(std::string str);
 
-    bool _valueIsVariable;
-    bool _valueIsConst;
+protected:
+    std::string _g_string;
+};
 
-    codeg::ReadableBusses _valueBus;
+class KeywordString : public KeywordBase
+{
+public:
+    KeywordString() = default;
+    ~KeywordString() override = default;
 
-    codeg::Variable* _variable;
+    static std::optional<KeywordString> parse(const std::string& str, codeg::CompilerData& data);
 
-    codeg::TargetType _target;
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_STRING;}
+};
+
+class KeywordName : public KeywordBase
+{
+public:
+    KeywordName() = default;
+    ~KeywordName() override = default;
+
+    static std::optional<KeywordName> parse(const std::string& str, codeg::CompilerData& data);
+
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_NAME;}
+
+    [[nodiscard]] const std::string& getName() const;
+    void setName(std::string str);
+
+private:
+    std::string g_name;
+};
+
+class KeywordConstant : public KeywordBase
+{
+public:
+    KeywordConstant() = default;
+    ~KeywordConstant() override = default;
+
+    static std::optional<KeywordConstant> parse(const std::string& str, codeg::CompilerData& data);
+
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_CONSTANT;}
+
+    [[nodiscard]] std::optional<codeg::ReadableBusses> getReadableBusType() const override;
+
+    [[nodiscard]] std::optional<std::pair<uint32_t, std::size_t>> getValue() const override;
+
+    void setValue(uint32_t value);
+
+private:
+    uint32_t g_value{0};
+    std::size_t g_valueByteSize{1};
+};
+
+class KeywordVariable : public KeywordBase
+{
+public:
+    KeywordVariable() = default;
+    ~KeywordVariable() override = default;
+
+    static std::optional<KeywordVariable> parse(const std::string& str, codeg::CompilerData& data, bool mustExist=false);
+
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_VARIABLE;}
+
+    [[nodiscard]] std::optional<codeg::ReadableBusses> getReadableBusType() const override;
+
+    [[nodiscard]] const codeg::Variable* getVariable() const;
+    [[nodiscard]] codeg::Variable* getVariable();
+
+    [[nodiscard]] const std::string& getName() const;
+    [[nodiscard]] const std::string& getPoolName() const;
+
+    void setVariableName(const std::string& str);
+    void setVariablePoolName(const std::string& poolName);
+
+    void setVariable(codeg::Variable* variable);
+
+    [[nodiscard]] bool exist() const;
+
+private:
+    std::string g_name;
+    std::string g_poolName;
+    codeg::Variable* g_variable{nullptr};
+};
+
+class KeywordValue : public KeywordBase
+{
+public:
+    KeywordValue() = default;
+    ~KeywordValue() override = default;
+
+    static std::optional<KeywordValue> parse(const std::string& str, codeg::CompilerData& data);
+
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_VALUE;}
+
+    [[nodiscard]] std::optional<codeg::ReadableBusses> getReadableBusType() const override;
+
+    [[nodiscard]] std::optional<std::pair<uint32_t, std::size_t>> getValue() const override;
+
+    [[nodiscard]] std::optional<codeg::KeywordVariable> getVariableKeyword() const;
+    [[nodiscard]] std::optional<codeg::KeywordConstant> getConstantKeyword() const;
+
+    [[nodiscard]] bool isVariable() const;
+    [[nodiscard]] bool isConstant() const;
+
+private:
+    std::variant<codeg::KeywordVariable, codeg::KeywordConstant, codeg::ReadableBusses> g_underlyingType;
+};
+
+class KeywordBus : public KeywordBase
+{
+public:
+    KeywordBus() = default;
+    ~KeywordBus() override = default;
+
+    static std::optional<KeywordBus> parse(const std::string& str, codeg::CompilerData& data);
+
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_BUS;}
+
+    [[nodiscard]] codeg::BusTypes getBus() const;
+    void setBus(codeg::BusTypes bus);
+
+private:
+    codeg::BusTypes g_bus{codeg::BusTypes::BUS_NULL};
+};
+
+class KeywordTarget : public KeywordBase
+{
+public:
+    KeywordTarget() = default;
+    ~KeywordTarget() override = default;
+
+    static std::optional<KeywordTarget> parse(const std::string& str, codeg::CompilerData& data);
+
+    [[nodiscard]] codeg::KeywordTypes getType() const override {return codeg::KeywordTypes::KEYWORD_TARGET;}
+
+    [[nodiscard]] codeg::TargetType getTarget() const;
+    void setTarget(codeg::TargetType target);
+
+private:
+    codeg::TargetType g_target{codeg::TargetType::TARGET_NULL};
 };
 
 }//end codeg

@@ -258,7 +258,7 @@ codeg::Variable* PoolList::getVariableWithString(const std::string& str, const s
     std::string varName;
     std::string poolName;
 
-    if ( codeg::GetVariableString(str, defaultPoolName, varName, poolName) )
+    if (codeg::ParseVariableFromString(str, defaultPoolName, varName, poolName) )
     {
         for (auto& value : this->g_pools)
         {
@@ -399,7 +399,7 @@ bool IsVariable(const std::string& str)
     }
     return false;
 }
-bool GetVariableString(const std::string& str, const std::string& defaultPoolName, std::string& buffName, std::string& buffPool)
+bool ParseVariableFromString(const std::string& str, const std::string& defaultPoolName, std::string& buffName, std::string& buffPool)
 {
     bool poolName = false;
 

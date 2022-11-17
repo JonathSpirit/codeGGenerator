@@ -123,26 +123,27 @@ std::string Instruction_set::getName() const
 
 void Instruction_set::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argStringName;
-    if ( !argStringName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_STRING, data) )
-    {//Check string
+    auto kStringName = KeywordString::parse(input._arguments[0], data);
+    auto kStringValue = KeywordString::parse(input._arguments[1], data);
+
+    if (!kStringName.has_value())
+    {
         throw codeg::ArgumentError(1, "string");
     }
 
-    codeg::Keyword argStringData;
-    if ( !argStringData.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_STRING, data) )
-    {//Check string
+    if (!kStringValue.has_value())
+    {
         throw codeg::ArgumentError(2, "string");
     }
 
-    if ( data._macros.check(argStringName._str) )
+    if ( data._macros.check(kStringName->getString()) )
     {//Check if already set
-        data._macros.set(argStringName._str, argStringData._str);
-        ConsoleWarning << "macro \"" << argStringName._str << "\" already exist and will be replaced" << std::endl;
+        data._macros.set(kStringName->getString(), kStringValue->getString());
+        ConsoleWarning << "macro \"" << kStringName->getString() << "\" already exist and will be replaced" << std::endl;
     }
     else
     {
-        data._macros.set(argStringName._str, argStringData._str);
+        data._macros.set(kStringName->getString(), kStringValue->getString());
     }
 }
 
@@ -154,13 +155,14 @@ std::string Instruction_unset::getName() const
 
 void Instruction_unset::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argStringName;
-    if ( !argStringName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_STRING, data) )
-    {//Check string
+    auto kStringName = KeywordString::parse(input._arguments[0], data);
+
+    if ( !kStringName.has_value() )
+    {
         throw codeg::ArgumentError(1, "string");
     }
 
-    data._macros.remove(argStringName._str);
+    data._macros.remove(kStringName->getString());
 }
 
 ///Instruction_var
@@ -171,52 +173,60 @@ std::string Instruction_var::getName() const
 
 void Instruction_var::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    std::string varName;
-    std::string varPool;
-    if ( !codeg::GetVariableString(input._arguments[0], data._defaultPool, varName, varPool) )
-    {//Check variable
+    codeg::MemorySize wantedMemorySize = 1;
+    auto kVariable = KeywordVariable::parse(input._arguments[0], data);
+
+    if (!kVariable.has_value())
+    {
         throw codeg::ArgumentError(1, "variable");
     }
 
-    codeg::MemorySize varSize = 1;
     if (input._arguments.size() == 2)
     {
-        codeg::Keyword argConstant;
-        if ( !argConstant.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-        {//Check constant
+        auto kConstant = KeywordConstant::parse(input._arguments[1], data);
+        if (!kConstant.has_value())
+        {
             throw codeg::ArgumentError(2, "constant");
         }
-        if ( (argConstant._value == 0) || (argConstant._value > std::numeric_limits<codeg::MemorySize>::max()) )
+        if ( (kConstant->getValue()->first == 0) ||
+             (kConstant->getValue()->first > std::numeric_limits<codeg::MemorySize>::max()) )
         {
             throw codeg::CompileError("variable size cannot be 0 or >"+std::to_string(std::numeric_limits<codeg::MemorySize>::max()));
         }
-        varSize = argConstant._value;
+        wantedMemorySize = kConstant->getValue()->first;
     }
 
-    if ( codeg::Pool* tmpPool = data._pools.getPool(varPool) )
-    {//Check pool
-        if ( codeg::Variable* buffVar = tmpPool->getVariable(varName) )
+    if (kVariable->exist())
+    {
+        if (kVariable->getVariable()->_size == wantedMemorySize)
         {
-            if (buffVar->_size == varSize)
-            {
-                ConsoleWarning << "redeclaration of variable \""<<varName<<"\" in pool \""<<varPool<<"\" with size of " << varSize << std::endl;
-            }
-            else
-            {
-                throw codeg::CompileError("redeclaration of variable \""+varName+"\" in pool \""+varPool+"\" but with different size (wanted "+std::to_string(varSize)+" instead of "+std::to_string(buffVar->_size)+")");
-            }
+            ConsoleWarning << "redeclaration of variable \""
+                           << kVariable->getName()
+                           << "\" in pool \""
+                           << kVariable->getPoolName()
+                           << "\" with size of " << wantedMemorySize << std::endl;
         }
         else
         {
-            if ( !tmpPool->addVariable(varName, varSize) )
-            {
-                throw codeg::FatalError("Unknown error, variable should be ok but can't create it");
-            }
+            throw codeg::CompileError("redeclaration of variable \""+kVariable->getName()+
+                "\" in pool \""+kVariable->getPoolName()+
+                "\" but with different size (wanted "+std::to_string(wantedMemorySize)+
+                " instead of "+std::to_string(kVariable->getVariable()->_size)+")");
         }
     }
     else
     {
-        throw codeg::CompileError("bad pool (pool \""+varPool+"\" does not exist)");
+        if ( codeg::Pool* pool = data._pools.getPool(kVariable->getPoolName()) )
+        {//Check pool
+            if ( !pool->addVariable(kVariable->getName(), wantedMemorySize) )
+            {
+                throw codeg::FatalError("unknown error, variable should be ok but can't create it");
+            }
+        }
+        else
+        {
+            throw codeg::CompileError("bad pool (pool \""+kVariable->getPoolName()+"\" does not exist)");
+        }
     }
 }
 
@@ -228,37 +238,35 @@ std::string Instruction_label::getName() const
 
 void Instruction_label::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    uint32_t address = 0;
+    codeg::Address address = data._code.getCursor();
+
+    auto kName = KeywordName::parse(input._arguments[0], data);
+
+    if ( !kName.has_value() )
+    {
+        throw codeg::ArgumentError(1, "name");
+    }
 
     if ( input._arguments.size() == 2)
     {//Custom address position
-        codeg::Keyword argConstant;
-        if ( !argConstant.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-        {//Check constant
+        auto kConstant = KeywordConstant::parse(input._arguments[1], data);
+
+        if ( !kConstant.has_value() )
+        {
             throw codeg::ArgumentError(2, "constant");
         }
 
-        address = argConstant._value;
-    }
-    else if ( input._arguments.size() == 1)
-    {
-        address = data._code.getCursor();
-    }
-
-    codeg::Keyword argName;
-    if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-    {//Check label name
-        throw codeg::ArgumentError(1, "name");
+        address = kConstant->getValue()->first;
     }
 
     codeg::Label tmpLabel;
     tmpLabel._addressStatic = address;
     tmpLabel._uniqueIndex = 0;
-    tmpLabel._name = argName._str;
+    tmpLabel._name = kName->getName();
 
     if ( !data._jumps.addLabel(tmpLabel) )
     {//Check label
-        throw codeg::CompileError("bad label (label \""+argName._str+"\" already exist)");
+        throw codeg::CompileError("bad label (label \""+kName->getName()+"\" already exist)");
     }
 }
 
@@ -271,26 +279,14 @@ std::string Instruction_jump::getName() const
 void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
     if ( input._arguments.size() == 1)
-    {//Label or fixed address
-        codeg::Keyword arg;
-        if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-        {//Check label name
-            codeg::JumpPoint tmpPoint;
-            tmpPoint._addressStatic = data._code.getCursor();
-            tmpPoint._labelName = arg._str;
+    {//Label name or fixed address
+        auto kConstant = KeywordConstant::parse(input._arguments[0], data);
 
-            if ( !data._jumps.addJumpPoint(tmpPoint) )
+        if (kConstant.has_value())
+        {//Fixed address
+            if ( kConstant->getValue()->second <= 3 )
             {
-                throw codeg::CompileError("bad label (unknown label \""+arg._str+"\")");
-            }
-
-            data._code.pushEmptyJump();
-        }
-        else if ( arg._type == codeg::KeywordTypes::KEYWORD_CONSTANT )
-        {
-            if ( arg._valueSize <= 3 )
-            {
-                data._code.pushFixedJump(arg._value);
+                data._code.pushFixedJump(kConstant->getValue()->first);
             }
             else
             {
@@ -299,86 +295,86 @@ void Instruction_jump::compile(const codeg::StringDecomposer& input, codeg::Comp
         }
         else
         {
-            throw codeg::ArgumentError(1, "name/constant");
+            auto kName = KeywordName::parse(input._arguments[0], data);
+
+            if (kName.has_value())
+            {//Label name
+                codeg::JumpPoint tmpPoint;
+                tmpPoint._addressStatic = data._code.getCursor();
+                tmpPoint._labelName = kName->getName();
+
+                if ( !data._jumps.addJumpPoint(tmpPoint) )
+                {
+                    throw codeg::CompileError("bad label (unknown label \""+kName->getName()+"\")");
+                }
+
+                data._code.pushEmptyJump();
+            }
+            else
+            {
+                throw codeg::ArgumentError(1, "name/constant");
+            }
         }
     }
     else if ( input._arguments.size() == 3)
-    {//dynamic address position
-        codeg::Keyword arg;
-        if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if ( arg._valueIsVariable )
-            {//A variable
-                arg._variable->_link.push_back({data._code.getCursor()});
+    {//Dynamic address position
+        const std::pair<uint32_t, std::size_t> defaultValue{0,1};
 
-                data._code.pushEmptyVarAccess();
-                data._code.push(codeg::OPCODE_BJMPSRC3_CLK | codeg::READABLE_RAM);
-                data._code.pushDummy();
-            }
-            else if ( arg._valueSize == 1 )
-            {//A constant or readable bus
-                data._code.push(codeg::OPCODE_BJMPSRC3_CLK | arg._valueBus);
-                data._code.pushCheckDummy(arg._value, arg._valueBus);
-            }
-            else
-            {
-                throw codeg::ByteSizeError(1, "1");
-            }
-        }
-        else
+        auto kValueMSB = KeywordValue::parse(input._arguments[0], data);
+        auto kValue = KeywordValue::parse(input._arguments[1], data);
+        auto kValueLSB = KeywordValue::parse(input._arguments[2], data);
+
+        if (!kValueMSB.has_value())
         {
             throw codeg::ArgumentError(1, "value");
         }
-
-        if ( arg.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if ( arg._valueIsVariable )
-            {//A variable
-                arg._variable->_link.push_back({data._code.getCursor()});
-
-                data._code.pushEmptyVarAccess();
-                data._code.push(codeg::OPCODE_BJMPSRC2_CLK | codeg::READABLE_RAM);
-                data._code.pushDummy();
-            }
-            else if ( arg._valueSize == 1 )
-            {//A constant or readable bus
-                data._code.push(codeg::OPCODE_BJMPSRC2_CLK | arg._valueBus);
-                data._code.pushCheckDummy(arg._value, arg._valueBus);
-            }
-            else
-            {
-                throw codeg::ByteSizeError(2, "1");
-            }
-        }
-        else
+        if (!kValue.has_value())
         {
             throw codeg::ArgumentError(2, "value");
         }
-
-        if ( arg.process(input._arguments[2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if ( arg._valueIsVariable )
-            {//A variable
-                arg._variable->_link.push_back({data._code.getCursor()});
-
-                data._code.pushEmptyVarAccess();
-                data._code.push(codeg::OPCODE_BJMPSRC1_CLK | codeg::READABLE_RAM);
-                data._code.pushDummy();
-            }
-            else if ( arg._valueSize == 1 )
-            {//A constant or readable bus
-                data._code.push(codeg::OPCODE_BJMPSRC1_CLK | arg._valueBus);
-                data._code.pushCheckDummy(arg._value, arg._valueBus);
-            }
-            else
-            {
-                throw codeg::ByteSizeError(3, "1");
-            }
-        }
-        else
+        if (!kValueLSB.has_value())
         {
             throw codeg::ArgumentError(3, "value");
         }
+
+        if (kValueMSB->isVariable())
+        {
+            kValueMSB->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+            data._code.pushEmptyVarAccess();
+        }
+        else if (kValueMSB->getValue().value_or(defaultValue).second != 1)
+        {
+            throw codeg::ByteSizeError(1, "1");
+        }
+
+        data._code.push(codeg::OPCODE_BJMPSRC3_CLK | kValueMSB->getReadableBusType().value());
+        data._code.pushCheckDummy(kValueMSB->getValue().value_or(defaultValue).first, kValueMSB->getReadableBusType().value());
+
+        if (kValue->isVariable())
+        {
+            kValue->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+            data._code.pushEmptyVarAccess();
+        }
+        else if (kValue->getValue().value_or(defaultValue).second != 1)
+        {
+            throw codeg::ByteSizeError(2, "1");
+        }
+
+        data._code.push(codeg::OPCODE_BJMPSRC2_CLK | kValue->getReadableBusType().value());
+        data._code.pushCheckDummy(kValue->getValue().value_or(defaultValue).first, kValue->getReadableBusType().value());
+
+        if (kValueLSB->isVariable())
+        {
+            kValueLSB->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+            data._code.pushEmptyVarAccess();
+        }
+        else if (kValueLSB->getValue().value_or(defaultValue).second != 1)
+        {
+            throw codeg::ByteSizeError(3, "1");
+        }
+
+        data._code.push(codeg::OPCODE_BJMPSRC1_CLK | kValueLSB->getReadableBusType().value());
+        data._code.pushCheckDummy(kValueLSB->getValue().value_or(defaultValue).first, kValueLSB->getReadableBusType().value());
 
         data._code.push(codeg::OPCODE_JMPSRC_CLK);
     }
@@ -404,218 +400,185 @@ std::string Instruction_affect::getName() const
 void Instruction_affect::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
     if ( input._arguments.size() == 1 )
-    {
-        codeg::Keyword arg;
-        if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if (arg._valueIsVariable)
-            {
-                throw codeg::CompileError("can't copy a variable in another memory location");
-            }
-            if ( arg._valueSize > 1 )
-            {
-                throw codeg::ByteSizeError(1, "1");
-            }
+    {//assigning without setting the address
+        auto kValue = KeywordValue::parse(input._arguments[0], data);
 
-            data._code.push(codeg::OPCODE_RAMW | arg._valueBus);
-            data._code.pushCheckDummy(arg._value, arg._valueBus);
-        }
-        else
+        if (!kValue.has_value())
         {
             throw codeg::ArgumentError(1, "value");
         }
+
+        if (kValue->isVariable())
+        {
+            throw codeg::CompileError("can't copy a variable in another memory location");
+        }
+        auto value = kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1});
+        if (value.second != 1)
+        {
+            throw codeg::ByteSizeError(1, "1");
+        }
+
+        data._code.push(codeg::OPCODE_RAMW | kValue->getReadableBusType().value());
+        data._code.pushCheckDummy(value.first, kValue->getReadableBusType().value());
     }
-    else if ( input._arguments.size() == 2 )
+    else if ( input._arguments.size() == 2)
     {//fixed specified address or variable
-        codeg::Keyword arg;
-        if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-        {//A variable
-            codeg::Keyword argValue;
-            if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-            {//Check value
-                if ( !argValue._valueIsVariable )
-                {
-                    if (argValue._valueSize != 1)
-                    {
-                        throw codeg::ByteSizeError(2, "1");
-                    }
+        auto kConstant = KeywordConstant::parse(input._arguments[0], data);
+        auto kValue = KeywordValue::parse(input._arguments[1], data);
 
-                    arg._variable->_link.push_back({data._code.getCursor()});
-                    data._code.pushEmptyVarAccess();
+        if (!kValue.has_value())
+        {
+            throw codeg::ArgumentError(2, "value");
+        }
+        if (kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).second != 1)
+        {
+            throw codeg::ByteSizeError(2, "1");
+        }
 
-                    data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                    data._code.pushCheckDummy(argValue._value, argValue._valueBus);
-                }
-                else
-                {
-                    throw codeg::CompileError("can't copy a variable in another variable");
-                }
+        if (!kConstant.has_value())
+        {
+            auto kVariable = KeywordVariable::parse(input._arguments[0], data, true);
+            if (!kVariable.has_value())
+            {
+                throw codeg::ArgumentError(1, "variable/constant");
             }
             else
             {
-                throw codeg::ArgumentError(2, "value");
+                //variable
+                if (kValue->isVariable())
+                {
+                    throw codeg::CompileError("can't copy a variable in another variable");
+                }
+
+                kVariable->getVariable()->_link.push_back({data._code.getCursor()});
+                data._code.pushEmptyVarAccess();
+
+                data._code.push(codeg::OPCODE_RAMW | kValue->getReadableBusType().value());
+                data._code.pushCheckDummy(kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).first, kValue->getReadableBusType().value());
             }
         }
-        else if ( arg._type == codeg::KeywordTypes::KEYWORD_CONSTANT )
-        {//Constant
-            if ( arg._valueSize > 2 )
+        else
+        {
+            //fixed specified address
+            if (kValue->isVariable())
+            {
+                throw codeg::CompileError("can't copy a variable in another memory location");
+            }
+
+            if (kConstant->getValue()->second > 2)
             {
                 throw codeg::ByteSizeError(1, "<= 2");
             }
 
-            codeg::Keyword argValue;
-            if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-            {//A value
-                if ( !argValue._valueIsVariable )
-                {
-                    if (argValue._valueSize != 1)
-                    {
-                        throw codeg::ByteSizeError(2, "1");
-                    }
+            data._code.pushFixedVarAccess(kConstant->getValue()->first);
 
-                    data._code.pushFixedVarAccess(arg._value);
-
-                    data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                    data._code.pushCheckDummy(argValue._value, argValue._valueBus);
-                }
-                else
-                {
-                    throw codeg::CompileError("can't copy a variable in another variable");
-                }
-            }
-            else
-            {
-                throw codeg::ArgumentError(2, "value");
-            }
-        }
-        else
-        {
-            throw codeg::ArgumentError(1, "variable/constant");
+            data._code.push(codeg::OPCODE_RAMW | kValue->getReadableBusType().value());
+            data._code.pushCheckDummy(kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).first, kValue->getReadableBusType().value());
         }
     }
     else if ( input._arguments.size() >= 3 )
-    {
-        codeg::Keyword argPoolName;
-        if ( argPoolName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-        {//Pool name
-            codeg::Pool* pool = data._pools.getPool(argPoolName._str);
-            if (!pool)
+    {//Assigns in a fixed size pool or a variable with an offset
+        auto kNamePoolName = KeywordName::parse(input._arguments[0], data);
+
+        if (kNamePoolName.has_value())
+        {//Assigns in a fixed size pool
+            auto kConstantOffset = KeywordConstant::parse(input._arguments[1], data);
+
+            if (!kConstantOffset.has_value())
             {
-                throw codeg::CompileError("bad argument (unknown pool : \""+argPoolName._str+"\")");
+                throw codeg::ArgumentError(2, "constant");
+            }
+            if (kConstantOffset->getValue()->second > 2)
+            {
+                throw codeg::ByteSizeError(2, "<= 2");
+            }
+
+            codeg::Pool* pool = data._pools.getPool(kNamePoolName->getName());
+            if (pool == nullptr)
+            {
+                throw codeg::CompileError("bad argument (unknown pool : \""+kNamePoolName->getName()+"\")");
             }
             if ( pool->getMaxSize() == 0 )
             {
                 throw codeg::CompileError("bad argument (pool must have a fixed size)");
             }
 
-            codeg::Keyword argOffset;
-            if ( argOffset.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-            {//Offset
-                if (argOffset._valueSize > 2)
-                {
-                    throw codeg::ByteSizeError(2, "<= 2");
-                }
-
-                codeg::MemorySize offset = argOffset._value;
-                std::size_t numOfValue = input._arguments.size() - 2;
-                if ( (numOfValue+offset) > pool->getMaxSize())
-                {
-                    throw codeg::CompileError("pool overflow (try to affect "+std::to_string(numOfValue)+" values with offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
-                }
-
-                for (std::size_t i=0; i<numOfValue; ++i)
-                {
-                    codeg::Keyword argValue;
-                    if ( argValue.process(input._arguments[i+2], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-                    {//Value
-                        if ( !argValue._valueIsVariable )
-                        {
-                            if (argValue._valueSize != 1)
-                            {
-                                throw codeg::ByteSizeError(i+3, "1");
-                            }
-
-                            pool->_link.push_back({data._code.getCursor(), static_cast<codeg::MemorySize>(i+offset)});
-
-                            data._code.pushEmptyVarAccess();
-
-                            data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                            data._code.pushCheckDummy(argValue._value, argValue._valueBus);
-                        }
-                        else
-                        {
-                            throw codeg::CompileError("can't copy a variable in another location in memory");
-                        }
-                    }
-                    else
-                    {
-                        throw codeg::ArgumentError(i+3, "value");
-                    }
-                }
-            }
-            else
+            codeg::MemorySize offset = kConstantOffset->getValue()->first;
+            std::size_t numOfValue = input._arguments.size() - 2;
+            if ( (numOfValue+offset) > pool->getMaxSize())
             {
-                throw codeg::ArgumentError(2, "constant");
+                throw codeg::CompileError("pool overflow (try to affect "+std::to_string(numOfValue)+" values with offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
             }
+
+            for (std::size_t i=0; i<numOfValue; ++i)
+            {
+                auto kValue = KeywordValue::parse(input._arguments[i+2], data);
+
+                if (!kValue.has_value())
+                {
+                    throw codeg::ArgumentError(i+3, "value");
+                }
+                if (kValue->isVariable())
+                {
+                    throw codeg::CompileError("can't copy a variable in another location in memory");
+                }
+                if (kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).second != 1)
+                {
+                    throw codeg::ByteSizeError(i+3, "1");
+                }
+
+                pool->_link.push_back({data._code.getCursor(), static_cast<codeg::MemorySize>(i+offset)});
+
+                data._code.pushEmptyVarAccess();
+
+                data._code.push(codeg::OPCODE_RAMW | kValue->getReadableBusType().value());
+                data._code.pushCheckDummy(kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).first, kValue->getReadableBusType().value());
+            }
+        }
+        else if (input._arguments.size() == 3)
+        {//Assigns a variable with an offset
+            auto kConstant = KeywordConstant::parse(input._arguments[2], data);
+            auto kValue = KeywordValue::parse(input._arguments[1], data);
+            auto kVariable = KeywordVariable::parse(input._arguments[0], data, true);
+
+            if (!kVariable.has_value())
+            {
+                throw codeg::ArgumentError(1, "variable/name");
+            }
+            if (!kValue.has_value())
+            {
+                throw codeg::ArgumentError(2, "value");
+            }
+            if (!kConstant.has_value())
+            {
+                throw codeg::ArgumentError(3, "constant");
+            }
+
+            if (kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).second != 1)
+            {
+                throw codeg::ByteSizeError(2, "1");
+            }
+            if (kConstant->getValue()->second > 2)
+            {
+                throw codeg::ByteSizeError(3, "<= 2");
+            }
+
+            if (kValue->isVariable())
+            {
+                throw codeg::CompileError("can't copy a variable in another variable");
+            }
+
+            codeg::MemorySize offset = kConstant->getValue()->first;
+
+            kVariable->getVariable()->_link.push_back({data._code.getCursor(), offset});
+            data._code.pushEmptyVarAccess();
+
+            data._code.push(codeg::OPCODE_RAMW | kValue->getReadableBusType().value());
+            data._code.pushCheckDummy(kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1}).first, kValue->getReadableBusType().value());
         }
         else
         {
-            if (input._arguments.size() == 3)
-            {
-                codeg::Keyword arg;
-                if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-                {//A variable
-                    codeg::MemorySize offset;
-                    codeg::Keyword argOffset;
-                    if ( argOffset.process(input._arguments[2], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-                    {//Offset
-                        if (argOffset._valueSize > 2)
-                        {
-                            throw codeg::ByteSizeError(3, "<= 2");
-                        }
-
-                        offset = argOffset._value;
-                    }
-                    else
-                    {
-                        throw codeg::ArgumentError(3, "constant");
-                    }
-
-                    codeg::Keyword argValue;
-                    if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-                    {//Check value
-                        if ( !argValue._valueIsVariable )
-                        {
-                            if (argValue._valueSize != 1)
-                            {
-                                throw codeg::ByteSizeError(2, "1");
-                            }
-
-                            arg._variable->_link.push_back({data._code.getCursor(), offset});
-                            data._code.pushEmptyVarAccess();
-
-                            data._code.push(codeg::OPCODE_RAMW | argValue._valueBus);
-                            data._code.pushCheckDummy(argValue._value, argValue._valueBus);
-                        }
-                        else
-                        {
-                            throw codeg::CompileError("can't copy a variable in another variable");
-                        }
-                    }
-                    else
-                    {
-                        throw codeg::ArgumentError(2, "value");
-                    }
-                }
-                else
-                {
-                    throw codeg::ArgumentError(1, "name/variable");
-                }
-            }
-            else
-            {
-                throw codeg::ArgumentError(1, "name");
-            }
+            throw codeg::ArgumentError(1, "name");
         }
     }
 }
@@ -628,60 +591,65 @@ std::string Instruction_get::getName() const
 
 void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() == 1 )
+    if (input._arguments.size() == 1)
     {//fixed specified address or variable
-        codeg::Keyword arg;
-        if ( arg.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
-        {//Variable
-            arg._variable->_link.push_back({data._code.getCursor()});
+        auto kConstant = KeywordConstant::parse(input._arguments[0], data);
+
+        if (!kConstant.has_value())
+        {
+            auto kVariable = KeywordVariable::parse(input._arguments[0], data, true);
+
+            if (!kVariable.has_value())
+            {
+                throw codeg::ArgumentError(1, "variable/constant");
+            }
+            //variable
+            kVariable->getVariable()->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
-        else if ( arg._type == codeg::KeywordTypes::KEYWORD_CONSTANT )
-        {//Constant
-            if ( arg._valueSize > 2 )
+        else
+        {
+            //fixed specified address
+            if (kConstant->getValue()->second > 2)
             {
                 throw codeg::ByteSizeError(1, "<= 2");
             }
-
-            data._code.pushFixedVarAccess(arg._value);
-        }
-        else
-        {
-            throw codeg::ArgumentError(1, "variable/constant");
+            data._code.pushFixedVarAccess(kConstant->getValue()->first);
         }
     }
-    else if ( input._arguments.size() == 2 )
+    else if (input._arguments.size() == 2)
     {//fixed size pool, or variable with offset
-        codeg::Keyword argOffset;
-        if ( argOffset.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-        {//Offset
-            if (argOffset._valueSize > 2)
-            {
-                throw codeg::ByteSizeError(2, "<= 2");
-            }
-        }
-        else
+        auto kVariable = KeywordVariable::parse(input._arguments[0], data, true);
+        auto kConstantOffset = KeywordConstant::parse(input._arguments[1], data);
+
+        if (!kConstantOffset.has_value())
         {
             throw codeg::ArgumentError(2, "constant");
         }
+        if (kConstantOffset->getValue()->second > 2)
+        {
+            throw codeg::ByteSizeError(2, "<= 2");
+        }
 
-        codeg::Keyword arg1;
-        if ( arg1.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-        {//Pool name
-            codeg::Pool* pool = data._pools.getPool(arg1._str);
+        codeg::MemorySize offset = kConstantOffset->getValue()->first;
+
+        if (!kVariable.has_value())
+        {
+            auto kName = KeywordName::parse(input._arguments[0], data);
+
+            if (!kName.has_value())
+            {
+                throw codeg::ArgumentError(1, "name/variable");
+            }
+            //fixed size pool
+            codeg::Pool* pool = data._pools.getPool(kName->getName());
             if (!pool)
             {
-                throw codeg::CompileError("bad argument (unknown pool : \""+arg1._str+"\")");
+                throw codeg::CompileError("bad argument (unknown pool : \""+kName->getName()+"\")");
             }
             if ( pool->getMaxSize() == 0 )
             {
                 throw codeg::CompileError("bad argument (pool must have a fixed size)");
-            }
-
-            codeg::MemorySize offset = argOffset._value;
-            if (offset >= pool->getMaxSize())
-            {
-                throw codeg::CompileError("pool overflow (try to get value at offset "+std::to_string(offset)+" but the max size is "+std::to_string(pool->getMaxSize())+")");
             }
 
             pool->_link.push_back({data._code.getCursor(), offset});
@@ -689,21 +657,14 @@ void Instruction_get::compile(const codeg::StringDecomposer& input, codeg::Compi
         }
         else
         {
-            if (arg1._type == codeg::KeywordTypes::KEYWORD_VARIABLE)
-            {//Variable
-                codeg::MemorySize offset = argOffset._value;
-                if (offset >= arg1._variable->_size)
-                {
-                    throw codeg::CompileError("variable overflow (try to get value at offset "+std::to_string(offset)+" but the variable size is "+std::to_string(arg1._variable->_size)+")");
-                }
-
-                arg1._variable->_link.push_back({data._code.getCursor(), offset});
-                data._code.pushEmptyVarAccess();
-            }
-            else
+            //variable with offset
+            if (offset >= kVariable->getVariable()->_size)
             {
-                throw codeg::ArgumentError(1, "name/variable");
+                throw codeg::CompileError("variable overflow (try to get value at offset "+std::to_string(offset)+" but the variable size is "+std::to_string(kVariable->getVariable()->_size)+")");
             }
+
+            kVariable->getVariable()->_link.push_back({data._code.getCursor(), offset});
+            data._code.pushEmptyVarAccess();
         }
     }
 }
@@ -716,63 +677,56 @@ std::string Instruction_write::getName() const
 
 void Instruction_write::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argBus;
-    if ( argBus.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_BUS, data) )
-    {//A bus
-        codeg::Keyword argValue;
-        if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if (argValue._valueIsVariable)
-            {//A variable
-                argValue._variable->_link.push_back({data._code.getCursor()});
-                data._code.pushEmptyVarAccess();
-            }
-            else if (argValue._valueSize != 1)
-            {
-                throw codeg::ByteSizeError(2, "1");
-            }
-        }
-        else
-        {
-            throw codeg::ArgumentError(2, "value");
-        }
+    auto kBus = KeywordBus::parse(input._arguments[0], data);
+    auto kValue = KeywordValue::parse(input._arguments[1], data);
 
-        switch ( argBus._value )
-        {
-        case codeg::BUS_NULL:
-            throw codeg::CompileError("bad bus (bus can't be null)");
-            break;
-
-        case codeg::BUS_WRITEABLE_1:
-            data._code.push(codeg::OPCODE_BWRITE1_CLK | argValue._valueBus);
-            break;
-        case codeg::BUS_WRITEABLE_2:
-            data._code.push(codeg::OPCODE_BWRITE2_CLK | argValue._valueBus);
-            break;
-        case codeg::BUS_SPICFG:
-            data._code.push(codeg::OPCODE_BCFG_SPI_CLK | argValue._valueBus);
-            break;
-        case codeg::BUS_SPI:
-            data._code.push(codeg::OPCODE_SPI_CLK | argValue._valueBus);
-            break;
-
-        case codeg::BUS_OPLEFT:
-            data._code.push(codeg::OPCODE_OPLEFT_CLK | argValue._valueBus);
-            break;
-        case codeg::BUS_OPRIGHT:
-            data._code.push(codeg::OPCODE_OPRIGHT_CLK | argValue._valueBus);
-            break;
-
-        default:
-            throw codeg::CompileError("bad bus (unknown bus)");
-            break;
-        }
-        data._code.pushCheckDummy(argValue._value, argValue._valueBus);
-    }
-    else
+    if (!kBus.has_value())
     {
         throw codeg::ArgumentError(1, "bus");
     }
+    if (!kValue.has_value())
+    {
+        throw codeg::ArgumentError(2, "value");
+    }
+
+    if (kValue->isVariable())
+    {
+        kValue->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+        data._code.pushEmptyVarAccess();
+    }
+    auto value = kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1});
+    if (value.second != 1)
+    {
+        throw codeg::ByteSizeError(2, "1");
+    }
+
+    switch (kBus->getBus())
+    {
+    case codeg::BUS_WRITEABLE_1:
+        data._code.push(codeg::OPCODE_BWRITE1_CLK | kValue->getReadableBusType().value());
+        break;
+    case codeg::BUS_WRITEABLE_2:
+        data._code.push(codeg::OPCODE_BWRITE2_CLK | kValue->getReadableBusType().value());
+        break;
+    case codeg::BUS_SPICFG:
+        data._code.push(codeg::OPCODE_BCFG_SPI_CLK | kValue->getReadableBusType().value());
+        break;
+    case codeg::BUS_SPI:
+        data._code.push(codeg::OPCODE_SPI_CLK | kValue->getReadableBusType().value());
+        break;
+
+    case codeg::BUS_OPLEFT:
+        data._code.push(codeg::OPCODE_OPLEFT_CLK | kValue->getReadableBusType().value());
+        break;
+    case codeg::BUS_OPRIGHT:
+        data._code.push(codeg::OPCODE_OPRIGHT_CLK | kValue->getReadableBusType().value());
+        break;
+
+    default:
+        throw codeg::CompileError("bad bus (unknown bus)");
+    }
+
+    data._code.pushCheckDummy(value.first, kValue->getReadableBusType().value());
 }
 
 ///Instruction_select
@@ -783,46 +737,42 @@ std::string Instruction_select::getName() const
 
 void Instruction_select::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argTarget;
-    if ( argTarget.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_TARGET, data) )
-    {//A target
-        codeg::Keyword argValue;
-        if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if (argValue._valueIsVariable)
-            {//A variable
-                argValue._variable->_link.push_back({data._code.getCursor()});
-                data._code.pushEmptyVarAccess();
-            }
-            else if (argValue._valueSize != 1)
-            {
-                throw codeg::ByteSizeError(2, "1");
-            }
-        }
-        else
-        {
-            throw codeg::ArgumentError(2, "value");
-        }
+    auto kTarget = KeywordTarget::parse(input._arguments[0], data);
+    auto kValue = KeywordValue::parse(input._arguments[1], data);
 
-        switch ( argTarget._target )
-        {
-        case codeg::TargetType::TARGET_OPERATION:
-            data._code.push(codeg::OPCODE_OPCHOOSE_CLK | argValue._valueBus);
-            break;
-        case codeg::TargetType::TARGET_PERIPHERAL:
-            data._code.push(codeg::OPCODE_BPCS_CLK | argValue._valueBus);
-            break;
-
-        default:
-            throw codeg::CompileError("bad target (unknown target)");
-            break;
-        }
-        data._code.pushCheckDummy(argValue._value, argValue._valueBus);
-    }
-    else
+    if (!kTarget.has_value())
     {
         throw codeg::ArgumentError(1, "target");
     }
+    if (!kValue.has_value())
+    {
+        throw codeg::ArgumentError(2, "value");
+    }
+
+    if (kValue->isVariable())
+    {
+        kValue->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+        data._code.pushEmptyVarAccess();
+    }
+    auto value = kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1});
+    if (value.second != 1)
+    {
+        throw codeg::ByteSizeError(2, "1");
+    }
+
+    switch (kTarget->getTarget())
+    {
+    case codeg::TargetType::TARGET_OPERATION:
+        data._code.push(codeg::OPCODE_OPCHOOSE_CLK | kValue->getReadableBusType().value());
+        break;
+    case codeg::TargetType::TARGET_PERIPHERAL:
+        data._code.push(codeg::OPCODE_BPCS_CLK | kValue->getReadableBusType().value());
+        break;
+
+    default:
+        throw codeg::CompileError("bad target (unknown target)");
+    }
+    data._code.pushCheckDummy(value.first, kValue->getReadableBusType().value());
 }
 
 ///Instruction_do
@@ -833,78 +783,86 @@ std::string Instruction_do::getName() const
 
 void Instruction_do::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    ///OPERATION
-    std::size_t oprightArgIndex;
+    const std::pair<uint32_t,std::size_t> defaultValue{0,1};
+    std::optional<KeywordValue> kValueOpLeft;
+    std::optional<KeywordValue> kValueOpRight;
+
+    //Operation choose
     if (input._arguments.size() == 3)
     {
-        oprightArgIndex = 2;
+        kValueOpLeft = KeywordValue::parse(input._arguments[0], data);
+        kValueOpRight = KeywordValue::parse(input._arguments[2], data);
 
-        codeg::Keyword argValueOp;
-        if ( argValueOp.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-        {//A value
-            if (argValueOp._valueIsVariable)
-            {
-                argValueOp._variable->_link.push_back({data._code.getCursor()});
-                data._code.pushEmptyVarAccess();
-            }
-            else if (argValueOp._valueSize != 1)
-            {
-                throw codeg::ByteSizeError(2, "1");
-            }
+        if (!kValueOpLeft.has_value())
+        {
+            throw codeg::ArgumentError(1, "value");
         }
-        else
+        if (!kValueOpRight.has_value())
+        {
+            throw codeg::ArgumentError(3, "value");
+        }
+
+        auto kValueOpChoose = KeywordValue::parse(input._arguments[1], data);
+
+        if (!kValueOpChoose.has_value())
         {
             throw codeg::ArgumentError(2, "value");
         }
-        data._code.push(codeg::OPCODE_OPCHOOSE_CLK | argValueOp._valueBus);
-        data._code.pushCheckDummy(argValueOp._value, argValueOp._valueBus);
-    }
-    else
-    {
-        oprightArgIndex = 1;
-    }
-
-    ///LEFT
-    codeg::Keyword argValueLeft;
-    if ( argValueLeft.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if (argValueLeft._valueIsVariable)
+        if (kValueOpChoose->isVariable())
         {
-            argValueLeft._variable->_link.push_back({data._code.getCursor()});
+            kValueOpChoose->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
             data._code.pushEmptyVarAccess();
         }
-        else if (argValueLeft._valueSize != 1)
+        if (kValueOpChoose->getValue().value_or(defaultValue).second != 1)
         {
-            throw codeg::ByteSizeError(1, "1");
+            throw codeg::ByteSizeError(2, "1");
         }
-    }
-    else
-    {
-        throw codeg::ArgumentError(1, "value");
-    }
-    data._code.push(codeg::OPCODE_OPLEFT_CLK | argValueLeft._valueBus);
-    data._code.pushCheckDummy(argValueLeft._value, argValueLeft._valueBus);
 
-    ///RIGHT
-    codeg::Keyword argValueRight;
-    if ( argValueRight.process(input._arguments[oprightArgIndex], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if (argValueRight._valueIsVariable)
-        {
-            argValueRight._variable->_link.push_back({data._code.getCursor()});
-            data._code.pushEmptyVarAccess();
-        }
-        else if (argValueRight._valueSize != 1)
-        {
-            throw codeg::ByteSizeError(oprightArgIndex+1, "1");
-        }
+        data._code.push(codeg::OPCODE_OPCHOOSE_CLK | kValueOpChoose->getReadableBusType().value());
+        data._code.pushCheckDummy(kValueOpChoose->getValue().value_or(defaultValue).first, kValueOpChoose->getReadableBusType().value());
     }
     else
     {
-        throw codeg::ArgumentError(oprightArgIndex+1, "value");
+        kValueOpLeft = KeywordValue::parse(input._arguments[0], data);
+        kValueOpRight = KeywordValue::parse(input._arguments[1], data);
+
+        if (!kValueOpLeft.has_value())
+        {
+            throw codeg::ArgumentError(1, "value");
+        }
+        if (!kValueOpRight.has_value())
+        {
+            throw codeg::ArgumentError(2, "value");
+        }
     }
-    data._code.push(codeg::OPCODE_OPRIGHT_CLK | argValueRight._valueBus);
-    data._code.pushCheckDummy(argValueRight._value, argValueRight._valueBus);
+
+    //Left value
+    if (kValueOpLeft->isVariable())
+    {
+        kValueOpLeft->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+        data._code.pushEmptyVarAccess();
+    }
+    if (kValueOpLeft->getValue().value_or(defaultValue).second != 1)
+    {
+        throw codeg::ByteSizeError(1, "1");
+    }
+
+    data._code.push(codeg::OPCODE_OPLEFT_CLK | kValueOpLeft->getReadableBusType().value());
+    data._code.pushCheckDummy(kValueOpLeft->getValue().value_or(defaultValue).first, kValueOpLeft->getReadableBusType().value());
+
+    //Right value
+    if (kValueOpRight->isVariable())
+    {
+        kValueOpRight->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+        data._code.pushEmptyVarAccess();
+    }
+    if (kValueOpRight->getValue().value_or(defaultValue).second != 1)
+    {
+        throw codeg::ByteSizeError(1 + (input._arguments.size() == 3 ? 1 : 0), "1");
+    }
+
+    data._code.push(codeg::OPCODE_OPRIGHT_CLK | kValueOpRight->getReadableBusType().value());
+    data._code.pushCheckDummy(kValueOpRight->getValue().value_or(defaultValue).first, kValueOpRight->getReadableBusType().value());
 }
 
 ///Instruction_tick
@@ -915,59 +873,43 @@ std::string Instruction_tick::getName() const
 
 void Instruction_tick::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argStr;
-    if ( argStr.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_STRING, data) )
-    {//A string
-        if (argStr._str == "simple")
+    auto kString = KeywordString::parse(input._arguments[0], data);
+    codeg::MemoryBigSize count = 1;
+
+    if (input._arguments.size() == 2)
+    {
+        auto kConstant = KeywordConstant::parse(input._arguments[1], data);
+        if (!kConstant.has_value())
         {
-            if ( input._arguments.size() == 2 )
-            {//Check size
-                codeg::Keyword argValue;
-                if ( !argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-                {
-                    throw codeg::ArgumentError(2, "constant");
-                }
-                for (uint32_t i=0; i<argValue._value; ++i)
-                {
-                    data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
-                    data._code.pushDummy();
-                }
-            }
-            else
-            {
-                data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
-                data._code.pushDummy();
-            }
+            throw codeg::ArgumentError(2, "constant");
         }
-        else if (argStr._str == "long")
+        count = kConstant->getValue()->first;
+    }
+
+    if (!kString.has_value())
+    {
+        throw codeg::ArgumentError(1, "string");
+    }
+
+    if (kString->getString() == "simple")
+    {
+        for (codeg::MemoryBigSize i=0; i<count; ++i)
         {
-            if ( input._arguments.size() == 2 )
-            {//Check size
-                codeg::Keyword argValue;
-                if ( argValue.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-                {
-                    throw codeg::ArgumentError(2, "constant");
-                }
-                for (uint32_t i=0; i<argValue._value; ++i)
-                {
-                    data._code.push(codeg::OPCODE_LTICK | codeg::READABLE_DEFAULT);
-                    data._code.pushDummy();
-                }
-            }
-            else
-            {
-                data._code.push(codeg::OPCODE_LTICK | codeg::READABLE_DEFAULT);
-                data._code.pushDummy();
-            }
+            data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
+            data._code.pushCheckDummy(0, codeg::READABLE_DEFAULT);
         }
-        else
+    }
+    else if (kString->getString() == "long")
+    {
+        for (codeg::MemoryBigSize i=0; i<count; ++i)
         {
-            throw codeg::CompileError("bad argument (argument 1 [string] must be \"long\" or \"simple\")");
+            data._code.push(codeg::OPCODE_LTICK | codeg::READABLE_DEFAULT);
+            data._code.pushCheckDummy(0, codeg::READABLE_DEFAULT);
         }
     }
     else
     {
-        throw codeg::ArgumentError(1, "string");
+        throw codeg::CompileError("bad argument (argument 1 [string] must be \"long\" or \"simple\")");
     }
 }
 
@@ -979,24 +921,20 @@ std::string Instruction_brut::getName() const
 
 void Instruction_brut::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argConstant;
     for (std::size_t i=0; i<input._arguments.size(); ++i)
     {
-        if ( argConstant.process(input._arguments[i], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-        {//A value
-            if ( argConstant._valueSize == 1 )
-            {
-                data._code.push(argConstant._value);
-            }
-            else
-            {
-                throw codeg::ByteSizeError(i+1, "1");
-            }
-        }
-        else
+        auto kConstant = KeywordConstant::parse(input._arguments[i], data);
+
+        if (!kConstant.has_value())
         {
             throw codeg::ArgumentError(i+1, "constant");
         }
+        if (kConstant->getValue()->second != 1)
+        {
+            throw codeg::ByteSizeError(i+1, "1");
+        }
+
+        data._code.push(kConstant->getValue()->first);
     }
 }
 
@@ -1008,15 +946,15 @@ std::string Instruction_function::getName() const
 
 void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argName;
-    if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
+    auto kName = KeywordName::parse(input._arguments[0], data);
+    if (!kName.has_value())
     {
         throw codeg::ArgumentError(1, "name");
     }
 
-    if ( data._functions.get(argName._str) != nullptr )
+    if ( data._functions.get(kName->getName()) != nullptr )
     {
-        throw codeg::CompileError("bad function (function \""+argName._str+"\" already exist)");
+        throw codeg::CompileError("bad function (function \""+kName->getName()+"\" already exist)");
     }
 
     if ( !data._actualFunctionName.empty() )
@@ -1030,18 +968,18 @@ void Instruction_function::compile(const codeg::StringDecomposer& input, codeg::
 
     data._scopes.newScope(codeg::ScopeStats::SCOPE_FUNCTION, data._reader.getLineCount(), data._reader.getPath()); //New scope
 
-    data._actualFunctionName = argName._str;
-    data._functions.push(argName._str);
+    data._actualFunctionName = kName->getName();
+    data._functions.push(kName->getName());
 
-    data._jumps._jumpPoints.push_back({"%%E"+argName._str, data._code.getCursor()}); //Jump to the end of the function
+    data._jumps._jumpPoints.push_back({"%%E"+kName->getName(), data._code.getCursor()}); //Jump to the end of the function
     data._code.pushEmptyJump();
 
-    if ( !data._jumps.addLabel({"%%"+argName._str, 0, data._code.getCursor()}) )
+    if ( !data._jumps.addLabel({"%%"+kName->getName(), 0, data._code.getCursor()}) )
     {//Label to the start of the function
-        throw codeg::CompileError("label error (label \"%%"+argName._str+"\" already exist)");
+        throw codeg::CompileError("label error (label \"%%"+kName->getName()+"\" already exist)");
     }
 
-    ConsoleInfo << "\tstart of the function \""<< argName._str <<"\" at address : " << data._code.getCursor() << std::endl;
+    ConsoleInfo << "\tstart of the function \""<< kName->getName() <<"\" at address : " << data._code.getCursor() << std::endl;
 }
 
 ///Instruction_if
@@ -1052,23 +990,23 @@ std::string Instruction_if::getName() const
 
 void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argValue;
-    if ( argValue.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if (argValue._valueIsVariable)
-        {//A variable
-            argValue._variable->_link.push_back({data._code.getCursor()});
-            data._code.pushEmptyVarAccess();
-        }
-        else if (argValue._valueSize != 1)
-        {
-            throw codeg::ByteSizeError(1, "1");
-        }
-    }
-    else
+    auto kValue = KeywordValue::parse(input._arguments[0], data);
+
+    if (!kValue.has_value())
     {
         throw codeg::ArgumentError(1, "value");
     }
+    auto value = kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1});
+    if (kValue->isVariable())
+    {
+        kValue->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+        data._code.pushEmptyVarAccess();
+    }
+    if (value.second != 1)
+    {
+        throw codeg::ByteSizeError(1, "1");
+    }
+
     /*
     2 jump points must be created in order to work properly :
         - At the false condition, label named %%Fn where n is the scope
@@ -1081,8 +1019,8 @@ void Instruction_if::compile(const codeg::StringDecomposer& input, codeg::Compil
     data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopes.getScopeCount()), data._code.getCursor()});
     data._code.pushEmptyJumpAddress();
 
-    data._code.push(codeg::OPCODE_IF | argValue._valueBus);
-    data._code.pushCheckDummy(argValue._value, argValue._valueBus);
+    data._code.push(codeg::OPCODE_IF | kValue->getReadableBusType().value());
+    data._code.pushCheckDummy(value.first, kValue->getReadableBusType().value());
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 }
 
@@ -1123,23 +1061,23 @@ std::string Instruction_ifnot::getName() const
 
 void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argValue;
-    if ( argValue.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_VALUE, data) )
-    {//A value
-        if (argValue._valueIsVariable)
-        {//A variable
-            argValue._variable->_link.push_back({data._code.getCursor()});
-            data._code.pushEmptyVarAccess();
-        }
-        else if (argValue._valueSize != 1)
-        {
-            throw codeg::ByteSizeError(1, "1");
-        }
-    }
-    else
+    auto kValue = KeywordValue::parse(input._arguments[0], data);
+
+    if (!kValue.has_value())
     {
         throw codeg::ArgumentError(1, "value");
     }
+    auto value = kValue->getValue().value_or(std::pair<uint32_t,std::size_t>{0,1});
+    if (kValue->isVariable())
+    {
+        kValue->getVariableKeyword()->getVariable()->_link.push_back({data._code.getCursor()});
+        data._code.pushEmptyVarAccess();
+    }
+    if (value.second != 1)
+    {
+        throw codeg::ByteSizeError(1, "1");
+    }
+
     /*
     2 jump points must be created in order to work properly :
         - At the false condition, label named %%Fn where n is the scope
@@ -1152,8 +1090,8 @@ void Instruction_ifnot::compile(const codeg::StringDecomposer& input, codeg::Com
     data._jumps._jumpPoints.push_back({"%%F"+std::to_string(data._scopes.getScopeCount()), data._code.getCursor()});
     data._code.pushEmptyJumpAddress();
 
-    data._code.push(codeg::OPCODE_IFNOT | argValue._valueBus);
-    data._code.pushCheckDummy(argValue._value, argValue._valueBus);
+    data._code.push(codeg::OPCODE_IFNOT | kValue->getReadableBusType().value());
+    data._code.pushCheckDummy(value.first, kValue->getReadableBusType().value());
     data._code.push(codeg::OPCODE_JMPSRC_CLK);
 }
 
@@ -1215,35 +1153,37 @@ std::string Instruction_call::getName() const
 
 void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    if ( input._arguments.size() == 4 )
+    auto kName = KeywordName::parse(input._arguments[0], data);
+    if (!kName.has_value())
+    {
+        throw codeg::ArgumentError(1, "name");
+    }
+
+    if (input._arguments.size() == 4)
     {//call a function
-        codeg::Keyword argName;
-        if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-        {
-            throw codeg::ArgumentError(1, "name");
-        }
-        codeg::Function* func = data._functions.get(argName._str);
+        codeg::Function* func = data._functions.get(kName->getName());
         if ( func == nullptr )
         {
-            throw codeg::CompileError("bad function (unknown function \""+argName._str+"\")");
+            throw codeg::CompileError("bad function (unknown function \""+kName->getName()+"\")");
         }
         if ( func->isDefinition() )
         {
             throw codeg::CompileError("bad function (can't call a definition with a return address)");
         }
 
-        codeg::Keyword argVar1;
-        if ( !argVar1.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        auto kVariableMSB = KeywordVariable::parse(input._arguments[1], data, true);
+        auto kVariable = KeywordVariable::parse(input._arguments[2], data, true);
+        auto kVariableLSB = KeywordVariable::parse(input._arguments[3], data, true);
+
+        if ( !kVariableMSB.has_value() )
         {
             throw codeg::ArgumentError(2, "variable");
         }
-        codeg::Keyword argVar2;
-        if ( !argVar2.process(input._arguments[2], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        if ( !kVariable.has_value() )
         {
             throw codeg::ArgumentError(3, "variable");
         }
-        codeg::Keyword argVar3;
-        if ( !argVar3.process(input._arguments[3], codeg::KeywordTypes::KEYWORD_VARIABLE, data) )
+        if ( !kVariableLSB.has_value() )
         {
             throw codeg::ArgumentError(4, "variable");
         }
@@ -1251,42 +1191,37 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         //Prepare return address
         uint32_t returnAddress = data._code.getCursor() + 25;
 
-        argVar1._variable->_link.push_back({data._code.getCursor()}); //MSB
+        kVariableMSB->getVariable()->_link.push_back({data._code.getCursor()}); //MSB
         data._code.pushEmptyVarAccess();
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push((returnAddress&0x00FF0000)>>16);
 
-        argVar2._variable->_link.push_back({data._code.getCursor()}); //MSB
+        kVariable->getVariable()->_link.push_back({data._code.getCursor()}); //MSB
         data._code.pushEmptyVarAccess();
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push((returnAddress&0x0000FF00)>>8);
 
-        argVar3._variable->_link.push_back({data._code.getCursor()}); //MSB
+        kVariableLSB->getVariable()->_link.push_back({data._code.getCursor()}); //MSB
         data._code.pushEmptyVarAccess();
         data._code.push(codeg::OPCODE_RAMW | codeg::READABLE_SOURCE);
         data._code.push(returnAddress&0x000000FF);
 
         codeg::JumpPoint tmpPoint;
         tmpPoint._addressStatic = data._code.getCursor();
-        tmpPoint._labelName = "%%"+argName._str;
+        tmpPoint._labelName = "%%"+kName->getName();
 
         if ( !data._jumps.addJumpPoint(tmpPoint) )
         {
-            throw codeg::CompileError("bad label (unknown label \"%%"+argName._str+"\")");
+            throw codeg::CompileError("bad label (unknown label \"%%"+kName->getName()+"\")");
         }
         data._code.pushEmptyJump();
     }
     else if ( input._arguments.size() == 1 )
     {//call a definition/function
-        codeg::Keyword argName;
-        if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-        {
-            throw codeg::ArgumentError(1, "name");
-        }
-        codeg::Function* func = data._functions.get(argName._str);
+        codeg::Function* func = data._functions.get(kName->getName());
         if ( func == nullptr )
         {
-            throw codeg::CompileError("bad definition/function (unknown definition/function \""+argName._str+"\")");
+            throw codeg::CompileError("bad definition/function (unknown definition/function \""+kName->getName()+"\")");
         }
         if ( func->isDefinition() )
         {//definition
@@ -1296,11 +1231,11 @@ void Instruction_call::compile(const codeg::StringDecomposer& input, codeg::Comp
         {//function
             codeg::JumpPoint tmpPoint;
             tmpPoint._addressStatic = data._code.getCursor();
-            tmpPoint._labelName = "%%"+argName._str;
+            tmpPoint._labelName = "%%"+kName->getName();
 
             if ( !data._jumps.addJumpPoint(tmpPoint) )
             {
-                throw codeg::CompileError("bad label (unknown label \"%%"+argName._str+"\")");
+                throw codeg::CompileError("bad label (unknown label \"%%"+kName->getName()+"\")");
             }
             data._code.pushEmptyJump();
         }
@@ -1315,48 +1250,43 @@ std::string Instruction_clock::getName() const
 
 void Instruction_clock::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argTarget;
-    if ( !argTarget.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_TARGET, data) )
+    auto kTarget = KeywordTarget::parse(input._arguments[0], data);
+
+    if (!kTarget.has_value())
     {
         throw codeg::ArgumentError(1, "target");
     }
 
     uint8_t targetOpcode;
-    switch (argTarget._target)
+    switch (kTarget->getTarget())
     {
-    case codeg::TARGET_PERIPHERAL:
+    case codeg::TargetType::TARGET_PERIPHERAL:
         targetOpcode = codeg::OPCODE_PERIPHERAL_CLK;
         break;
+
     default:
-        throw codeg::ArgumentError(1, "target");
-        break;
+        throw codeg::CompileError("bad/unsupported target");
     }
 
+    codeg::MemoryBigSize count = 1;
     if (input._arguments.size() == 2)
     {
-        codeg::Keyword argConstant;
-        if ( argConstant.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-        {//A value
-            if (argConstant._value == 0)
-            {
-                ConsoleWarning << "you want 0 clock pulses, this instruction will be ignored" << std::endl;
-            }
-
-            for (uint32_t i=0; i<argConstant._value; ++i)
-            {
-                data._code.push(targetOpcode | codeg::READABLE_DEFAULT);
-                data._code.pushDummy();
-            }
-        }
-        else
+        auto kConstant = KeywordConstant::parse(input._arguments[1], data);
+        if (!kConstant.has_value())
         {
             throw codeg::ArgumentError(2, "constant");
         }
+        if (kConstant->getValue()->first == 0)
+        {
+            ConsoleWarning << "you want 0 clock pulses, this instruction will be ignored" << std::endl;
+        }
+        count = kConstant->getValue()->first;
     }
-    else
+
+    for (codeg::MemoryBigSize i=0; i<count; ++i)
     {
         data._code.push(targetOpcode | codeg::READABLE_DEFAULT);
-        data._code.pushDummy();
+        data._code.pushCheckDummy(0, codeg::READABLE_DEFAULT);
     }
 }
 
@@ -1368,15 +1298,15 @@ std::string Instruction_pool::getName() const
 
 void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argName;
-    if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
-    {//A name
+    auto kNamePoolName = KeywordName::parse(input._arguments[0], data);
+    auto kConstantSize = KeywordConstant::parse(input._arguments[1], data);
+
+    if (!kNamePoolName.has_value())
+    {
         throw codeg::ArgumentError(1, "name");
     }
-
-    codeg::Keyword argSize;
-    if ( !argSize.process(input._arguments[1], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-    {//A constant
+    if (!kConstantSize.has_value())
+    {
         throw codeg::ArgumentError(2, "constant");
     }
 
@@ -1384,32 +1314,32 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
     bool isDynamic = true;
     if (input._arguments.size() == 3)
     {
-        codeg::Keyword argStart;
-        if ( !argStart.process(input._arguments[2], codeg::KeywordTypes::KEYWORD_CONSTANT, data) )
-        {//A constant
+        auto kConstantStartAddress = KeywordConstant::parse(input._arguments[2], data);
+        if ( !kConstantStartAddress.has_value() )
+        {
             throw codeg::ArgumentError(3, "constant");
         }
-        startAddress = argStart._value;
+        startAddress = kConstantStartAddress->getValue()->first;
         isDynamic = false;
     }
 
-    if ( codeg::Pool* tmpPool = data._pools.getPool(argName._str) )
+    if ( codeg::Pool* tmpPool = data._pools.getPool(kNamePoolName->getName()) )
     {//Pool already exist
-        ConsoleWarning << "pool \"" << argName._str << "\" already exist and will be replaced !" << std::endl;
+        ConsoleWarning << "pool \"" << kNamePoolName->getName() << "\" already exist and will be replaced !" << std::endl;
 
         tmpPool->setStartAddressType(isDynamic ? codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC : codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC);
-        tmpPool->setAddress(startAddress, argSize._value);
+        tmpPool->setAddress(startAddress, kConstantSize->getValue()->first);
     }
     else
     {//Pool must be created
-        codeg::Pool tmpNewPool(argName._str);
+        codeg::Pool tmpNewPool(kNamePoolName->getName());
 
         tmpNewPool.setStartAddressType(isDynamic ? codeg::Pool::StartAddressTypes::START_ADDRESS_DYNAMIC : codeg::Pool::StartAddressTypes::START_ADDRESS_STATIC);
-        tmpNewPool.setAddress(startAddress, argSize._value);
+        tmpNewPool.setAddress(startAddress, kConstantSize->getValue()->first);
 
         if ( !data._pools.addPool(tmpNewPool) )
         {
-            throw codeg::FatalError("bad pool (pool \""+argName._str+"\" already exist ?)");
+            throw codeg::FatalError("bad pool (pool \""+kNamePoolName->getName()+"\" already exist ?)");
         }
     }
 }
@@ -1439,15 +1369,15 @@ std::string Instruction_definition::getName() const
 
 void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
 {
-    codeg::Keyword argName;
-    if ( !argName.process(input._arguments[0], codeg::KeywordTypes::KEYWORD_NAME, data) )
+    auto kName = KeywordName::parse(input._arguments[0], data);
+    if ( !kName.has_value() )
     {
         throw codeg::ArgumentError(1, "name");
     }
 
-    if ( data._functions.get(argName._str) != nullptr )
+    if ( data._functions.get(kName->getName()) != nullptr )
     {
-        throw codeg::CompileError("bad definition (definition/function \""+argName._str+"\" already exist)");
+        throw codeg::CompileError("bad definition (definition/function \""+kName->getName()+"\" already exist)");
     }
 
     if ( !data._scopes.empty() )
@@ -1457,8 +1387,8 @@ void Instruction_definition::compile(const codeg::StringDecomposer& input, codeg
 
     data._scopes.newScope(codeg::ScopeStats::SCOPE_DEFINITION, data._reader.getLineCount(), data._reader.getPath()); //New scope
 
-    data._actualFunctionName = argName._str;
-    data._functions.push(argName._str, true);
+    data._actualFunctionName = kName->getName();
+    data._functions.push(kName->getName(), true);
 
     data._writeLinesIntoDefinition = true;
 }

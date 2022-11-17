@@ -117,7 +117,7 @@ private:
 };
 
 bool IsVariable(const std::string& str);
-bool GetVariableString(const std::string& str, const std::string& defaultPoolName, std::string& buffName, std::string& buffPool);
+bool ParseVariableFromString(const std::string& str, const std::string& defaultPoolName, std::string& buffName, std::string& buffPool);
 
 }//end codeg
 
