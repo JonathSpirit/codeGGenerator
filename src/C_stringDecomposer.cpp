@@ -33,8 +33,8 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
     char lastChar = ' ';
     bool ignoringSpace = true;
     bool ignoring = false;
-    bool isChar = false;
-    bool isString = false;
+    bool insideSimpleQuotes = false;
+    bool insideDoubleQuotes = false;
 
     this->_flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     if ( lastFlags & codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING )
@@ -49,18 +49,18 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
 
     this->_cleaned.reserve(str.size());
 
-    for (std::size_t i=0; i<str.size(); ++i)
+    for (char c : str)
     {
-        if (!isString && !isChar)
+        if (!insideDoubleQuotes && !insideSimpleQuotes)
         {//Not ignoring comments
-            if ( (lastChar == '#') && (str[i] == '[') )
+            if (lastChar == '#' && c == '[')
             {//Possible begin of multi-line comments
                 this->_flags |= codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING;
                 ignoring = true;
             }
-            else if ( str[i] == '#' )
+            else if (c == '#')
             {//Comment
-                if ( lastChar == ']' )
+                if (lastChar == ']')
                 {//Possible end of multi-line comments
                     if (!ignoring)
                     {
@@ -80,13 +80,13 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
 
             if (ignoring)
             {
-                lastChar = str[i];
+                lastChar = c;
                 ignoringSpace = true;
                 continue;
             }
         }
 
-        if ( str[i] == ' ' )
+        if ( c == ' ' )
         {//Space
             if ( !ignoringSpace )
             {
@@ -94,30 +94,30 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
                 ignoringSpace = true;
             }
         }
-        else if ( str[i] == '\"' )
+        else if ( c == '\"' )
         {
             this->_cleaned.push_back('\"');
 
-            if (!isChar)
+            if (!insideSimpleQuotes)
             {
-                isString = !isString;
+                insideDoubleQuotes = !insideDoubleQuotes;
             }
             ignoringSpace = false;
         }
-        else if ( str[i] == '\'' )
+        else if ( c == '\'' )
         {
             this->_cleaned.push_back('\'');
 
-            isChar = !isChar;
+            insideSimpleQuotes = !insideSimpleQuotes;
             ignoringSpace = false;
         }
-        else if ( (str[i] > 0x20) && (str[i] < 0x7F) )
+        else if ( (c > 0x20) && (c < 0x7F) )
         {//Only certain ASCII char
-            this->_cleaned.push_back(str[i]);
+            this->_cleaned.push_back(c);
             ignoringSpace = false;
         }
 
-        lastChar = str[i];
+        lastChar = c;
     }
     if (this->_cleaned.length() > 0)
     {
@@ -129,9 +129,9 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
 
     this->_brut = std::move(str);
 
-    if (isChar || isString)
+    if (insideSimpleQuotes || insideDoubleQuotes)
     {
-        throw codeg::SyntaxError("char/string quotation mark without an end !");
+        throw codeg::SyntaxError("char/string quotation marks without an end !");
     }
 
     this->_cleaned.shrink_to_fit();
