@@ -19,6 +19,8 @@
 
 #include <string>
 #include <unordered_map>
+#include <functional>
+#include <optional>
 
 namespace codeg
 {
@@ -26,7 +28,7 @@ namespace codeg
 class MacroList
 {
 public:
-    using MacroListType = std::unordered_map<std::string, std::string>;
+    using ListType = std::unordered_map<std::string, std::string>;
 
     MacroList() = default;
     ~MacroList() = default;
@@ -41,7 +43,28 @@ public:
     bool check(const std::string& key) const;
 
 private:
-    codeg::MacroList::MacroListType g_data;
+    codeg::MacroList::ListType g_data;
+};
+
+class InlinedStaticMacroList
+{
+public:
+    using ListType = std::unordered_map<std::string, std::function<std::optional<std::string>()> >;
+
+    InlinedStaticMacroList() = default;
+    ~InlinedStaticMacroList() = default;
+
+    void clear();
+
+    std::optional<std::string> getReplacement(const std::string& str) const;
+
+    void set(const std::string& key, std::function<std::optional<std::string>()> func);
+
+    bool remove(const std::string& key);
+    bool check(const std::string& key) const;
+
+private:
+    codeg::InlinedStaticMacroList::ListType g_data;
 };
 
 }//end codeg

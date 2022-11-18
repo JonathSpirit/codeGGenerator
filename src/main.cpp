@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <string>
 #include <limits>
+#include <random>
 
 #include "version.hpp"
 #include "C_target.hpp"
@@ -217,6 +218,36 @@ int main(int argc, char **argv)
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_definition()) );
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_enddef()) );
 
+    ///Random engine
+    std::mt19937_64 randomEngine( std::chrono::system_clock::now().time_since_epoch().count() );
+    uint32_t lastRandom = 0;
+
+    ///InlinedStaticMacro
+    codeg::InlinedStaticMacroList inlinedStaticMacroList;
+    inlinedStaticMacroList.set("rand8", [&](){
+        std::uniform_int_distribution<uint8_t> uniform_dist(std::numeric_limits<uint8_t>::min(), std::numeric_limits<uint8_t>::max());
+        lastRandom = uniform_dist(randomEngine);
+        return std::to_string(lastRandom);
+    });
+    inlinedStaticMacroList.set("rand16", [&](){
+        std::uniform_int_distribution<uint16_t> uniform_dist(std::numeric_limits<uint16_t>::min(), std::numeric_limits<uint16_t>::max());
+        lastRandom = uniform_dist(randomEngine);
+        return std::to_string(lastRandom);
+    });
+    inlinedStaticMacroList.set("rand24", [&](){
+        std::uniform_int_distribution<uint32_t> uniform_dist(std::numeric_limits<uint32_t>::min(), static_cast<uint32_t>(std::exp2l(24))-1);
+        lastRandom = uniform_dist(randomEngine);
+        return std::to_string(lastRandom);
+    });
+    inlinedStaticMacroList.set("rand32", [&](){
+        std::uniform_int_distribution<uint32_t> uniform_dist(std::numeric_limits<uint32_t>::min(), std::numeric_limits<uint32_t>::max());
+        lastRandom = uniform_dist(randomEngine);
+        return std::to_string(lastRandom);
+    });
+    inlinedStaticMacroList.set("last_rand", [&](){
+        return std::to_string(lastRandom);
+    });
+
     ///Code
     data._code.resize(65536);
 
@@ -229,7 +260,7 @@ int main(int argc, char **argv)
 
         while(data._reader.getLine(readLine) )
         {
-            data._decomposer.decompose(readLine, data._decomposer._flags);
+            data._decomposer.decompose(readLine, inlinedStaticMacroList, data._decomposer._flags);
 
             if ( !data._decomposer._instruction.empty() )
             {

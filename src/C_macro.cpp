@@ -19,6 +19,8 @@
 namespace codeg
 {
 
+//MacroList
+
 void MacroList::clear()
 {
     this->g_data.clear();
@@ -26,13 +28,11 @@ void MacroList::clear()
 
 bool MacroList::replace(std::string& str) const
 {
-    for (auto& [key,value] : this->g_data)
+    auto it = this->g_data.find(str);
+    if (it != this->g_data.end())
     {
-        if (str == key)
-        {
-            str = value;
-            return true;
-        }
+        str = it->second;
+        return true;
     }
     return false;
 }
@@ -48,7 +48,38 @@ bool MacroList::remove(const std::string& key)
 }
 bool MacroList::check(const std::string& key) const
 {
-    return this->g_data.find(key) != this->g_data.cend();
+    return this->g_data.find(key) != this->g_data.end();
+}
+
+//InlinedStaticMacroList
+
+void InlinedStaticMacroList::clear()
+{
+    this->g_data.clear();
+}
+
+std::optional<std::string> InlinedStaticMacroList::getReplacement(const std::string& str) const
+{
+    auto it = this->g_data.find(str);
+    if (it != this->g_data.end())
+    {
+        return it->second();
+    }
+    return std::nullopt;
+}
+
+void InlinedStaticMacroList::set(const std::string& key, std::function<std::optional<std::string>()> func)
+{
+    this->g_data[key] = std::move(func);
+}
+
+bool InlinedStaticMacroList::remove(const std::string& key)
+{
+    return this->g_data.erase(key) > 0;
+}
+bool InlinedStaticMacroList::check(const std::string& key) const
+{
+    return this->g_data.find(key) != this->g_data.end();
 }
 
 }//end codeg

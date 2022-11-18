@@ -28,13 +28,15 @@ void StringDecomposer::clear()
     this->_instruction.clear();
     this->_arguments.clear();
 }
-void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
+void StringDecomposer::decompose(std::string str, const codeg::InlinedStaticMacroList& inlinedStaticMacroList, uint8_t lastFlags)
 {
     char lastChar = ' ';
     bool ignoringSpace = true;
     bool ignoring = false;
     bool insideSimpleQuotes = false;
     bool insideDoubleQuotes = false;
+    bool insideInlinedStaticMacro = false;
+    std::string inlinedStaticMacro;
 
     this->_flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     if ( lastFlags & codeg::StringDecomposerFlags::FLAG_IGNORE_CHAINING )
@@ -86,16 +88,49 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
             }
         }
 
-        if ( c == ' ' )
+        if (c == ' ')
         {//Space
+            if (insideInlinedStaticMacro)
+            {
+                throw codeg::SyntaxError("Can't have space inside a inlined static macro !");
+            }
+
             if ( !ignoringSpace )
             {
                 this->_cleaned.push_back(' ');
                 ignoringSpace = true;
             }
         }
-        else if ( c == '\"' )
+        else if (c == '@')
         {
+            if (insideInlinedStaticMacro)
+            {
+                insideInlinedStaticMacro = false;
+                if (inlinedStaticMacro.empty())
+                {
+                    throw codeg::SyntaxError("Can't have empty inlined static macro !");
+                }
+
+                auto macroOutput = inlinedStaticMacroList.getReplacement(inlinedStaticMacro);
+                if (!macroOutput.has_value())
+                {
+                    throw codeg::SyntaxError("Unknown inlined static macro : "+inlinedStaticMacro);
+                }
+                this->_cleaned += macroOutput.value();
+                inlinedStaticMacro.clear();
+            }
+            else
+            {
+                insideInlinedStaticMacro = true;
+            }
+        }
+        else if (c == '\"')
+        {
+            if (insideInlinedStaticMacro)
+            {
+                throw codeg::SyntaxError("Can't have quotation marks inside a inlined static macro !");
+            }
+
             this->_cleaned.push_back('\"');
 
             if (!insideSimpleQuotes)
@@ -104,8 +139,13 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
             }
             ignoringSpace = false;
         }
-        else if ( c == '\'' )
+        else if (c == '\'')
         {
+            if (insideInlinedStaticMacro)
+            {
+                throw codeg::SyntaxError("Can't have quotation marks inside a inlined static macro !");
+            }
+
             this->_cleaned.push_back('\'');
 
             insideSimpleQuotes = !insideSimpleQuotes;
@@ -113,7 +153,14 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
         }
         else if ( (c > 0x20) && (c < 0x7F) )
         {//Only certain ASCII char
-            this->_cleaned.push_back(c);
+            if (insideInlinedStaticMacro)
+            {
+                inlinedStaticMacro.push_back(c);
+            }
+            else
+            {
+                this->_cleaned.push_back(c);
+            }
             ignoringSpace = false;
         }
 
@@ -132,6 +179,10 @@ void StringDecomposer::decompose(std::string str, uint8_t lastFlags)
     if (insideSimpleQuotes || insideDoubleQuotes)
     {
         throw codeg::SyntaxError("char/string quotation marks without an end !");
+    }
+    if (insideInlinedStaticMacro)
+    {
+        throw codeg::SyntaxError("inlined static macro declaration without an end !");
     }
 
     this->_cleaned.shrink_to_fit();

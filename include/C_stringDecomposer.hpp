@@ -18,6 +18,7 @@
 #define C_STRINGDECOMPOSER_HPP_INCLUDED
 
 #include "C_string.hpp"
+#include "C_macro.hpp"
 #include <string>
 #include <vector>
 
@@ -35,7 +36,7 @@ enum StringDecomposerFlags : uint8_t
 struct StringDecomposer
 {
     void clear();
-    void decompose(std::string str, uint8_t lastFlags=codeg::StringDecomposerFlags::FLAGS_EMPTY);
+    void decompose(std::string str, const codeg::InlinedStaticMacroList& inlinedStaticMacroList, uint8_t lastFlags=codeg::StringDecomposerFlags::FLAGS_EMPTY);
 
     uint8_t _flags = codeg::StringDecomposerFlags::FLAGS_EMPTY;
     std::string _brut;
