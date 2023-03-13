@@ -65,17 +65,17 @@ void InlinedStaticMacroList::clear()
     this->g_data.clear();
 }
 
-std::optional<std::string> InlinedStaticMacroList::getReplacement(const std::string& str) const
+std::optional<std::string> InlinedStaticMacroList::getReplacement(const std::string& str, const std::string& arg) const
 {
     auto it = this->g_data.find(str);
     if (it != this->g_data.end())
     {
-        return it->second();
+        return it->second(arg);
     }
     return std::nullopt;
 }
 
-void InlinedStaticMacroList::set(const std::string& key, std::function<std::optional<std::string>()> func)
+void InlinedStaticMacroList::set(const std::string& key, std::function<std::optional<std::string>(const std::string&)> func)
 {
     this->g_data[key] = std::move(func);
 }

@@ -51,16 +51,16 @@ private:
 class InlinedStaticMacroList
 {
 public:
-    using ListType = std::unordered_map<std::string, std::function<std::optional<std::string>()> >;
+    using ListType = std::unordered_map<std::string, std::function<std::optional<std::string>(const std::string&)> >;
 
     InlinedStaticMacroList() = default;
     ~InlinedStaticMacroList() = default;
 
     void clear();
 
-    std::optional<std::string> getReplacement(const std::string& str) const;
+    std::optional<std::string> getReplacement(const std::string& str, const std::string& arg) const;
 
-    void set(const std::string& key, std::function<std::optional<std::string>()> func);
+    void set(const std::string& key, std::function<std::optional<std::string>(const std::string&)> func);
 
     bool remove(const std::string& key);
     bool check(const std::string& key) const;

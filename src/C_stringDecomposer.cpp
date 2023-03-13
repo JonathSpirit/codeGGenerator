@@ -111,10 +111,34 @@ void StringDecomposer::decompose(std::string str, const codeg::InlinedStaticMacr
                     throw codeg::SyntaxError("Can't have empty inlined static macro !");
                 }
 
-                auto macroOutput = inlinedStaticMacroList.getReplacement(inlinedStaticMacro);
-                if (!macroOutput.has_value())
+                //Check for an argument
+                std::string inlinedStaticMacroArgument;
+                auto argPos = inlinedStaticMacro.find_first_of(':');
+
+                if (argPos != std::string::npos)
+                {
+                    inlinedStaticMacroArgument = inlinedStaticMacro.substr(argPos+1, std::string::npos);
+                    inlinedStaticMacro = inlinedStaticMacro.substr(0, argPos);
+
+                    if (inlinedStaticMacroArgument.empty())
+                    {
+                        throw codeg::SyntaxError("Can't have empty declared argument in inlined static macro : "+inlinedStaticMacro);
+                    }
+                    if (inlinedStaticMacro.empty())
+                    {
+                        throw codeg::SyntaxError("Can't have empty inlined static macro !");
+                    }
+                }
+
+                if (!inlinedStaticMacroList.check(inlinedStaticMacro))
                 {
                     throw codeg::SyntaxError("Unknown inlined static macro : "+inlinedStaticMacro);
+                }
+
+                auto macroOutput = inlinedStaticMacroList.getReplacement(inlinedStaticMacro, inlinedStaticMacroArgument);
+                if (!macroOutput.has_value())
+                {
+                    throw codeg::SyntaxError("Bad parameter for inlined static macro : "+inlinedStaticMacro);
                 }
                 this->_cleaned += macroOutput.value();
                 inlinedStaticMacro.clear();

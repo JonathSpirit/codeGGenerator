@@ -224,28 +224,46 @@ int main(int argc, char **argv)
 
     ///InlinedStaticMacro
     codeg::InlinedStaticMacroList inlinedStaticMacroList;
-    inlinedStaticMacroList.set("rand8", [&](){
+    inlinedStaticMacroList.set("rand8", [&]([[maybe_unused]] const std::string& arg){
         std::uniform_int_distribution<uint8_t> uniform_dist(std::numeric_limits<uint8_t>::min(), std::numeric_limits<uint8_t>::max());
         lastRandom = uniform_dist(randomEngine);
         return std::to_string(lastRandom);
     });
-    inlinedStaticMacroList.set("rand16", [&](){
+    inlinedStaticMacroList.set("rand16", [&]([[maybe_unused]] const std::string& arg){
         std::uniform_int_distribution<uint16_t> uniform_dist(std::numeric_limits<uint16_t>::min(), std::numeric_limits<uint16_t>::max());
         lastRandom = uniform_dist(randomEngine);
         return std::to_string(lastRandom);
     });
-    inlinedStaticMacroList.set("rand24", [&](){
+    inlinedStaticMacroList.set("rand24", [&]([[maybe_unused]] const std::string& arg){
         std::uniform_int_distribution<uint32_t> uniform_dist(std::numeric_limits<uint32_t>::min(), static_cast<uint32_t>(std::exp2l(24))-1);
         lastRandom = uniform_dist(randomEngine);
         return std::to_string(lastRandom);
     });
-    inlinedStaticMacroList.set("rand32", [&](){
+    inlinedStaticMacroList.set("rand32", [&]([[maybe_unused]] const std::string& arg){
         std::uniform_int_distribution<uint32_t> uniform_dist(std::numeric_limits<uint32_t>::min(), std::numeric_limits<uint32_t>::max());
         lastRandom = uniform_dist(randomEngine);
         return std::to_string(lastRandom);
     });
-    inlinedStaticMacroList.set("last_rand", [&](){
+    inlinedStaticMacroList.set("last_rand", [&]([[maybe_unused]] const std::string& arg){
         return std::to_string(lastRandom);
+    });
+    inlinedStaticMacroList.set("file_brut", [&](const std::string& arg){
+        std::ifstream brutFile(arg, std::ios::in | std::ios::binary);
+        if (!brutFile)
+        {
+            throw codeg::FatalError("inlined static macro <file_brut>, can't open file !");
+        }
+
+        std::string result;
+        char c;
+        while (brutFile.get(c))
+        {
+            result += std::to_string(static_cast<uint8_t>(c));
+            result += ' ';
+        }
+        brutFile.close();
+
+        return result;
     });
 
     ///Code
