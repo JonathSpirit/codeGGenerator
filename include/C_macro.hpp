@@ -22,6 +22,8 @@
 #include <functional>
 #include <optional>
 
+#define CODEG_MAX_REPLACEMENT_COUNT 100
+
 namespace codeg
 {
 

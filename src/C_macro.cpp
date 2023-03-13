@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include "C_macro.hpp"
+#include "C_error.hpp"
 
 namespace codeg
 {
@@ -28,13 +29,19 @@ void MacroList::clear()
 
 bool MacroList::replace(std::string& str) const
 {
-    auto it = this->g_data.find(str);
-    if (it != this->g_data.end())
+    std::size_t replacementCount = 0;
+    do
     {
+        auto it = this->g_data.find(str);
+        if (it == this->g_data.end())
+        {
+            return replacementCount > 0;
+        }
         str = it->second;
-        return true;
     }
-    return false;
+    while (++replacementCount < CODEG_MAX_REPLACEMENT_COUNT);
+
+    throw codeg::FatalError("macro: maximum replacement count reached, there is a loop somewhere !");
 }
 
 void MacroList::set(const std::string& key, const std::string& str)
