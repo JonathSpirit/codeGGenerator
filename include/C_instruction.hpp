@@ -551,6 +551,25 @@ public:
     void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
 };
 
+class Instruction_offset : public Instruction
+{
+    /**
+    KEYWORD         ARGUMENTS                             DESCRIPTION
+    offset          offset [string] [constant]            Add a offset in the code by adding [constant] numbers of NOP instructions.
+                                                          [string] can be "add" : It will add the wanted offset.
+                                                          [string] can be "reach"  : It will offset until a specific address is reached.
+    **/
+    public:
+    Instruction_offset() = default;
+    ~Instruction_offset() override = default;
+
+    [[nodiscard]] std::string getName() const override;
+
+    [[nodiscard]] codeg::ArgumentsSize getArgumentsSize() const override {return {{{2}}};}
+
+    void compile(const codeg::StringDecomposer& input, codeg::CompilerData& data) override;
+};
+
 class Instruction_import : public Instruction
 {
     /**

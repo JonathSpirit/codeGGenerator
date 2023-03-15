@@ -214,6 +214,7 @@ int main(int argc, char **argv)
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_call()) );
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_clock()) );
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_pool()) );
+    data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_offset()) );
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_import()) );
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_definition()) );
     data._instructions.push( std::unique_ptr<codeg::Instruction>(new codeg::Instruction_enddef()) );

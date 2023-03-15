@@ -1344,6 +1344,97 @@ void Instruction_pool::compile(const codeg::StringDecomposer& input, codeg::Comp
     }
 }
 
+///Instruction_offset
+std::string Instruction_offset::getName() const
+{
+    return "offset";
+}
+
+void Instruction_offset::compile(const codeg::StringDecomposer& input, codeg::CompilerData& data)
+{
+    auto kString = KeywordString::parse(input._arguments[0], data);
+    auto kConstant = KeywordConstant::parse(input._arguments[1], data);
+
+    if (!kString.has_value())
+    {
+        throw codeg::ArgumentError(1, "string");
+    }
+    if (!kConstant.has_value())
+    {
+        throw codeg::ArgumentError(2, "constant");
+    }
+
+    const std::string& string = kString.value().getString();
+
+    if (string == "add")
+    {
+        codeg::MemoryBigSize count = kConstant->getValue()->first;
+
+        if (count == 0)
+        {
+            ConsoleWarning << "offset of 0, no instruction will be added !" << std::endl;
+            return;
+        }
+        if (data._code.getWriteDummy())
+        {
+            if (count%2 != 0)
+            {
+                throw codeg::CompileError("when dummy values must be placed, offset must be a multiple of 2 !");
+            }
+
+            for (codeg::MemoryBigSize i = 0; i < count/2; ++i)
+            {
+                data._code.push(codeg::OPCODE_STICK | codeg::READABLE_SOURCE);
+                data._code.pushDummy();
+            }
+        }
+        else
+        {
+            for (codeg::MemoryBigSize i = 0; i < count; ++i)
+            {
+                data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
+                data._code.pushDummy();
+            }
+        }
+    }
+    else if (string == "reach")
+    {
+        codeg::MemoryBigSize reachAddress = kConstant->getValue()->first;
+        codeg::MemoryBigSize actualAddress = data._code.getCursor();
+
+        if (reachAddress < actualAddress)
+        {
+            throw codeg::CompileError("Can't reach the address "+std::to_string(reachAddress)+" as code address "+std::to_string(actualAddress)+" exceeds it !");
+        }
+        codeg::MemoryBigSize count = reachAddress - actualAddress;
+        if (data._code.getWriteDummy())
+        {
+            if (count%2 != 0)
+            {
+                throw codeg::CompileError("when dummy values must be placed, offset must be a multiple of 2 !");
+            }
+
+            for (codeg::MemoryBigSize i = 0; i < count/2; ++i)
+            {
+                data._code.push(codeg::OPCODE_STICK | codeg::READABLE_SOURCE);
+                data._code.pushDummy();
+            }
+        }
+        else
+        {
+            for (codeg::MemoryBigSize i = 0; i < count; ++i)
+            {
+                data._code.push(codeg::OPCODE_STICK | codeg::READABLE_DEFAULT);
+                data._code.pushDummy();
+            }
+        }
+    }
+    else
+    {
+        throw codeg::CompileError("bad argument (argument 1 [string] must be \"add\" or \"reach\")");
+    }
+}
+
 ///Instruction_import
 std::string Instruction_import::getName() const
 {
