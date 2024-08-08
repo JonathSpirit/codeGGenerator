@@ -19,6 +19,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #define CODEG_NULL_UINDEX 0
 

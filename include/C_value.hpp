@@ -18,6 +18,7 @@
 #define C_VALUE_HPP_INCLUDED
 
 #include <string>
+#include <cstdint>
 
 namespace codeg
 {
